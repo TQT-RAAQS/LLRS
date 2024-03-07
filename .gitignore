@@ -56,4 +56,4 @@ dkms.conf
 .vscode/
 
 # Notes
-.note
+*.note
