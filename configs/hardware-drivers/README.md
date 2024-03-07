@@ -1,1 +1,1 @@
-This directory contains the configuration files for the drivers of the LLRS hardware components. The drivers themselves are stored in src-components/hardware-drivers
+This directory contains the configuration files for the drivers of the LLRS hardware components. The hardware drivers themselves are stored in the src-components/hardware-drivers directory
