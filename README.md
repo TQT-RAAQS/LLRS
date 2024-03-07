@@ -10,7 +10,7 @@ C -->|list of ordered and batched moves to be performed| D[Waveform Synthesis]
 D -->|waveforms representing the moves| E[Waveform Streaming] 
 E -->|new array of atoms| A 
 ```
-Each of these submodules are defined in `src-components/LLRS-lib/`.
+Each of these submodules is defined in `modules/LLRS-lib/`.
 
 ## Resources ##
 ***Software***
@@ -23,7 +23,6 @@ Each of these submodules are defined in `src-components/LLRS-lib/`.
 - Spectrum M4 Abitrary Waveform Generator [Manual](https://uofwaterloo-my.sharepoint.com/:b:/r/personal/acooperr_uwaterloo_ca/Documents/TQT-RAAQS/Instruments/AWG/Spectrum%20M4i6622-x8/docs/m4i_m4x_66xx_manual_english.pdf?csf=1&web=1&e=vYy5b9)
 
 ## Directory ##
-
 ```
 LLRS
 ├─ .gitignore
@@ -31,17 +30,15 @@ LLRS
 ├─ LICENSE 
 ├─ resources
 ├─ configs
-│   └─ hardware-drivers
-│      ├─ AWG
-│      └─ FGC
+│  ├─ AWG
+│  └─ FGC
 ├─ tools
 ├─ benchmarks
 │  ├─ operational-benchmarking
 │  └─ runtime-benchmarking
-└─ src-components
-    ├─ hardware-drivers
-    │  ├─ AWG
-    │  └─ FGC
+└─ modules
+    ├─ AWG
+    ├─ FGC
     ├─ LLRS-lib
     │  ├─ image-acquisition
     │  ├─ image-processing
@@ -54,9 +51,6 @@ LLRS
     │  ├─ [PLACEHOLDER]
     │  └─ [PLACEHOLDER]
     ├─ LLRS-exe
-    │  ├─ [PLACEHOLDER]
-    │  └─ [PLACEHOLDER]
-    ├─ utils
     │  ├─ [PLACEHOLDER]
     │  └─ [PLACEHOLDER]
     ├─ tests
