@@ -1,0 +1,20 @@
+# AWG Global Settings
+driver_path:              /dev/spcm0    # The device file system handle
+sample_rate:              624000000     # Samples/s
+external_clock_freq:      10000000      # Hz
+freq_resolution:          100000        # ??
+channels:                 [0]           # Channel value in array
+amp:                      [280]         # Vpp in mV
+amp_lim:                  80            # DO NOT CHANGE THIS VALUE
+
+# Segment Settings
+awg_num_segments:         256
+awg_sample_rate:          624e6
+wfm_mask:                 0x7fff
+
+# Waveform Settings
+waveform_duration:        100e-6
+waveforms_per_segment:    32
+null_segment_length:      6240
+idle_segment_length:      6240
+
