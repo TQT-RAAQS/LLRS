@@ -5,3 +5,6 @@ url = https://github.com/jbeder/yaml-cpp.git
 depth = 1
 buildsystem = cmake
 revision = master
+
+[provide]
+yaml_cpp_dep = yaml-cpp
