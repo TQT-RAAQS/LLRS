@@ -57,3 +57,8 @@ dkms.conf
 
 # Notes
 *.note
+
+# Builddirs
+bin/
+build/
+builddir/
