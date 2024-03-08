@@ -1,0 +1,7 @@
+[wrap-git]
+directory = yaml-cpp
+
+url = https://github.com/jbeder/yaml-cpp.git
+depth = 1
+buildsystem = cmake
+revision = master
