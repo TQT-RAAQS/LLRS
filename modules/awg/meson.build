@@ -10,6 +10,9 @@ cmake = import('cmake')
 yaml_cpp_proj = cmake.subproject('yaml-cpp')
 yaml_cpp_dep = yaml_cpp_proj.dependency('yaml-cpp')
 
+# subdirectories
+subdir('spcm')
+
 # include directories
 awg_inc = include_directories('include')
 
@@ -26,4 +29,4 @@ awg_src = [
 awg = library('awg', 
     awg_src,
     include_directories: awg_inc,
-    dependencies: [yaml_cpp_dep])
+    dependencies: [yaml_cpp_dep, spcm_dep])
