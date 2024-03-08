@@ -21,7 +21,7 @@ Acquisition::ActiveSilicon1XCLD::ActiveSilicon1XCLD(uint32_t roi_width, uint32_t
     _vbin(vbin), _hbin(hbin)
 {
     /* Create handle and load default settings base on the PCF file */
-    std::string pcf_config_path = std::string("../../../config/fgc/activesilicon_1xcld.pcf");
+    std::string pcf_config_path = std::string(PROJECT_BASE_DIR + "/config/fgc/activesilicon_1xcld.pcf");
     PHX_Create(&this->_handle, &PHX_ErrHandlerDefault);
     PHX_ParameterSet(this->_handle, PHX_CONFIG_FILE, &pcf_config_path);
 
