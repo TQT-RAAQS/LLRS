@@ -1,0 +1,22 @@
+project('llrs-lib-reconfiguration', 
+        'cuda', 
+        default_options: ['default_library=static', ],
+        subproject_dir: 'algorithms')
+
+add_project_arguments('-gencode arch=compute_75,code=sm_75' , language : 'cuda')
+
+# include directory
+llrs_lib_reconfiguration_inc = include_directories('include')
+
+# subprojects
+
+linear_exact_v1_proj = subproject('linear-exact-v1')
+linear_exact_v2_proj = subproject('linear-exact-v2')
+redrec_v2_proj = subproject('redrec-v2')
+redrec_v3_proj = subproject('redrec-v3')
+
+# export dependencies
+llrs_lib_reconfiguration_dep = declare_dependency(
+  include_directories : llrs_lib_reconfiguration_inc,
+  link_with : [linear_exact_v1, linear_exact_v2, redrec_v2, redrec_v3]
+)
