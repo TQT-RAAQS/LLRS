@@ -21,3 +21,10 @@ fgc = library('fgc',
     fgc_src,
     include_directories: fgc_inc,
     dependencies: [activeSDK_dep])
+
+# dependencies
+fgc_dep = declare_dependency(
+    include_directories: fgc_inc,
+    link_with: fgc,
+    dependencies: [activeSDK_dep])
+    

@@ -30,3 +30,9 @@ awg = library('awg',
     awg_src,
     include_directories: awg_inc,
     dependencies: [yaml_cpp_dep, spcm_dep])
+
+# dependencies
+awg_dep = declare_dependency(
+    include_directories: awg_inc,
+    link_with: awg,
+    dependencies: [yaml_cpp_dep, spcm_dep])
