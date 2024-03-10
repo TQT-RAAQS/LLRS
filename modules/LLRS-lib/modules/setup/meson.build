@@ -14,7 +14,7 @@ llrs_lib_setup_src = [
 
 
 # targets
-llrs_lib_setup = library('awg', 
+llrs_lib_setup = library('llrs-lib-setup', 
     llrs_lib_setup_src,
     include_directories: [llrs_lib_common_inc, llrs_lib_setup_inc],
     dependencies: [waveform_synthesis_dep])
