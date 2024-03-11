@@ -1,4 +1,4 @@
-**
+/**
  * @brief Header file for parameter handling and waveform synthesis setup
  * @date Aug 2023
 */
