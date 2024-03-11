@@ -5,7 +5,7 @@
 #include "Collector.h"
 #include "WaveformTable.h"
 #include "Solver.h"
-#include "Settings.h"
+#include <LLRS-lib/Settings.h>
 #include "Setup.h"
 #include <memory>
 #include <vector>

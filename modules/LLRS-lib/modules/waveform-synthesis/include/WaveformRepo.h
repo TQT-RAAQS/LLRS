@@ -2,7 +2,7 @@
 #define _WAVEFORMREPO_H_
 
 #include "Waveform.h"
-#include "Settings.h"
+#include <LLRS-lib/Settings.h>
 #include "WaveformPowerCalculator.h"
 #include <cstdint>
 #include <unordered_map>

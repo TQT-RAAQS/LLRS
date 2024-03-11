@@ -2,7 +2,7 @@
 #define _WAVEFORMTABLE_H_
 
 #include "WaveformRepo.h"
-#include "Settings.h"
+#include <LLRS-lib/Settings.h>
 #include <string>
 #include <vector>
 #include <utility>
