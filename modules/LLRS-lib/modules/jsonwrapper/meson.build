@@ -2,6 +2,7 @@ project('llrs-lib-jsonwrapper',
         'cuda', 
         default_options: ['cpp_std=c++14', 'default_library=static'])
 
+cmake = import('cmake')
 
 # external dependencies
 yaml_cpp_proj = cmake.subproject('yaml-cpp')
@@ -14,6 +15,10 @@ llrs_lib_jsonwrapper_inc = include_directories('include')
 llrs_lib_jsonwrapper_src = [
     'src/JsonWrapper.cu',
   ]
+
+# external dependencies
+nlohmann_json_dep = dependency('nlohmann_json')
+jsoncpp_dep = dependency('jsoncpp')
 
 # targets
 llrs_lib_jsonwrapper = library('llrs-lib-jsonwrapper', 

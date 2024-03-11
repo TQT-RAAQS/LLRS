@@ -10,11 +10,14 @@ add_project_arguments('-I@CURRENT_SOURCE_DIR@/common/include', language: 'cuda')
 # include directories
 llrs_lib_inc = include_directories('include')
 
-
 # sources
 llrs_lib_src = [
     'src/llrs.cu'
   ]
+
+# external dependencies
+nlohmann_json_dep = dependency('nlohmann_json')
+jsoncpp_dep = dependency('jsoncpp')
 
 # submodules
 

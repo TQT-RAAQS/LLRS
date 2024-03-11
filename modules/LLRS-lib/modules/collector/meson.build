@@ -5,6 +5,9 @@ project('llrs-lib-collector',
 # include directories
 llrs_lib_collector_inc = include_directories('include')
 
+# external dependencies
+jsoncpp_dep = dependency('jsoncpp')
+
 # sources
 llrs_lib_collector_src = [
     'src/Collector.cu',
