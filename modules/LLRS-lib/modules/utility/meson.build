@@ -10,6 +10,12 @@ llrs_lib_utility_src = [
     'src/utility.cu',
   ]
 
+# submodules
+solver_proj =             subproject('solver')
+
+# dependencies
+llrs_lib_solver_dep =     solver_proj.get_variable('llrs_lib_solver_dep')
+
 # targets
 llrs_lib_utility = library('llrs-lib-utility', 
     llrs_lib_utility_src,

@@ -10,6 +10,14 @@ llrs_lib_solver_src = [
     'src/Solver.cu',
   ]
 
+# submodules
+reconfiguration_proj =    subproject('reconfiguration')
+collector_proj =          subproject('collector')
+
+# dependencies
+llrs_lib_reconfiguration_dep = reconfiguration_proj.get_variable('llrs_lib_reconfiguration_dep')
+llrs_lib_collector_dep = collector_proj.get_variable('llrs_lib_collector_dep')
+
 # targets
 llrs_lib_solver = library('llrs-lib-solver', 
     llrs_lib_solver_src,
