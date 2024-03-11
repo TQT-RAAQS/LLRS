@@ -15,7 +15,7 @@
 #include <jsoncpp/json/json.h>
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
-#include <LLRS-lib/Settings.h>
+#include "LLRS-lib/Settings.h"
 
 
 namespace Util {

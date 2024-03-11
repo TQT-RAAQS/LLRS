@@ -10,7 +10,7 @@
 #include <fstream>
 #include "WaveformRepo.h"
 #include "WaveformTable.h"
-#include <LLRS-lib/Settings.h>
+#include "LLRS-lib/Settings.h"
 #define PARAM_NUM 3
 
 namespace Setup

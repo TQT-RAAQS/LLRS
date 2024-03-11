@@ -4,6 +4,7 @@ project('LLRS',
         subproject_dir: 'modules')
 
 add_global_arguments('-DPROJECT_BASE_DIR="' + meson.source_root() + '"' , language : ['c', 'cpp', 'cuda'])
+add_global_arguments('-I' + meson.build_root() + '/modules/common-include' , language : ['c', 'cpp', 'cuda'])
 
 # subprojects
 fgc_proj = subproject('fgc')

@@ -3,10 +3,6 @@ project('LLRS-lib',
         default_options: ['cpp_std=c++14', 'default_library=shared'],
         subproject_dir: 'modules')
 
-
-# common-include (proproc.h and settings.h to be included in all modules)
-install_headers('common-include/PreProc.h', './common-include/Settings.h', subdir: 'LLRS-lib')
-
 # include directories
 llrs_lib_inc = include_directories('include')
 

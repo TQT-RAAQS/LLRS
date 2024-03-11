@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <cmath>
-#include <LLRS-lib/Settings.h>
+#include "LLRS-lib/Settings.h"
 
 namespace Synthesis{
 
