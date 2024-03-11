@@ -1,2 +1,5 @@
 # External Dependencies
 yaml-cpp/
+jsoncpp*/
+nlohmann_json*/
+packagecache/
