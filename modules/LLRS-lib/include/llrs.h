@@ -11,7 +11,7 @@
 #include "Solver.h"
 #include "WaveformRepo.h"
 #include "WaveformTable.h"
-#include "sequence.h"
+#include "Sequence.h"
 #include "ImageProcessor.h"
 #include "utility.h"
 #include "activesilicon-1xcld.hpp"

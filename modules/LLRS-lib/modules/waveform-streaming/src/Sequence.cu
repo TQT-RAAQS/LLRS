@@ -1,4 +1,4 @@
-#include "sequence.h"
+#include "Sequence.h"
 
 template<typename AWG_T>void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx, bool _2d, int Nt_x, int Nt_y) {
     this->idle_segment_idx = idle_segment_idx;
