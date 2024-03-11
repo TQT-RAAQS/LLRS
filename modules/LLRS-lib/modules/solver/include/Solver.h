@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iomanip>
 #include <chrono>
-#include "Settings.h"
+#include <LLRS_lib/Settings.h>
 #include "Collector.h"
 #include "Algorithms.h"
 

@@ -5,7 +5,7 @@ project('LLRS-lib',
 
 
 # common-include (proproc.h and settings.h to be included in all modules)
-add_project_arguments('-I@CURRENT_SOURCE_DIR@/common/include', language: 'cuda')
+install_headers('common-include/PreProc.h', './common-include/Settings.h', subdir: 'LLRS-lib')
 
 # include directories
 llrs_lib_inc = include_directories('include')

@@ -3,9 +3,9 @@
 
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
-#include "Settings.h"
+#include <LLRS-lib/Settings.h>
 #include "Setup.h"
-#include "PreProc.h"
+#include <LLRS-lib/PreProc.h>
 #include "JsonWrapper.h"
 #include "Collector.h"
 #include "Solver.h"

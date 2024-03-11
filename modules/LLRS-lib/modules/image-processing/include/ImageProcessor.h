@@ -6,8 +6,8 @@
 #ifndef _IMAGE_PROCESSING_H_
 #define _IMAGE_PROCESSING_H_
 
-#include "Settings.h"
-#include "PreProc.h"
+#include "LLRS-lib/Settings.h"
+#include "LLRS-lib/PreProc.h"
 #include <omp.h>
 #include <fstream>
 #include <cstdint>
