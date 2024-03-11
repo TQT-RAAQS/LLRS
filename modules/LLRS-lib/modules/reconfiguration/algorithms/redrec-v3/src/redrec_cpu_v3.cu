@@ -1,6 +1,6 @@
 #include "redrec_cpu_v3.h"
-#include "../../linear_exact_v2/cpu/lin_exact_1d_cpu_v2.h"
-#include<stdio.h>
+#include "lin_exact_1d_cpu_v2.h"
+#include <stdio.h>
 #define moves_gen
 
 int min(int a, int b) {
