@@ -11,9 +11,13 @@ llrs_lib_reconfiguration_inc = include_directories('include')
 # subprojects
 
 linear_exact_v1_proj = subproject('linear-exact-v1')
+linear_exact_v1 = linear_exact_v1_proj.get_variable('linear_exact_v1')
 linear_exact_v2_proj = subproject('linear-exact-v2')
+linear_exact_v2 = linear_exact_v2_proj.get_variable('linear_exact_v2')
 redrec_v2_proj = subproject('redrec-v2')
+redrec_v2 = redrec_v2_proj.get_variable('redrec_v2')
 redrec_v3_proj = subproject('redrec-v3')
+redrec_v3 = redrec_v3_proj.get_variable('redrec_v3')
 
 # export dependencies
 llrs_lib_reconfiguration_dep = declare_dependency(
