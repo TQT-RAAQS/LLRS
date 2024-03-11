@@ -8,4 +8,4 @@ add_global_arguments('-DPROJECT_BASE_DIR="' + meson.source_root() + '"' , langua
 # subprojects
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')
-
+llrs_lib_proj = subproject('LLRS-lib')
