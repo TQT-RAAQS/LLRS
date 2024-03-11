@@ -1,6 +1,6 @@
 project('llrs-lib-reconfiguration', 
         'cuda', 
-        default_options: ['default_library=static', ],
+        default_options: ['default_library=shared', ],
         subproject_dir: 'algorithms')
 
 add_project_arguments('-gencode arch=compute_75,code=sm_75' , language : 'cuda')
