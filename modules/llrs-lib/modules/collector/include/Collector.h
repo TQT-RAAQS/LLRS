@@ -10,8 +10,8 @@
 #include <algorithm>
 #include <ctime>
 #include <jsoncpp/json/json.h>
-#include "LLRS-lib/Settings.h"
-#include "LLRS-lib/PreProc.h"
+#include "llrs-lib/Settings.h"
+#include "llrs-lib/PreProc.h"
 
 template <typename T>
 static std::string vec_to_str(const std::vector<T>& vec) {

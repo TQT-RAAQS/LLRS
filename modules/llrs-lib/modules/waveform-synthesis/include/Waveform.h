@@ -1,7 +1,7 @@
 #ifndef _WAVEFORM_H_
 #define _WAVEFORM_H_
 
-#include "LLRS-lib/Settings.h"
+#include "llrs-lib/Settings.h"
 #include <tuple>
 #include <vector>
 #include <stdio.h>

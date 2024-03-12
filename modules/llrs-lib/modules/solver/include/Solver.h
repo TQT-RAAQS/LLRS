@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iomanip>
 #include <chrono>
-#include <LLRS-lib/Settings.h>
+#include <llrs-lib/Settings.h>
 #include "Collector.h"
 #include "Algorithms.h"
 #include "WaveformTable.h"
