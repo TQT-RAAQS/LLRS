@@ -10,6 +10,7 @@
     - [Software](outline/software/README.md)
         - [Modules](outline/software/modules/README.md)
             - [LLRS-lib](outline/software/modules/LLRS-lib/README.md)
-        - [Tools](outline/software/tools/README.md)
+    - [Tools](outline/tools/README.md)
+        - [LLCS](outline/tools/llcs/README.md)
 - [Operating the LLRS](operating/README.md)
     - [How to Setup](operating/how_to_setup/README.md)
