@@ -1,0 +1,6 @@
+[book]
+authors = ["amirdadp"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Low Latency Reconfiguration System"
