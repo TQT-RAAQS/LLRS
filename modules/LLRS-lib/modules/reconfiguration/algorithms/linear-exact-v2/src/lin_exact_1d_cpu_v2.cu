@@ -1,12 +1,6 @@
 #include "lin_exact_1d_cpu_v2.h"
 #include <stdlib.h>
 #include <stdio.h>
-
-int max(int a, int b) {
-    if (a < b) return b;
-    return a;
-}
-
 void compute_heights_cpu(int* sourceFlags, int* targetFlags, int numTraps, int* height){
     int heightNow = 0;
 

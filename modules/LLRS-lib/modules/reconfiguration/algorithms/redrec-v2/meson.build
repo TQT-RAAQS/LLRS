@@ -7,7 +7,6 @@ redrec_v2_inc = include_directories('include')
 
 # sources
 redrec_v2_src = [
-    'src/redrec_v2.cu',
     'src/redrec_v2_no_timer.cu'
   ]
 

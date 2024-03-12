@@ -3,21 +3,6 @@
 #include <stdio.h>
 #define moves_gen
 
-int min(int a, int b) {
-    if (a < b) return a;
-    return b;
-}
-
-int max2(int a, int b) {
-    if (a < b) return b;
-    return a;
-}
-
-int abs(int a) {
-    if (a < 0) return -a;
-    return a;
-}
-
 void moves_generator_unbatched_column(int width, int* OutSources, int* OutTargets, int numTargets, int* outputMovesSource, int* outputMovesTarget, int* moves_counter, int* offset) {
 
     int currentIndex = *moves_counter;
@@ -178,7 +163,7 @@ void find_pair_to_shuffle(int* surplus, int* column_solved, int* dynamic_columns
             if (atomsToShuffle > maxAtomsToShuffle) {
                 maxAtomsToShuffle = atomsToShuffle; 
                 min_dist = dynamic_columns[i+1] - i;
-                maxAbsVal = max2(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
+                maxAbsVal = max(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
                 minAbsVal = min(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
                 absValDiff = maxAbsVal - minAbsVal;
                 selectedPairIndex = i;
@@ -187,13 +172,13 @@ void find_pair_to_shuffle(int* surplus, int* column_solved, int* dynamic_columns
                 dist = dynamic_columns[i+1] - i;
                 if (dist < min_dist){
                     min_dist = dist;
-                    maxAbsVal = max2(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
+                    maxAbsVal = max(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
                     minAbsVal = min(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
                     absValDiff = maxAbsVal - minAbsVal;
                     selectedPairIndex = i;
                 } 
                 else if (dist == min_dist){
-                    maxAbsVal = max2(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
+                    maxAbsVal = max(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
                     minAbsVal = min(abs(surplus[i]), abs(surplus[dynamic_columns[i+1]]));
                     if(maxAbsVal-minAbsVal < absValDiff){
                         absValDiff = maxAbsVal - minAbsVal;

@@ -1,15 +1,5 @@
 #define INF ~(1 << 31)/2
 
-int min(int a, int b) {
-    if (a < b) return a;
-    return b;
-}
-
-int max(int a, int b) {
-    if (a < b) return b;
-    return a;
-}
-
 int get_excess(int* initial, int* target, int num_traps) {
     int excess = 0;
     for (int i = 1; i <= num_traps; i++) {
