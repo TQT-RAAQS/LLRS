@@ -60,16 +60,7 @@ template<typename AWG_T>void LLRS<AWG_T>::setup( std::string input, size_t llrs_
     std::clog.rdbuf(log_out.rdbuf());
     this->problem_id = problem_id;
 
-    /* Parse the user input as a json object */
-    //user_input = Util::JsonWrapper(PROBLEM_PATH(json_input));
-    //target_config = user_input.read_problem_target_config();
-
-    //This is for the hardcoded benchmark_params.yml file
-    try {
-        user_input = Util::JsonWrapper(YAML_PROBLEM_PATH(input));
-    } catch (...) {
-        user_input = Util::JsonWrapper(PROBLEM_PATH(input));
-    }
+	user_input = Util::JsonWrapper(CONFIG_PATH(input));
 
     const size_t Nt_x = user_input.read_problem_Nt_x();
     metadata.setNtx(Nt_x);
