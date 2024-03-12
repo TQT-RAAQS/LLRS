@@ -9,4 +9,5 @@ add_global_arguments('-I' + meson.source_root() + '/modules/common-include' , la
 # subprojects
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')
-llrs_lib_proj = subproject('LLRS-lib')
+llrs_lib_proj = subproject('llrs-lib')
+llrs_exe_proj = subproject('llrs-exe')
