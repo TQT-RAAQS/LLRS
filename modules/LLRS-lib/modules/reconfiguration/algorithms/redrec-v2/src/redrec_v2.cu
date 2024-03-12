@@ -8,16 +8,6 @@
 Timer timer;
 float batching_time = 0;
 
-int min(int a, int b) {
-    if (a < b) return a;
-    return b;
-}
-
-int max(int a, int b) {
-    if (a < b) return b;
-    return a;
-}
-
 int abs(int a) {
     if (a < 0) return -a;
     return a;
