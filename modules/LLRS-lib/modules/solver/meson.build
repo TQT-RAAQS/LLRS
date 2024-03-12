@@ -13,19 +13,21 @@ llrs_lib_solver_src = [
 # submodules
 reconfiguration_proj =    subproject('reconfiguration')
 collector_proj =          subproject('collector')
+waveform_synthesis_proj = subproject('waveform-synthesis')
 
 # dependencies
 llrs_lib_reconfiguration_dep = reconfiguration_proj.get_variable('llrs_lib_reconfiguration_dep')
 llrs_lib_collector_dep = collector_proj.get_variable('llrs_lib_collector_dep')
+llrs_lib_waveform_synthesis_dep = waveform_synthesis_proj.get_variable('llrs_lib_waveform_synthesis_dep')
 
 # targets
 llrs_lib_solver = library('llrs-lib-solver', 
     llrs_lib_solver_src,
     include_directories: [llrs_lib_solver_inc],
-    dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep])
+    dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])
 
 # dependencies
 llrs_lib_solver_dep = declare_dependency(
     include_directories: [llrs_lib_solver_inc],
     link_with: llrs_lib_solver,
-    dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep])
+    dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])

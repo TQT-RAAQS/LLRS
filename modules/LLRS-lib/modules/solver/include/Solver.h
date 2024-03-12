@@ -7,6 +7,7 @@
 #include <LLRS-lib/Settings.h>
 #include "Collector.h"
 #include "Algorithms.h"
+#include "WaveformTable.h"
 
 /**
  * @brief The Reconfig namespace contains all the classes and functions related to the reconfiguration problem
