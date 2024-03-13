@@ -1,0 +1,7 @@
+[wrap-git]
+directory = cppzmq 
+
+url = https://github.com/zeromq/cppzmq.git
+depth = 1
+buildsystem = cmake
+revision = master

@@ -1,5 +1,5 @@
 project('llcs-trigger-detector', 
-        'cpp'
+        'cpp',
         default_options: ['default_library=static'])
 
 # include directories

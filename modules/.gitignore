@@ -3,4 +3,5 @@ yaml-cpp/
 jsoncpp*/
 nlohmann_json*/
 hdf5-1.14.3/
+cppzmq/
 packagecache/

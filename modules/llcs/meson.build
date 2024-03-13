@@ -10,7 +10,8 @@ llcs_src = [
 
 # submodules
 h5_wrapper_proj = subproject('h5-wrapper')
-trigger_detector_proj = subproject('trigger-detector')
+llcs_trigger_detector_proj = subproject('trigger-detector')
+llcs_server_proj = subproject('server')
 
 # dependencies
 
