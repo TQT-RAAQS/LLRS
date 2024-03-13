@@ -4,17 +4,17 @@ project('LLRS-exe',
 
 # sources
 llrs_exe_src = [
-    'src/main.cu'
+    'main.cu'
   ]
 
 # submodules
-llrs_lib_proj =                subproject('LLRS-lib')
+llrs_lib_proj =   subproject('llrs-lib')
 
 # dependencies
-llrs_lib_dep = fgc_proj.get_variable('llrs_lib_dep')
+llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_dep')
 
 # targets
 llrs_exe = executable('llrs-exe',
-    llrs_lib_src,
+    llrs_exe_src,
     dependencies: [llrs_lib_dep],
     install: true)
