@@ -5,7 +5,7 @@ The Low-Latency Control System is the system responsible for running the LLRS ex
 # General Workflow:
 
 <p align="center">
-  <img src="llcs-design.svg" width="350" title="LLCS Workflow Diagram">
+  <img src="llcs-design.png" width="350" title="LLCS Workflow Diagram">
 </p>
 
 The LLCS will begin in the BEGIN state, where the LLRS object is created and static waveforms are streamed to the AWG. Upon completion, the LLCS will automatically transition to the idle state where it will wait for server calls from the workstation. The server calls can configure/reconfigure various experiment modules and experiment sequence, transition the LLCS to the READY state, where it will wait for a hardware trigger to begin the experimental shot, and exit the LLCS. Each trigger will execute a series of experiment modules, configured by the workstation. Upon finishing all triggers in the shot, a JSON file containing relevant experimental metadata will be sent to the workstation and the LLCS will return to the IDLE state. 
