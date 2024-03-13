@@ -8,7 +8,28 @@ The Low-Latency Control System is the system responsible for running the LLRS ex
   <img src="llcs-design.png" width="350" title="LLCS Workflow Diagram">
 </p>
 
-The LLCS will begin in the BEGIN state, where the LLRS object is created and static waveforms are streamed to the AWG. Upon completion, the LLCS will automatically transition to the idle state where it will wait for server calls from the workstation. The server calls can configure/reconfigure various experiment modules and experiment sequence, transition the LLCS to the READY state, where it will wait for a hardware trigger to begin the experimental shot, and exit the LLCS. Each trigger will execute a series of experiment modules, configured by the workstation. Upon finishing all triggers in the shot, a JSON file containing relevant experimental metadata will be sent to the workstation and the LLCS will return to the IDLE state. 
+
+```BEGIN```: Connects to hardware, configures LLRS with initial configuration, and streams static waveforms
+
+```IDLE```: Waits for server requests
+
+```RESET```: Reconfigures LLRS, returns to IDLE upon completion
+
+```PSF_RESET```: Updates PSF file, returns to IDLE upon completion
+
+```Close AWG```: LLCS gives up control of the AWG
+
+```Restart AWG```: LLCS retakes control of the AWG, returns to IDLE upon completion
+
+```CONFIG```: Configures experiment (hardware and experimental shot sequence), transitions to READY upon completion
+
+```READY```: Awaits hardware trigger to begin the configured experiment sequence
+
+```Experiment Sequence```: Executes the series of experiment modules. Transitions to DONE upon finishing the current experiment trigger
+ 
+```DONE```: Saves relevant metadata to a JSON file. If there are more triggers remaining in the shot, transition to READY, otherwise transition to IDLE.
+
+```EXIT```: Exits the LLCS
 
 
 # Usage Instructions:
