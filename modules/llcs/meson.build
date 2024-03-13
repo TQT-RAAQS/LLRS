@@ -14,11 +14,16 @@ llcs_trigger_detector_proj = subproject('trigger-detector')
 llcs_server_proj = subproject('server')
 llcs_state_proj = subproject('state')
 llcs_fsm_proj = subproject('fsm')
-
-# dependencies
+awg_proj = subproject('awg')
 
 # external dependencies
+llcs_trigger_detector_dep = llcs_trigger_detector_proj.get_variable('llcs_trigger_detector_dep')
+llcs_server_dep = llcs_server_proj.get_variable('llcs_server_dep')
+llcs_fsm_dep = llcs_fsm_proj.get_variable('llcs_fsm_dep')
+awg_dep = awg_proj.get_variable('awg_dep')
 
 # targets
-
-# export dependencies
+llcs = executable('llcs',
+    llcs_src,
+    dependencies: [llcs_trigger_detector_dep, llcs_server_dep, llcs_fsm_dep, awg_dep],
+    install: true)
