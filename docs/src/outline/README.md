@@ -10,8 +10,8 @@ C -->|list of ordered and batched moves to be performed| D[Waveform Synthesis]
 D -->|waveforms representing the moves| E[Waveform Streaming] 
 E -->|new array of atoms| A 
 ```
-Each of these submodules is defined in `modules/LLRS-lib/`.
- 
+Each of these submodules is defined in [`modules/llrs-lib/modules`](https://github.com/TQT-RAAQS/LLRS/tree/main/modules/llrs-lib).
+
 ## Requisites ##
  
 - GCC | [Installation Guide](https://gcc.gnu.org/install/)
