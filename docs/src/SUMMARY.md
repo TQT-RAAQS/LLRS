@@ -7,6 +7,7 @@
             - [FGC](outline/hardware/peripherals/fgc/README.md)
             - [AWG](outline/hardware/peripherals/awg/README.md)
         - [Devices](outline/hardware/devices/README.md)
+            - [EMCCD](outline/hardware/devices/camera/README.md)
     - [Software](outline/software/README.md)
         - [Modules](outline/software/modules/README.md)
             - [LLRS-lib](outline/software/modules/LLRS-lib/README.md)
