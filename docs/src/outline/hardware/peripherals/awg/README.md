@@ -4,7 +4,8 @@ The Automatic Waveform Generator (AWG) is a versatile electronic instrument desi
 In the context of the LLRS, the AWG is responsible for loading and streaming waveforms corresponding to the moves that are produced by the problem solving algorithms. 
 
 The source code files and driver code for the AWG can be found in the github repository at [LLRS/modules/awg](https://github.com/TQT-RAAQS/LLRS/tree/main/modules/awg).
-The Spectrum Hardware Manual and Software Driver Manual for can be found at the link below.
+
+The Spectrum Hardware Manual and Software Driver Manual for can be found at the following link.
 [AWG Manual](https://uofwaterloo-my.sharepoint.com/:b:/r/personal/acooperr_uwaterloo_ca/Documents/TQT-RAAQS/Projects%20(URAs)/Caltech/Scripts/createUniformTweezers/2018-05-10%20Create%20uniform%20arrays/createTweezers/SpcmMatlabDriver/m4i_m4x_66xx_manual_english.pdf?csf=1&web=1&e=6Qa8B3)
 
 
