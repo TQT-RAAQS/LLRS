@@ -1,5 +1,5 @@
 # LLRS Outline
-The low-latency reconfiguration system (LLRS) is a closed-loop feedback control system that arranges and reconfigures atoms within an array of laser traps
+The low-latency reconfiguration system (LLRS) is a closed-loop feedback control system that arranges and reconfigures atoms within an array of laser traps.
  
 The LLRS contains five submodules:
 ```mermaid 
@@ -32,34 +32,36 @@ LLRS
 ├─ LICENSE 
 ├─ resources
 ├─ configs
-│  ├─ AWG
-│  └─ FGC
+│  ├─ llrs 
+│  ├─ operational-benchmarking 
+│  ├─ runtime-benchmarking 
+│  ├─ awg 
+│  └─ fgc 
 ├─ tools
-├─ benchmarks
-│  ├─ operational-benchmarking
-│  └─ runtime-benchmarking
+│  └─ benchmarks 
+│     ├─ operational-benchmarking 
+│     └─ runtime-benchmarking 
 └─ modules
-    ├─ AWG
-    ├─ FGC
-    ├─ LLRS-lib
+    ├─ awg 
+    ├─ fgc 
+    ├─ llrs-lib
     │  ├─ image-acquisition
     │  ├─ image-processing
     │  ├─ reconfiguration
+    │  ├─ solver 
     │  ├─ waveform-synthesis
     │  ├─ waveform-streaming
     │  ├─ setup 
-    │  └─ library
-    ├─ LLRS-server
-    │  ├─ [PLACEHOLDER]
+    │  ├─ collector 
+    │  ├─ utility 
+    │  └─ jsonwrapper 
+    ├─ llcs 
     │  └─ [PLACEHOLDER]
-    ├─ LLRS-exe
-    │  ├─ [PLACEHOLDER]
+    ├─ llrs-exe
     │  └─ [PLACEHOLDER]
     ├─ tests
-    │  ├─ [PLACEHOLDER]
     │  └─ [PLACEHOLDER]
-    ├─ benchmarks
-    │  ├─ [PLACEHOLDER]
-    │  └─ [PLACEHOLDER]
-    └─ README.md
+    ├─ operational-benchmarking
+    └─ runtime-benchmarking
+       └─ [PLACEHOLDER]
 ```
