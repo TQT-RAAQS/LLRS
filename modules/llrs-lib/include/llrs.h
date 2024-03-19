@@ -103,8 +103,6 @@ public:
     std::vector<int32_t> get_target_config(Target target, int num_target );
     void create_center_target ( std::vector<int32_t> &target_config, int num_target );
     void setTargetConfig(std::vector<int> new_target_config);
-    void set_psf(std::string json_input);
-    void set_target(std::string json_input);
     int getTrialNum();
     int getRepNum();
     void store_moves();

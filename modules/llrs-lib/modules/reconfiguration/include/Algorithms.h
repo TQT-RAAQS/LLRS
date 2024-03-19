@@ -1,7 +1,5 @@
 /*
-The declarations and repackagings for the algorithms that are called 
-from /home/tqtraaqs2/Experiment/experiment/modules/LLRS/src/system/submodules/reconfiguration/lib
-and an outline of their particular parameters
+The declarations and repackagings for the algorithms that are used in the Solver module
 */
 
 extern "C" void lin_exact_cpu_v2_block_batched

@@ -20,7 +20,7 @@ template<typename AWG_T>void LLRS<AWG_T>::small_setup( std::string json_input ){
     old_rdbuf = std::clog.rdbuf();
     std::clog.rdbuf(log_out.rdbuf());
    
-    user_input = Util::JsonWrapper((json_input));
+    user_input = Util::JsonWrapper(CONFIG_PATH(json_input));
 
     const size_t num_target = user_input.read_problem_num_target();
     std::string target_config_label = user_input.read_problem_target_config_label();
@@ -416,37 +416,4 @@ template<typename AWG_T>void LLRS<AWG_T>::clean(){
 }
 
 template class LLRS<AWG>;
-
-
-template<typename AWG_T>void LLRS<AWG_T>::set_psf(std::string json_input){
-
-    old_rdbuf = std::clog.rdbuf();
-    std::clog.rdbuf(log_out.rdbuf());
-    
-    user_input = Util::JsonWrapper((json_input));
-
-    img_proc_obj = Processing::ImageProcessor(
-        PSF_PATH(user_input.read_experiment_psf_path()), 
-        user_input.read_problem_Nt_x() * user_input.read_problem_Nt_y()
-    );
-}
-
-template<typename AWG_T>void LLRS<AWG_T>::set_target(std::string json_input){
-
-    old_rdbuf = std::clog.rdbuf();
-    std::clog.rdbuf(log_out.rdbuf());
-    
-    user_input = Util::JsonWrapper((json_input));
-
-    const size_t num_target = user_input.read_problem_num_target();
-    std::string target_config_label = user_input.read_problem_target_config_label();
-
-    if (target_config_label == "centre_compact"){
-        target_config = get_target_config(CENTRE_COMPACT, num_target);
-    } else if (target_config_label == "custom") {
-        target_config = user_input.read_problem_target_config(); 
-    }
-
-
-}
 
