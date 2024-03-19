@@ -1,4 +1,5 @@
 #include "llrs.h"
+#include "awg.h"
 #include <fstream>
 #include <cstdlib>
 #include <memory>
@@ -8,12 +9,11 @@ int main(int argc, char * argv[]){
     // Read problem statement
     std::string problem_id;
     std::string problem_config;
-    if (argc > 1) {
+    if (argc > 2) {
         problem_config = std::string(argv[1]); 
-        problem_id = argv>2?std::string(argv[2]): ""; 
+        problem_id = 	 std::string(argv[2]); 
     } else {
-        ERROR << " No argument provided, reading from the default config file." << std::endl; 
-        problem_config = "config.yml";
+		std::cout << "For runtime benchmarking, please provide problem_id and problem_config." << std::endl; 
         return LLRS_ERR;
     }
 
@@ -30,9 +30,6 @@ int main(int argc, char * argv[]){
     awg->start_stream();
     awg->print_awg_error();
     assert(awg->get_current_step() == 0);
-
-    std::cout << "LLRS Setup Complete, please press any key to execure LLRS." << std::endl;
-    std::cin.get();
 
     l.execute();
     l.reset();
