@@ -15,3 +15,4 @@
         - [LLCS](outline/tools/llcs/README.md)
 - [Operating the LLRS](operating/README.md)
     - [How to Setup](operating/how_to_setup/README.md)
+    - [Config & Files](operating/config_and_files/README.md)
