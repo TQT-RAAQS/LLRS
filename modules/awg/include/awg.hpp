@@ -1,7 +1,7 @@
 #ifndef STREAM_AWG_HPP
 #define STREAM_AWG_HPP
 
-#include "common.hpp"
+#include "awg/common.hpp"
 #include "spcm_includes.h"
 
 #define MAX_SEGMENT_DIVIDE 4096
