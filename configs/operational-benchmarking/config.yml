@@ -1,0 +1,13 @@
+# For the benchmark, provide the following list of parameters:
+#   base_problem_definition: filename for one of the reconfigurable problem definitions in the resources/problems directory, if your desired problem is not there, you can create a new one and add it to the directory. If you want to iterate over a range of values for a parameter, you can put "{}" instead of the value in the config file and provide a range of values for the parameter in the range_param field.
+#   num_trials  
+#   num_repetition  
+#   range_param: Provide a range of values for the variable_param. 
+# Please don't commit your changes to this file.
+
+# Example:
+base_problem_definition: 21_atoms_problem.yml
+num_trials: 100 
+num_repetition: 100 
+variable_param: num_atoms # (For figure generation purposes)
+range_param: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
