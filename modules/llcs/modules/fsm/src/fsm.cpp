@@ -309,11 +309,13 @@ template<typename AWG_T>void FiniteStateMachine<AWG_T>::saveMetadata(std::string
         const int numCycles = llrs_metadata.at(i).getNumCycles();
         const std::vector<std::vector<Reconfig::Move>>& movesPerCycle = llrs_metadata.at(i).getMovesPerCycle();
         const std::vector<std::vector<int32_t>>& atomConfigs = llrs_metadata.at(i).getAtomConfigs();
+        const nlohmann::json& runtimeData = llrs_metadata.at(i).getRuntimeData();
 
         //Save the number of cycles executed and the dimensions of the array
         json_data["Nt_x"] = Nt_x;
         json_data["Nt_y"] = Nt_y;
         json_data["Cycles"] = numCycles;
+        json_data["runtime_data"] = runtimeData;
 
 
         //Save the initial atom configuration

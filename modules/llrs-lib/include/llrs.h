@@ -61,6 +61,7 @@ public:
         int num_cycles;
         std::vector<std::vector<Reconfig::Move>> moves_per_cycle;
         std::vector<std::vector<int32_t>> atom_configs;
+        nlohmann::json runtime_data;
 
         friend class LLRS;
 
@@ -71,6 +72,7 @@ public:
         const int getNumCycles() const;
         const std::vector<std::vector<Reconfig::Move>>& getMovesPerCycle() const;
         const std::vector<std::vector<int32_t>>& getAtomConfigs() const;
+        const nlohmann::json& getRuntimeData() const;
 
         Metadata(const Metadata& other) {
             Nt_x = other.Nt_x;
@@ -78,6 +80,7 @@ public:
             num_cycles = other.num_cycles;
             moves_per_cycle = other.moves_per_cycle;
             atom_configs = other.atom_configs;
+            runtime_data = other.runtime_data;
         }
     private:
         Metadata();
@@ -89,6 +92,7 @@ public:
         void setMovesPerCycle(const std::vector<std::vector<Reconfig::Move>>& moves);
         void setAtomConfigs(const std::vector<std::vector<int32_t>>& configs);
         void addAtomConfigs(const std::vector<int32_t>& atom_config);
+        void setRuntimeData(const nlohmann::json& runtime_data);
         } metadata;
 
 

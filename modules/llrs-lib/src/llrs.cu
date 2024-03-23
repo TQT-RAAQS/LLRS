@@ -124,6 +124,7 @@ template<typename AWG_T>void LLRS<AWG_T>::setup( std::string input, size_t llrs_
     metadata.setNumCycles(0);
     metadata.setMovesPerCycle({});
     metadata.setAtomConfigs({});
+    metadata.setRuntimeData({});
 
 }
 
@@ -159,6 +160,7 @@ template<typename AWG_T>void LLRS<AWG_T>::reset(){
     metadata.setNumCycles(0);
     metadata.setMovesPerCycle({});
     metadata.setAtomConfigs({});
+    metadata.setRuntimeData({});
 
 }
 
@@ -331,8 +333,10 @@ template<typename AWG_T>void LLRS<AWG_T>::execute(){
 
 #ifdef LOGGING_RUNTIME
     /* Log all runtime data as a json based on probelm id */
+    nlohmann::json timing_data = p_collector->gen_runtime_json();
     std::string output_fname = BENCHMARK_PATH(problem_id);
-    Util::write_json_file(p_collector->gen_runtime_json(), output_fname);
+    Util::write_json_file(timing_data, output_fname);
+    metadata.setRuntimeData(timing_data);
 #endif
 
     metadata.num_cycles++;
@@ -373,6 +377,10 @@ template<typename AWG_T>const std::vector<std::vector<int32_t>>& LLRS<AWG_T>::Me
     return atom_configs;
 }
 
+template<typename AWG_T>const nlohmann::json& LLRS<AWG_T>::Metadata::getRuntimeData() const {
+    return runtime_data;
+}
+
 // Define Metadata setter functions
 template<typename AWG_T>void LLRS<AWG_T>::Metadata::setNtx(const int new_Ntx) {
     Nt_x = new_Ntx;
@@ -402,6 +410,16 @@ template<typename AWG_T>void LLRS<AWG_T>::Metadata::addAtomConfigs(const std::ve
     std::vector<std::vector<int32_t>> currentAtomConfigs = getAtomConfigs();
     currentAtomConfigs.push_back(atom_config);
     setAtomConfigs(currentAtomConfigs);
+}
+
+template<typename AWG_T>void LLRS<AWG_T>::Metadata::setRuntimeData(const nlohmann::json& new_runtime_data) {
+    runtime_data = new_runtime_data;
+}
+
+
+
+template<typename AWG_T>void LLRS<AWG_T>::setTargetConfig(std::vector<int> new_target_config){
+    target_config = new_target_config;
 }
 
 template<typename AWG_T>void LLRS<AWG_T>::clean(){
