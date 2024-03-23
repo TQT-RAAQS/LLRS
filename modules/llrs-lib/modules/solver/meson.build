@@ -26,6 +26,12 @@ llrs_lib_solver = library('llrs-lib-solver',
     include_directories: [llrs_lib_solver_inc],
     dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])
 
+llrs_lib_solver_so = shared_library('llrs-lib-solver-so',
+    llrs_lib_solver_src,
+    cuda_args: ['-D IS_SO']
+    include_directories: [llrs_lib_solver_inc],
+    dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])    
+
 # dependencies
 llrs_lib_solver_dep = declare_dependency(
     include_directories: [llrs_lib_solver_inc],
