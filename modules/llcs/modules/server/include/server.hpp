@@ -1,7 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "common.hpp"
+#include "llcs/common.hpp"
 #include <zmq.hpp>
 #include <fstream>
 #include <nlohmann/json.hpp>
