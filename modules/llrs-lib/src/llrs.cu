@@ -417,11 +417,6 @@ template<typename AWG_T>void LLRS<AWG_T>::Metadata::setRuntimeData(const nlohman
 }
 
 
-
-template<typename AWG_T>void LLRS<AWG_T>::setTargetConfig(std::vector<int> new_target_config){
-    target_config = new_target_config;
-}
-
 template<typename AWG_T>void LLRS<AWG_T>::clean(){
 
     std::clog.rdbuf(old_rdbuf);
