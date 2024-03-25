@@ -10,7 +10,7 @@ add_global_arguments('-D LOGGING_RUNTIME', language : ['c', 'cpp', 'cuda'])
 # subprojects
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')
-llrs_lib_proj = subprject('llrs-lib')
+llrs_lib_proj = subproject('llrs-lib')
 llcs_proj = subproject('llcs')
 operational_benchmarking_proj = subproject('operational-benchmarking')
 runtime_benchmarking_proj = subproject('runtime-benchmarking')
