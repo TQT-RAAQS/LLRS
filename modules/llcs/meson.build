@@ -10,7 +10,7 @@ llcs_src = [
 
 # submodules
 h5_wrapper_proj = subproject('h5-wrapper')
-llcs_trigger_detector_proj = subproject('trigger-detector')
+trigger_detector_proj = subproject('trigger-detector')
 llcs_server_proj = subproject('server')
 llcs_state_proj = subproject('state')
 llcs_fsm_proj = subproject('fsm')
@@ -26,5 +26,5 @@ awg_dep = awg_proj.get_variable('awg_dep')
 llcs = executable('llcs',
     llcs_src,
     link_args: '-lstdc++fs',
-    dependencies: [llcs_trigger_detector_dep, llcs_server_dep, llcs_fsm_dep, awg_dep],
+    dependencies: [trigger_detector_dep, llcs_server_dep, llcs_fsm_dep, awg_dep],
     install: true)
