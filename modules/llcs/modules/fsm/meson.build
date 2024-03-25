@@ -20,7 +20,7 @@ llrs_lib_proj =         subproject('llrs-lib')
 # dependencies
 llcs_state_dep = state_proj.get_variable('llcs_state_dep')
 llcs_server_dep = server_proj.get_variable('llcs_server_dep')
-llcs_trigger_detector_dep = trigger_detector_proj.get_variable('llcs_trigger_detector_dep')
+trigger_detector_dep = trigger_detector_proj.get_variable('trigger_detector_dep')
 h5_wrapper_dep = h5_wrapper_proj.get_variable('h5_wrapper_dep')
 llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_dep')
 
@@ -29,10 +29,10 @@ llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_dep')
 llcs_fsm = library('llcs_fsm', 
     llcs_fsm_src,
     include_directories: [llcs_fsm_inc],
-    dependencies: [llcs_state_dep, llcs_server_dep, llcs_trigger_detector_dep, h5_wrapper_dep, llrs_lib_dep])
+    dependencies: [llcs_state_dep, llcs_server_dep, trigger_detector_dep, h5_wrapper_dep, llrs_lib_dep])
 
 # dependencies
 llcs_fsm_dep = declare_dependency(
     include_directories: [llcs_fsm_inc],
     link_with: [llcs_fsm],
-    dependencies: [llcs_state_dep, llcs_server_dep, llcs_trigger_detector_dep, h5_wrapper_dep, llrs_lib_dep])
+    dependencies: [llcs_state_dep, llcs_server_dep, trigger_detector_dep, h5_wrapper_dep, llrs_lib_dep])
