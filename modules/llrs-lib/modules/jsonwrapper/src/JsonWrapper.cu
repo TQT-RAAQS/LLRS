@@ -14,6 +14,15 @@ void Util::write_json_file(const Json::Value& value, const std::string& filename
     }
 }
 
+void Util::write_json_file(const nlohmann::json& value, const std::string& filename) {
+   	std::ofstream file(filename);
+    if (file.is_open()) {
+		o << std::setw(4) << value << std::endl; 
+    } else {
+        ERROR << "Error opening file: " << filename << std::endl;
+    }
+}
+
 
 void convertYamlToJson(const YAML::Node& yamlNode, Json::Value& jsonValue) {
     if (yamlNode.IsScalar()) {

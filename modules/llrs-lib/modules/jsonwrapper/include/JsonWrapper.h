@@ -22,6 +22,7 @@
 namespace Util {
 
     void write_json_file(const Json::Value& value, const std::string& filename);
+    void write_json_file(const nlohmann::json& value, const std::string& filename);
     Json::Value read_json_file(const std::string& filename);
     std::vector<int32_t> vector_transform(Json::Value val);
 
