@@ -1,5 +1,5 @@
 #include "llrs.h"
-#include "awg.h"
+#include "awg.hpp"
 #include <fstream>
 #include <cstdlib>
 #include <memory>
