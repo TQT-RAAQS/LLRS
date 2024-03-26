@@ -8,7 +8,6 @@
 #define ATOM_EXISTS_CONFIG 1
 #define NO_ATOM nullptr 
 
-
 int TrapArray::reverse(int new_Nt_y) {
     return Nt_y - new_Nt_y - 1;
 }
@@ -21,18 +20,23 @@ int TrapArray::reverse(int new_Nt_y) {
 */
 
 TrapArray::TrapArray(int Nt_x, int Nt_y, const std::vector<int32_t> &current_config, double loss_params_alpha, double loss_params_nu, double lifetime,int total_moves): Nt_x(Nt_x), Nt_y(Nt_y), loss_params_alpha(loss_params_alpha), loss_params_nu(loss_params_nu), lifetime(lifetime), total_moves(total_moves) {
-    
-    traps.resize(Nt_x, std::vector<Atom *>(Nt_y, nullptr));
+    traps.resize(Nt_y, std::vector<Atom*>(Nt_x));
     //Add Atom objects to traps where an atom exists
+    for(auto &i: traps){
+        for(auto &j: i){
+            j=nullptr;
+        }
+    }
 
     for (int32_t i  = 0; i < current_config.size(); i++) {
         if (current_config[i] == ATOM_EXISTS_CONFIG) {
-            traps[i % Nt_x][i / Nt_x] = new Atom(0,0, IMPLANTED, loss_params_alpha, loss_params_nu, lifetime);
+            traps[i / Nt_x][i % Nt_x] = new Atom(0,0, IMPLANTED, loss_params_alpha, loss_params_nu, lifetime);
         } else {
 
-            traps[i / Nt_y][i % Nt_y] = NO_ATOM;
+            traps[i / Nt_x][i % Nt_x] = NO_ATOM;
         }
     }
+
 
 
 }
@@ -53,60 +57,54 @@ TrapArray::~TrapArray() {
 */
 int TrapArray::checkBounds(int low_Nt_x, int high_Nt_x, int low_Nt_y, int high_Nt_y) {
     if (high_Nt_x >= this->Nt_x || low_Nt_x < 0) {
-        std::cout << low_Nt_x << " " << high_Nt_x << std::endl;
-        std::cout << "OUT OF RANGE ROW ERROR" << std::endl;
+        std::cerr << low_Nt_x << " " << high_Nt_x << std::endl;
+        std::cerr << "OUT OF RANGE ROW ERROR" << std::endl;
         return 1;
     }
     if (high_Nt_y >= this->Nt_y || low_Nt_y < 0) {
-        std::cout << low_Nt_y << " " << high_Nt_y << std::endl;
-        std::cout << "OUT OF RANGE COL ERROR" << std::endl;
+        std::cerr << low_Nt_y << " " << high_Nt_y << std::endl;
+        std::cerr << "OUT OF RANGE COL ERROR" << std::endl;
         return 1;
     }
-    return 0;
-}
-
-/**
- * @brief Function to check if a Vertical Movement is "legal"
- * @param row1 The row corresponding to the current position of the trap
- * @param row2 The row corresponding to the future position of the trap
- * @param col The column corresponding to the current and future position of the trap
- * @return error code
-*/
-
-int TrapArray::checkMovementVertical(int Nt_x1, int Nt_y1, int Nt_y2) {
-    std::cout << "Nt_x1 " << Nt_x1 << " Nt_y1 " << Nt_y1 << " Nt_y2 " << Nt_y2 << std::endl;
-    std::cout << traps.size() << std::endl;
-    if ((traps.at(Nt_x1)).at(Nt_y1) != NO_ATOM && (traps.at(Nt_x1)).at(Nt_y2) != NO_ATOM) {
-        this->printTrapArray(Nt_x1-1, Nt_x1+1, Nt_y1-1, Nt_y2+1);
-        std::cout << "VERTICAL: " << Nt_x1 << " " << Nt_y1 << " " << Nt_y2 << std::endl;
-        std::cout << "ATOM COLLISION" << std::endl;
-        return 1;
-    }
-    std::cout << "Made it through" << std::endl;
     return 0;
 }
 
 /**
  * @brief Function to check if a Horizontal Movement is "legal"
- * @param row The row corresponding to the current and future position of the trap
- * @param col1 The column corresponding to the current position of the trap
- * @param col2 The column corresponding to the future position of the trap
+ * @param Nt_x1 The row corresponding to the current and future position of the trap
+ * @param Nt_y1 The column corresponding to the current position of the trap
+ * @param Nt_y2 The column corresponding to the future position of the trap
  * @return error code
 */
 
-int TrapArray::checkMovementHorizontal(int Nt_x1, int Nt_x2, int Nt_y1) {
+int TrapArray::checkMovementHorizontal(int Nt_x1, int Nt_y1, int Nt_y2) {
+
+    if ((traps.at(Nt_x1)).at(Nt_y1) != NO_ATOM && (traps.at(Nt_x1)).at(Nt_y2) != NO_ATOM) {
+        return 1;
+    }
+    return 0;
+}
+
+
+/**
+ * @brief Function to check if a Vertical Movement is "legal"
+ * @param Nt_x1 The row corresponding to the current position of the trap
+ * @param Nt_x2 The row corresponding to the future position of the trap
+ * @param Nt_y1 The column corresponding to the current and future position of the trap
+ * @return error code
+*/
+
+int TrapArray::checkMovementVertical(int Nt_x1, int Nt_x2, int Nt_y1) {
 
     //Check if there is an existing atom in the target trap, if there is then there is a collision
 
     if (traps.at(Nt_x1).at(Nt_y1) != NO_ATOM && traps.at(Nt_x2).at(Nt_y1) != NO_ATOM) {
-        this->printTrapArray(Nt_x1-1, Nt_x2+1, Nt_y1-1, Nt_y1+1);
-        std::cout << "HORIZONTAL: " << Nt_x1 << " " << Nt_x2 << " " << Nt_y1 << std::endl;
-        std::cout << "ATOM COLLISION" << std::endl;
         return 1;
     }
 
     return 0;
 }
+
 
 /**
  * @brief Function to move atoms based on a move type
@@ -120,75 +118,82 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size, Synthesis::
         case Synthesis::FORWARD_1D:
         case Synthesis::UP_2D:
         {
-            std::cout << "in switch" << std::endl;
-            int high_Nt_y = low_Nt_y + block_size;
-            for (int i = high_Nt_y-1; i >= low_Nt_y; --i) {
+            int high_Nt_x = low_Nt_x + block_size - 1;
+            for (int i = high_Nt_x; i >= low_Nt_x; --i) {
                 //check for atom collision
-                std::cout<<" "<<low_Nt_x<<" "<<i<<std::endl;
-                if (checkMovementVertical(low_Nt_x, i, i+1) != 0) {
+                if (checkMovementVertical(i, i+1, low_Nt_y) != 0) {
                     return 2;
                 }
                 //if target is free and the source trap has an atom, move the atom from the source to target
-                if (this->traps[low_Nt_x][i] != NO_ATOM) {
-                    this->traps[low_Nt_x][i]->displace();
-                    auto tmp = this->traps[low_Nt_x][i];
-                    this->traps[low_Nt_x][i] = this->traps[low_Nt_x][i+1];
-                    this->traps[low_Nt_x][i+1] = tmp;
+                if (this->traps[i][low_Nt_y] != NO_ATOM) {
+                    this->traps[i][low_Nt_y]->displace();
+                    auto tmp = this->traps[i][low_Nt_y];
+                    this->traps[i][low_Nt_y] = this->traps[i+1][low_Nt_y];
+                    this->traps[i+1][low_Nt_y] = tmp;
+                    increaseTotalMoves(1);
                 }
+
             }
+           
         }
         break;
-        case Synthesis::BACKWARD_1D: 
+        case Synthesis::BACKWARD_1D:
         case Synthesis::DOWN_2D:
         {
-            int high_Nt_y = low_Nt_y - block_size;
-            for (int i = low_Nt_y+1; i <= high_Nt_y; ++i) {
+            int high_Nt_x = low_Nt_x + block_size;
+            for (int i = low_Nt_x+1; i <= high_Nt_x; ++i) {
                 //check for atom collision
-                if (checkMovementVertical(low_Nt_x, i, i-1) != 0) {
+                if (checkMovementVertical(i, i-1, low_Nt_y) != 0) {
                     return 2;
                 }
-                //if target is free and the source trap has an atom, move the atom from the source to target            
- 
-                if (this->traps[low_Nt_x][i] != NO_ATOM) {
-                    this->traps[low_Nt_x][i]->displace();
-                    auto tmp = this->traps[low_Nt_x][i];
-                    this->traps[low_Nt_x][i] = this->traps[low_Nt_x][i-1];
-                    this->traps[low_Nt_x][i-1] = tmp;
+                //if target is free and the source trap has an atom, move the atom from the source to target
+                if (this->traps[i][low_Nt_y] != NO_ATOM) {
+                    this->traps[i][low_Nt_y]->displace();
+                    auto tmp = this->traps[i][low_Nt_y];
+                    this->traps[i][low_Nt_y] = this->traps[i-1][low_Nt_y];
+                    this->traps[i-1][low_Nt_y] = tmp;
+                    increaseTotalMoves(1);
                 }
+
             }
+            
         }
         break;
+        
         case Synthesis::RIGHT_2D:
         {
-            int new_Nt_x = low_Nt_x + 1;
+            int new_Nt_y = low_Nt_y + 1;
             //check for atom collision
-            if (checkMovementHorizontal(low_Nt_x, new_Nt_x, low_Nt_y) != 0) {
+            if (checkMovementHorizontal(low_Nt_x, low_Nt_y, new_Nt_y) != 0) {
                 return 2;
             }
             //if target is free and the source trap has an atom, move the atom from the source to target            
             if (this->traps[low_Nt_x][low_Nt_y] != NO_ATOM) {
                 this->traps[low_Nt_x][low_Nt_y]->displace();
                 auto tmp = this->traps[low_Nt_x][low_Nt_y];
-                this->traps[low_Nt_x][low_Nt_y] = this->traps[new_Nt_x][low_Nt_y];
-                this->traps[new_Nt_x][low_Nt_y] = tmp;
+                this->traps[low_Nt_x][low_Nt_y] = this->traps[low_Nt_x][new_Nt_y];
+                this->traps[low_Nt_x][new_Nt_y] = tmp;
+                increaseTotalMoves(1);
             }
+
         }
         break;
+        
         case Synthesis::LEFT_2D:
         {
-            int new_Nt_x = low_Nt_x;
-            int old_Nt_x = low_Nt_x + 1;
             //check for atom collision
-            if (checkMovementHorizontal(old_Nt_x, new_Nt_x, low_Nt_y) != 0) {
+            if (checkMovementHorizontal(low_Nt_x, low_Nt_y, low_Nt_y+1) != 0) {
                 return 2;
             }
             //if target is free and the source trap has an atom, move the atom from the source to target
-            if (this->traps[old_Nt_x][low_Nt_y] != NO_ATOM) {
-                this->traps[old_Nt_x][low_Nt_y]->displace();
-                auto tmp = this->traps[old_Nt_x][low_Nt_y];
-                this->traps[old_Nt_x][low_Nt_y] = this->traps[new_Nt_x][low_Nt_y];
-                this->traps[new_Nt_x][low_Nt_y] = tmp;
+            if (this->traps[low_Nt_x][low_Nt_y+1] != NO_ATOM) {
+                this->traps[low_Nt_x][low_Nt_y+1]->displace();
+                auto tmp = this->traps[low_Nt_x][low_Nt_y];
+                this->traps[low_Nt_x][low_Nt_y] = this->traps[low_Nt_x][low_Nt_y+1];
+                this->traps[low_Nt_x][low_Nt_y+1] = tmp;
+                increaseTotalMoves(1);
             }
+
         }
         break;
     }
@@ -202,9 +207,10 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size, Synthesis::
 */
 int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
     for (const auto &move: moves_list) {
-        increaseTotalMoves(1);
+
+        
         Synthesis::WfMoveType move_type = std::get<0>(move);
-        int row = std::get<1>(move);
+        int row = std::get<1>(move);    
         int col = std::get<2>(move);     // 0 if 1D
         int length = std::get<3>(move);  // block_size
 
@@ -214,7 +220,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                     if (this->traps[i][col] == NO_ATOM) {
                         continue;
                     }
-                    
+                    increaseTotalMoves(1);
                     this->traps[i][col]->transfer();
                     this->traps[i][col]->setState(EXTRACTED);
                 }
@@ -225,57 +231,74 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                     if (this->traps[i][col] == NO_ATOM) {
                         continue;
                     }
+                    increaseTotalMoves(1);
                     this->traps[i][col]->transfer();
                     this->traps[i][col]->setState(IMPLANTED);
                 }
                 break;
             case Synthesis::EXTRACT_2D:
-                // if (this->checkBounds(new_Nt_x, new_Nt_x, new_Nt_y, new_Nt_y + length - 1)) {
-                //   return 1;
-                // }
+
                 for (int i = row; i < length + row; ++i) {
-                    if (this->traps[col][i] == NO_ATOM) {
+                    if (this->traps[i][col] == NO_ATOM) {
                         continue;
                     }
-                    this->traps[col][i]->transfer();
-                    this->traps[col][i]->setState(EXTRACTED);
+                    increaseTotalMoves(1);
+                    this->traps[i][col]->transfer();
+                    this->traps[i][col]->setState(EXTRACTED);
                 }
                 break;
             
             case Synthesis::IMPLANT_2D:
-                //  if (this->checkBounds(new_Nt_x, new_Nt_x, new_Nt_y, new_Nt_y + length - 1)) {
-                //     return 1;
-                // }
+
                 for (int i = row; i < length + row; ++i) {
-                    if (this->traps[col][i] == NO_ATOM) {
+                    if (this->traps[i][col] == NO_ATOM) {
                         continue;
                     }
-
-                    this->traps[col][i]->transfer();
-                    this->traps[col][i]->setState(IMPLANTED);
+                    increaseTotalMoves(1);
+                    this->traps[i][col]->transfer();
+                    this->traps[i][col]->setState(IMPLANTED);
                 }
                 break;
     
             default:
-                std::cout<<"row "<<row << " col "<<col<< " length " << length << " move type " << move_type <<std::endl;
                 int ret = this->moveAtoms(row, col, length, move_type);
                 if (ret != 0) {
                     return 1;
                 }
         }
+
     }
+
     return 0;
 }
 
 
 /**
- * @brief Return the total number of moves performed by the trap_array
+ * @brief Return the total number of moves performed on the center configuration atoms
 */
-int TrapArray::getTotalMoves() {
-    return this->total_moves;
+int TrapArray::getRelaventMoves() {
+
+    int x=0;
+
+    for(int i=((Nt_y-Nt_x)/2); i<((Nt_y-Nt_x)/2)+Nt_x; i++){
+        for(auto j:traps[i]){
+            x+=j->getAlpha() + j->getNu();
+        }
+    }
+
+    return x;
 }
 
 /**
+ * @brief Return the total number of moves performed 
+*/
+
+int TrapArray::getTotalMoves(){
+    return total_moves;
+}
+
+/**
+ * 
  * @brief Increase the total number of moves performed by the trap array
  * @param num_moves The number of moves to increase by (default 1)
 */
@@ -292,16 +315,24 @@ void TrapArray::increaseTotalMoves(int num_moves) {
 void TrapArray::performLoss() {
     double counter = 0;
     int total = 0;
-    // std::srand(0);
-    for (size_t i = 0; i < this->Nt_x; ++i) {
-        for (size_t j = 0; j < this->Nt_y; ++j) {
+
+    for (size_t i = 0; i < this->Nt_y; ++i) {
+        for (size_t j = 0; j < this->Nt_x; ++j) {
             if (this->traps[i][j] == NO_ATOM) {
                 continue;
             }
             double loss_value = this->traps[i][j]->getLoss(this->getTotalMoves());
-            double random = (double)(((double)rand()) / (double) RAND_MAX);
+            // Seed the random number generator
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_real_distribution<> dis(0.0, 1.0);
+
+            // Generate a random number
+            double random = dis(gen);
             total += 1;
             counter += loss_value;
+
+            // If the loss value is lower than the random number, the atom is lost
             if (loss_value < random) {
                 delete this->traps[i][j];
                 this->traps[i][j] = NO_ATOM;
@@ -320,19 +351,20 @@ void TrapArray::performLoss() {
 
 void TrapArray::getArray(std::vector<int32_t> &current_config) {
     if (current_config.size() != (this->Nt_x * this->Nt_y)) {
-        std::cout << "THE DIMENSIONS DO NOT MATCH" << std::endl;
+        std::cerr << "THE DIMENSIONS DO NOT MATCH" << std::endl;
         return;
     }
-    for (size_t i = 0; i < this->Nt_x; ++i) {
-        for (size_t j = 0; j < this->Nt_y; ++j) {
+    for (size_t i = 0; i < this->Nt_y; ++i) {
+        for (size_t j = 0; j < this->Nt_x; ++j) {
             if (this->traps[i][j] != NO_ATOM) {
-                current_config[j*this->Nt_x + i] = 1;
+                current_config[i*this->Nt_x + j] = 1;
             }
             else {
-                current_config[j*this->Nt_x + i] = 0;
+                current_config[i*this->Nt_x + j] = 0;
             }
         }
     }
+
     return;
 }
 
@@ -355,38 +387,35 @@ void TrapArray::printTrapArray(int Nt_x1, int Nt_x2, int Nt_y1, int Nt_y2) {
 */
 
 void TrapArray::printTrapArrayBounds(int Nt_x1, int Nt_x2, int Nt_y1, int Nt_y2) {
-    std::cout << "   ";
+    std::cerr << "   ";
     for (int i = Nt_x1; i < Nt_x2; ++i) {
-        std::cout << i << "          ";
+        std::cerr << i << "          ";
     }
-    std::cout << std::endl;
+    std::cerr << std::endl;
     for (int i = Nt_x1; i < Nt_x2; ++i) {
-        std::cout << "------------";
+        std::cerr << "------------";
     }
-    std::cout << std::endl;
+    std::cerr << std::endl;
     for (int j = Nt_y1; j < Nt_y2; ++j) {
         if (j >= 10) {
-            std::cout << j <<  "|";
+            std::cerr << j <<  "|";
         }
         else {
-            std::cout << j <<  "| ";
+            std::cerr << j <<  "| ";
         }
         for (int i = Nt_x1; i < Nt_x2; ++i) {
             if (this->traps[i][j] == NO_ATOM) {
-                std::cout << "0: (0, 0), ";
+                std::cerr << "0: (0, 0), ";
             }
             else if (this->traps[i][j]->getState() == IMPLANTED) {
-                std::cout << "I: (" << this->traps[i][j]->getAlpha();
-                std::cout << ", " << this->traps[i][j]->getNu() << "), ";
+                std::cerr << "I: (" << this->traps[i][j]->getAlpha();
+                std::cerr << ", " << this->traps[i][j]->getNu() << "), ";
             }
             else {
-                std::cout << "E: (" << this->traps[i][j]->getAlpha();
-                std::cout << ", " << this->traps[i][j]->getNu() << "), ";
+                std::cerr << "E: (" << this->traps[i][j]->getAlpha();
+                std::cerr << ", " << this->traps[i][j]->getNu() << "), ";
             }
         }
-        std::cout << std::endl;
+        std::cerr << std::endl;
     }
 }
-
-
-

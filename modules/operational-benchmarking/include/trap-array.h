@@ -10,11 +10,11 @@
 #include <bits/stdc++.h>
 #include <random>
 #include "atom.h"
-#include "system/Settings.h"
+#include "Solver.h"
+#include "llrs-lib/Settings.h"
 
 class TrapArray {
     // Trap Array Class used to store configurations of atoms in traps
-    private:
         int Nt_x; // number of rows
         int Nt_y; // numbers of columns
         double loss_params_alpha = 0.985;
@@ -129,6 +129,9 @@ class TrapArray {
          */
         void printTrapArrayBounds(int Nt_x1 = 0, int Nt_x2 = 0, int Nt_y1 = 0, int Nt_y2 = 0);
 
+
+        void printTraps();
+        int getRelaventMoves();
 };
 
 #endif

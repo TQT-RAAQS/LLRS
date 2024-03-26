@@ -1,6 +1,7 @@
 /*
  * Atom Class to be used for Operation Benchmarking in Main
  */
+
 #ifndef _ATOM_H_
 #define _ATOM_H_
 
@@ -12,6 +13,9 @@ enum State {
     EXTRACTED = 1
 };
 
+/// defines time per move in seconds
+#define SECONDS_PER_MOVE 10e-6
+
 class Atom {
     // Atom class used to store properties and observables during reconfiguration sequence.
 
@@ -20,7 +24,6 @@ class Atom {
     //         number of transfer operations undergone by atom
     //     n_nu : int
     //         number of displacement operations undergone by atom
-private:
     int n_alpha;
     int n_nu;
     State state;
