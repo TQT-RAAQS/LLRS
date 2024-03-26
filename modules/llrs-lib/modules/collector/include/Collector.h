@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <ctime>
-#include <jsoncpp/json/json.h>
+#include <nlohmann/json.hpp>
 #include "llrs-lib/Settings.h"
 #include "llrs-lib/PreProc.h"
 
@@ -58,7 +58,7 @@ namespace Util {
         void get_external_time(const std::string& module, int trial, int rep, int cycle, float time);
         long long elapsed_time(const std::string& module, int trial, int rep, int cycle);
 
-        Json::Value gen_runtime_json();
+        nlohmann::json gen_runtime_json();
     };
     
 }

@@ -68,8 +68,8 @@ long long Util::Collector::elapsed_time(const std::string& module, int trial, in
     return std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
 }
 
-Json::Value Util::Collector::gen_runtime_json() {
-    Json::Value root;
+nlohmann::json Util::Collector::gen_runtime_json() {
+    nlohmann::json root;
 
     for (const auto& module_info : _timers) {
         const std::string& module = module_info.first;
