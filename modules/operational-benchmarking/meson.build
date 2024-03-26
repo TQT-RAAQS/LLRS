@@ -38,5 +38,5 @@ op_bench_trap_array = library('op-bench-trap-array',
 op_bench_exe = executable('op-bench',
     op_bench_src,
     link_with: [op_bench_trap_array],
-    include_directories: [op_benchmarking_inc],
+    include_directories: [op_bench_inc],
     dependencies: [solver_dep, utility_dep, jsonwrapper_dep])
