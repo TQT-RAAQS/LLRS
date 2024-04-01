@@ -50,8 +50,8 @@
 #ifndef __DVAPI_CUDA_H_
 #define __DVAPI_CUDA_H_
 
-#include <cuda.h>
 #include "DVPAPI.h"
+#include <cuda.h>
 
 DVPAPI_INTERFACE
 dvpInitCUDAContext(uint32_t flags);
@@ -66,12 +66,10 @@ DVPAPI_INTERFACE
 dvpUnbindFromCUDACtx(DVPBufferHandle hBuf);
 
 DVPAPI_INTERFACE
-dvpCreateGPUCUDAArray(CUarray array, 
-                      DVPBufferHandle *bufferHandle);
+dvpCreateGPUCUDAArray(CUarray array, DVPBufferHandle *bufferHandle);
 
 DVPAPI_INTERFACE
-dvpCreateGPUCUDADevicePtr(CUdeviceptr devPtr, 
-                          DVPBufferHandle *bufferHandle);
+dvpCreateGPUCUDADevicePtr(CUdeviceptr devPtr, DVPBufferHandle *bufferHandle);
 
 //------------------------------------------------------------------------
 // Function:      dvpMapBufferWaitCUDAStream
@@ -92,8 +90,7 @@ dvpCreateGPUCUDADevicePtr(CUdeviceptr devPtr,
 //------------------------------------------------------------------------
 
 DVPAPI_INTERFACE
-dvpMapBufferWaitCUDAStream(DVPBufferHandle gpuBufferHandle,
-                           CUstream stream);
+dvpMapBufferWaitCUDAStream(DVPBufferHandle gpuBufferHandle, CUstream stream);
 
 //------------------------------------------------------------------------
 // Function:      dvpMapBufferEndCUDAStream
@@ -112,13 +109,12 @@ dvpMapBufferWaitCUDAStream(DVPBufferHandle gpuBufferHandle,
 // Returns:       DVP_STATUS_OK
 //                DVP_STATUS_INVALID_PARAMETER
 //                DVP_STATUS_ERROR
-//                DVP_STATUS_UNSIGNALED     - returned if the API is 
+//                DVP_STATUS_UNSIGNALED     - returned if the API is
 //                      unable to place a signal in the API compute stream
 //------------------------------------------------------------------------
 
 DVPAPI_INTERFACE
-dvpMapBufferEndCUDAStream(DVPBufferHandle gpuBufferHandle,
-                          CUstream stream);
+dvpMapBufferEndCUDAStream(DVPBufferHandle gpuBufferHandle, CUstream stream);
 
 DVPAPI_INTERFACE
 dvpGetRequiredConstantsCUDACtx(uint32_t *bufferAddrAlignment,

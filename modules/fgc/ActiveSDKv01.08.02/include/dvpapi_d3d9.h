@@ -50,28 +50,24 @@
 #ifndef __DVAPI_D3D9_H_
 #define __DVAPI_D3D9_H_
 
-#include <d3d9.h>
 #include "DVPAPI.h"
+#include <d3d9.h>
 
 DVPAPI_INTERFACE
-dvpInitD3D9Device(IDirect3DDevice9 *pD3D9Device,
-                  uint32_t flags);
+dvpInitD3D9Device(IDirect3DDevice9 *pD3D9Device, uint32_t flags);
 
 DVPAPI_INTERFACE
 dvpCloseD3D9Device(IDirect3DDevice9 *pD3D9Device);
 
+DVPAPI_INTERFACE
+dvpBindToD3D9Device(DVPBufferHandle hBuf, IDirect3DDevice9 *pD3D9Device);
 
 DVPAPI_INTERFACE
-dvpBindToD3D9Device(DVPBufferHandle hBuf,
-                    IDirect3DDevice9 *pD3D9Device);
+dvpUnbindFromD3D9Device(DVPBufferHandle hBuf, IDirect3DDevice9 *pD3D9Device);
 
 DVPAPI_INTERFACE
-dvpUnbindFromD3D9Device(DVPBufferHandle hBuf, 
-                        IDirect3DDevice9 *pD3D9Device);
-
-DVPAPI_INTERFACE
-dvpCreateGPUD3D9Resource(IDirect3DResource9 *pD3DResource, 
-                         DVPBufferHandle *bufferHandle); 
+dvpCreateGPUD3D9Resource(IDirect3DResource9 *pD3DResource,
+                         DVPBufferHandle *bufferHandle);
 
 DVPAPI_INTERFACE
 dvpGetRequiredConstantsD3D9Device(uint32_t *bufferAddrAlignment,

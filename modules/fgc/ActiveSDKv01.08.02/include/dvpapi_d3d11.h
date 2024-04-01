@@ -50,23 +50,20 @@
 #ifndef __DVAPI_D3D11_H_
 #define __DVAPI_D3D11_H_
 
-#include <d3d11.h>
 #include "DVPAPI.h"
+#include <d3d11.h>
 
 DVPAPI_INTERFACE
-dvpInitD3D11Device(ID3D11Device *pD3D11Device,
-                   uint32_t flags);
+dvpInitD3D11Device(ID3D11Device *pD3D11Device, uint32_t flags);
 
 DVPAPI_INTERFACE
 dvpCloseD3D11Device(ID3D11Device *pD3D11Device);
 
 DVPAPI_INTERFACE
-dvpBindToD3D11Device(DVPBufferHandle hBuf, 
-                    ID3D11Device *pD3D11Device);
+dvpBindToD3D11Device(DVPBufferHandle hBuf, ID3D11Device *pD3D11Device);
 
 DVPAPI_INTERFACE
-dvpUnbindFromD3D11Device(DVPBufferHandle hBuf, 
-                         ID3D11Device *pD3D11Device);
+dvpUnbindFromD3D11Device(DVPBufferHandle hBuf, ID3D11Device *pD3D11Device);
 
 DVPAPI_INTERFACE
 dvpCreateGPUD3D11Resource(ID3D11Resource *pD3DResource,

@@ -50,7 +50,7 @@
 #ifndef __DVAPI_GL_H_
 #define __DVAPI_GL_H_
 
-#include <GL/gl.h> 
+#include <GL/gl.h>
 #include <GL/glext.h>
 
 #if !defined(WIN32)
@@ -77,12 +77,10 @@ DVPAPI_INTERFACE
 dvpUnbindFromGLCtx(DVPBufferHandle hBuf);
 
 DVPAPI_INTERFACE
-dvpCreateGPUBufferGL(GLuint bufferID, 
-                     DVPBufferHandle *bufferHandle);
+dvpCreateGPUBufferGL(GLuint bufferID, DVPBufferHandle *bufferHandle);
 
 DVPAPI_INTERFACE
-dvpCreateGPUTextureGL(GLuint texID, 
-                      DVPBufferHandle *bufferHandle);
+dvpCreateGPUTextureGL(GLuint texID, DVPBufferHandle *bufferHandle);
 
 DVPAPI_INTERFACE
 dvpGetRequiredConstantsGLCtx(uint32_t *bufferAddrAlignment,
@@ -91,6 +89,5 @@ dvpGetRequiredConstantsGLCtx(uint32_t *bufferAddrAlignment,
                              uint32_t *semaphoreAllocSize,
                              uint32_t *semaphorePayloadOffset,
                              uint32_t *semaphorePayloadSize);
-
 
 #endif
