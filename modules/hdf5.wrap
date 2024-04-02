@@ -1,9 +1,0 @@
-[wrap-file]
-directory = hdf5-1.14.3 
-
-source_url = https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.3/src/hdf5-1.14.3.tar.gz
-source_filename = hdf5-1.14.3.tar.gz
-source_hash = 09cdb287aa7a89148c1638dd20891fdbae08102cf433ef128fd345338aa237c7 
-method = cmake
-
-[provide]
