@@ -104,7 +104,7 @@ int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
                             std::to_string(Nt_y) + "_" +
                             std::to_string((int)std::round(sample_rate)) + "_" +
                             std::to_string((int)std::round(wf_duration * 1e6)) +
-                            _ + std::to_string(waveform_length) + "_" +
+                            "_" + std::to_string(waveform_length) + "_" +
                             std::to_string(waveform_mask) + ".bin";
     std::string repo_fname = WF_REPO_PATH(file_name);
     INFO << "Caching repo as" << repo_fname << std::endl;
@@ -138,7 +138,7 @@ Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
                             std::to_string(Nt_y) + "_" +
                             std::to_string((int)std::round(sample_rate)) + "_" +
                             std::to_string((int)std::round(wf_duration * 1e6)) +
-                            _ + std::to_string(waveform_length) + "_" +
+                            "_" + std::to_string(waveform_length) + "_" +
                             std::to_string(waveform_mask) + ".bin";
     std::string repo_path = WF_REPO_PATH(file_name);
 
