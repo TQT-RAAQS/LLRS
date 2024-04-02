@@ -4,7 +4,7 @@
 
 std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
                                                  int waveform_mask) {
-    short new_max = wavefrom_mask >> 1;
+    short new_max = waveform_mask >> 1;
     std::vector<short> sv;
 
     for (size_t i = 0; i < src.size(); ++i) {
@@ -19,7 +19,7 @@ std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
 /// WaveformTable Class
 
 Synthesis::WaveformTable::WaveformTable(WaveformRepo *p_repo,
-                                        bool is_transposed)
+                                        bool is_transposed, int waveform_mask)
     : secondary_chan{(is_transposed) ? CHAN_1 : CHAN_0},
       primary_chan{(is_transposed) ? CHAN_0 : CHAN_1},
       secondary_size{(is_transposed) ? (*p_repo).get_dimension_y()

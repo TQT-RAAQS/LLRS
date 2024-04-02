@@ -218,7 +218,7 @@ void Synthesis::WaveformRepo::generate_static_waveforms(Channel channel,
     /// generate every indivisual tone first and add it to temp vector and
     /// hashmap
     for (int i = 0; i < n; ++i) {
-        Waveform wf(params[i]);
+        Waveform wf(params[i], 0, waveform_duration);
         std::vector<double> dwf = wf.discretize(_wf_len, _sample_rate);
 
         _waveform_hashmap.emplace(get_key(channel, STATIC, i, 1, 0), dwf);
@@ -273,25 +273,31 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
         WP params_before(0, std::get<1>(params[i]) - df, 0);
         WP params_after(0, std::get<1>(params[i]) + df, 0);
 
-        fade_in_forward[i] = Displacement(params_before, params[i])
-                                 .discretize(_wf_len, _sample_rate);
-        fade_in_backward[i] = Displacement(params_after, params[i])
-                                  .discretize(_wf_len, _sample_rate);
+        fade_in_forward[i] =
+            Displacement(params_before, params[i], waveform_duration)
+                .discretize(_wf_len, _sample_rate);
+        fade_in_backward[i] =
+            Displacement(params_after, params[i], waveform_duration)
+                .discretize(_wf_len, _sample_rate);
 
-        fade_out_forward[i] = Displacement(params[i], params_after)
-                                  .discretize(_wf_len, _sample_rate);
-        fade_out_backward[i] = Displacement(params[i], params_before)
-                                   .discretize(_wf_len, _sample_rate);
+        fade_out_forward[i] =
+            Displacement(params[i], params_after, waveform_duration)
+                .discretize(_wf_len, _sample_rate);
+        fade_out_backward[i] =
+            Displacement(params[i], params_before, waveform_duration)
+                .discretize(_wf_len, _sample_rate);
     }
 
     // generate individual moving displacement waveforms, add them to repo as
     // special single tone displacements
     for (int i = 0; i < n - 1; i++) {
         reverse_i = n - 1 - i;
-        move_forward[i] = Displacement(params[i], params[i + 1])
-                              .discretize(_wf_len, _sample_rate);
+        move_forward[i] =
+            Displacement(params[i], params[i + 1], waveform_duration)
+                .discretize(_wf_len, _sample_rate);
         move_backward[reverse_i] =
-            Displacement(params[reverse_i], params[reverse_i - 1])
+            Displacement(params[reverse_i], params[reverse_i - 1],
+                         waveform_duration)
                 .discretize(_wf_len, _sample_rate);
 
         _waveform_hashmap.emplace(get_key(channel, RIGHTWARD, i, 1, 0),
@@ -402,10 +408,10 @@ void Synthesis::WaveformRepo::generate_transfer_waveforms(
 
     /// generating and storing individual tone waveforms
     for (size_t i = 0; i < n; ++i) {
-        Extraction ewf(params[i], false);
+        Extraction ewf(params[i], false, waveform_duration);
         std::vector<double> edwf = ewf.discretize(_wf_len, _sample_rate);
 
-        Extraction iwf(params[i], true);
+        Extraction iwf(params[i], true, waveform_duration);
         std::vector<double> idwf = iwf.discretize(_wf_len, _sample_rate);
 
         _waveform_hashmap.emplace(get_key(channel, EXTRACT, i, 1, 0), edwf);
