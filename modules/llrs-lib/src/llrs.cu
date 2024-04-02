@@ -91,7 +91,6 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
 #endif
 
     /* Camera FGC Settings */
-    // DKEA: remove out of llrs eventually
     fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>(
         user_input.read_experiment_roi_width(),
         user_input.read_experiment_roi_height());
@@ -108,14 +107,18 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
 
     solver = Reconfig::Solver(Nt_x, Nt_y, p_collector);
 
+    double awg_sample_rate = awg_sequence->get_sample_rate();
+    double waveform_duration = awg_sequence->get_waveform_duration();
+    int waveform_length = awg_sequence->get_waveform_length();
+    int wfm_mask = awg_sequence->get_waveform_mask();
     /* Waveform Synthesis Initialization */
     const double table_sample_rate =
-        _2d ? AWG_SAMPLE_RATE / 2 : AWG_SAMPLE_RATE;
+        _2d ? awg_sample_rate / 2 : awg_sample_rate;
 
-    wf_table =
-        Setup::create_wf_table(Nt_x, Nt_y, table_sample_rate, WAVEFORM_DUR,
-                               user_input.read_experiment_coefx_path(),
-                               user_input.read_experiment_coefy_path(), false);
+    wf_table = Setup::create_wf_table(
+        Nt_x, Nt_y, table_sample_rate, waveform_duration, waveform_length,
+        wfm_mask user_input.read_experiment_coefx_path(),
+        user_input.read_experiment_coefy_path(), false);
 
     awg_sequence->setup(llrs_seg_off, llrs_step_off, _2d, Nt_x, Nt_y);
 

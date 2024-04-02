@@ -33,19 +33,12 @@ template <typename AWG_T> class Sequence {
                          int rep_num, int cycle_num);
     void emccd_trigger() { awg->generate_async_output_pulse(ASYNC_TRIG_AMP); }
     void reset();
+
     void get_1d_static_wfm(int16 *pnData, int num_wfms, int Nt_x);
-
-    /**
-     * @brief Get the waveform duration object
-     * @return int
-     */
-    int get_waveform_duration() const { awg->get_waveform_duration(); }
-
-    /**
-     * @brief Get the sample rate object
-     * @return int
-     */
-    int get_sample_rate() const { awg->get_sample_rate(); }
+    double get_waveform_duration() const { awg->get_waveform_duration(); }
+    double get_sample_rate() const { awg->get_sample_rate(); }
+    int get_waveform_length() const { awg->get_waveform_length(); }
+    int get_waveform_mask() const { awg->get_wavefrom_mask(); }
 
   private:
     std::shared_ptr<AWG_T> awg;

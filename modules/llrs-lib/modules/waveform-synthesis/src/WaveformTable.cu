@@ -2,9 +2,9 @@
 
 /// Helper
 
-std::vector<short>
-Synthesis::translate_waveform(const std::vector<double> &src) {
-    short new_max = WFM_MASK >> 1;
+std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
+                                                 int waveform_mask) {
+    short new_max = wavefrom_mask >> 1;
     std::vector<short> sv;
 
     for (size_t i = 0; i < src.size(); ++i) {
@@ -29,7 +29,7 @@ Synthesis::WaveformTable::WaveformTable(WaveformRepo *p_repo,
       primary_static{init_primary(STATIC, primary_size, p_repo)},
       primary_extract{init_primary(EXTRACT, primary_size, p_repo)},
       primary_implant{init_primary(IMPLANT, primary_size, p_repo)},
-      base_table{} {
+      base_table{}, waveform_mask{waveform_mask} {
 
     primary_forward.resize(primary_size + 1);
     for (int i = 2; i <= primary_size; ++i) {
@@ -243,8 +243,10 @@ Synthesis::WaveformTable::init_primary(WfType wf_type, size_t range,
             // std::endl;
             size_t address =
                 get_blocked_addr(wf_type, index, block_size, range);
-            primary_table[address] = translate_waveform(p_repo->get_waveform(
-                primary_chan, wf_type, index, block_size, extraction_extent));
+            primary_table[address] = translate_waveform(
+                p_repo->get_waveform(primary_chan, wf_type, index, block_size,
+                                     extraction_extent),
+                waveform_mask);
         }
     }
 
@@ -257,7 +259,8 @@ Synthesis::WaveformTable::init_secondary(WfType wf_type, size_t range,
     WF_PAGE offset_table(range);
     for (int index = 0; index < range; index++) {
         offset_table[index] = translate_waveform(
-            p_repo->get_waveform(secondary_chan, wf_type, index, 1, 0));
+            p_repo->get_waveform(secondary_chan, wf_type, index, 1, 0),
+            waveform_mask);
     }
     return offset_table;
 }

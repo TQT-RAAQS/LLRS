@@ -52,6 +52,7 @@ class WaveformRepo {
     double _sample_rate;
     double _wf_duration;
     size_t _wf_len;
+    int _wf_mask;
     std::unordered_map<std::uint32_t, std::vector<double>> _waveform_hashmap;
 
   public:
@@ -63,7 +64,7 @@ class WaveformRepo {
      * @param wf_duration
      */
     WaveformRepo(std::size_t n_x, std::size_t n_y, double sample_rate,
-                 double wf_duration);
+                 double wf_duration, int waveform_length, int waveform_mask);
 
     /**
      * @brief generates all needed waveforms according to repo dimensions,

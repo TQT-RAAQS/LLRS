@@ -78,6 +78,7 @@ class WaveformTable {
     WF_PAGE secondary_leftward;
     WF_PAGE secondary_rightward;
     std::map<Table_key, TABLE_PAGE> base_table;
+    int waveform_mask;
 
   public:
     /**
@@ -89,7 +90,7 @@ class WaveformTable {
      *   and secoondary channel values, by default we say CHAN1 is
      * primary(column-wise) and CHAN0 is secondary (row-wise)
      */
-    WaveformTable(WaveformRepo *p_repo, bool is_transposed);
+    WaveformTable(WaveformRepo *p_repo, bool is_transposed, int waveform_mask);
 
     /**
      * @brief The default constructor

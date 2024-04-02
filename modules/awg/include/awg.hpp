@@ -26,7 +26,7 @@ class AWG {
     drv_handle get_card() const { return p_card; };
     int get_num_channels() const { return num_channels; };
     double get_sample_rate() const { return config.sample_rate; };
-    int get_waveform_duration() const { return config.waveform_duration; };
+    double get_waveform_duration() const { return config.waveform_duration; };
     int get_num_segments() const { return config.awg_num_segments; };
     int get_waveforms_per_segment() const {
         return config.waveforms_per_segment;
@@ -39,6 +39,7 @@ class AWG {
     int get_waveform_length() const { return config.waveform_length; };
     int get_null_segment_length() const { return config.null_segment_length; };
     int get_idle_segment_length() const { return config.idle_segment_length; };
+    int get_wavefrom_mask() const { return config.wfm_mask; };
 
     uint32 get_current_step();
     uint32 get_last_seg() const { return this->max_seg - 1; };

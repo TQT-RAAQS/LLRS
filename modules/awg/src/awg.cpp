@@ -51,7 +51,8 @@ uint32 AWG::read_config(std::string filename) {
     config.waveforms_per_segment = node["waveforms_per_segment"].as<int>();
     config.null_segment_length = node["null_segment_length"].as<int>();
     config.idle_segment_length = node["idle_segment_length"].as<int>();
-    config.waveform_length = config.sample_rate * config.waveform_duration;
+    config.waveform_length = static_cast<int>(config.sample_rate) *
+                             static_cast<int>(config.waveform_duration);
     config.samples_per_segment =
         config.waveforms_per_segment * config.waveform_length;
     config.trigger_size = node["trigger_size"].as<int>();

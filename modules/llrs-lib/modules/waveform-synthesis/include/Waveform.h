@@ -52,7 +52,7 @@ class Waveform {
      * @param t0 => start time
      * @param T  => Waveform duration
      */
-    Waveform(WP params, double t0 = 0, double T = WAVEFORM_DUR);
+    Waveform(WP params, double t0, double T);
 
     /// Getters/Setters
     WP get_params() { return _params; }
@@ -65,8 +65,7 @@ class Waveform {
      *  @param num_samples
      *  @param sample_rate
      */
-    std::vector<double> discretize(std::size_t num_samples = WAVEFORM_LEN,
-                                   double sample_rate = AWG_SAMPLE_RATE);
+    std::vector<double> discretize(std::size_t num_samples, double sample_rate);
 
     /**
      * @brief Generates a waveform sample at a specified index using parameters
@@ -87,8 +86,10 @@ class Extraction : public Waveform {
      * @param is_reversed
      * @param amp_mod  => Modulation type
      */
-    Extraction(WP params, bool is_reversed, Modulation amp_mod = TANH)
-        : Waveform(params), _is_reversed(is_reversed), _amp_mod(amp_mod) {}
+    Extraction(WP params, bool is_reversed, double waveform_duration,
+               Modulation amp_mod = TANH)
+        : Waveform(params, 0, waveform_duration), _is_reversed(is_reversed),
+          _amp_mod(amp_mod) {}
 
     /**
      * @brief generates an extraction waveform sample at a specified index using
@@ -117,8 +118,8 @@ class Displacement : public Waveform {
      * @param freq_mod
      * @param freq_slope
      */
-    Displacement(WP params, WP dest, Modulation amp_mod = TANH,
-                 Modulation freq_mod = ERF,
+    Displacement(WP params, WP dest, double waveform_duration,
+                 Modulation amp_mod = TANH, Modulation freq_mod = ERF,
                  double freq_slope = DISPLACEMENT_FREQUENCY_RELATIVE_SLOPE);
 
     /**

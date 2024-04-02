@@ -23,10 +23,11 @@ void Synthesis::element_wise_add(std::vector<double> src,
 /// WaveformRepo Class
 
 Synthesis::WaveformRepo::WaveformRepo(std::size_t n_x, std::size_t n_y,
-                                      double sample_rate, double wf_duration)
+                                      double sample_rate, double wf_duration,
+                                      int waveform_length, int waveform_mask)
     : _n_x(n_x), _n_y(n_y), _sample_rate(sample_rate),
-      _wf_duration(wf_duration) {
-    _wf_len = (size_t)(_wf_duration * _sample_rate);
+      _wf_duration(wf_duration), _wf_len(waveform_length),
+      _wf_mask(waveform_mask) {
     // reserves enough space in repo to fit all waveforms according to repo
     // dimensions
     _waveform_hashmap.reserve((5 * _n_x * _n_x + _n_x) / 2 +
