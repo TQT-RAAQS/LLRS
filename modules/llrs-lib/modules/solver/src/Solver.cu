@@ -39,19 +39,19 @@ bool target_met(std::vector<int32_t> current, std::vector<int32_t> target) {
  */
 
 Reconfig::Algo get_algo_enum(std::string name) {
-    if (name == "liblin_exact_1d.so") {
+    if (name == "LINEAR-EXACT-1D") {
         return Reconfig::LINEAR_EXACT_1D;
-    } else if (name == "liblin_exact_1d_cpu_v2.so") {
+    } else if (name == "LINEAR-EXACT-V2-1D") {
         return Reconfig::LINEAR_EXACT_V2_1D;
-    } else if (name == "libredrec_v2.so") {
+    } else if (name == "REDREC-V2-2D") {
         return Reconfig::REDREC_CPU_V2_2D;
-    } else if (name == "libredrec_cpu_v3.so") {
+    } else if (name == "REDREC-CPU-V3-2D") {
         return Reconfig::REDREC_CPU_V3_2D;
-    } else if (name == "libaro_cpu.so") {
+    } else if (name == "ARO-2D") {
         return Reconfig::ARO_CPU_2D;
-    } else if (name == "libredrec_gpu_v3.so") {
+    } else if (name == "REDREC-GPU-V3-2D") {
         return Reconfig::REDREC_GPU_V3_2D;
-    } else if (name == "libbird_cpu.so") {
+    } else if (name == "BIRD-CPU-2D") {
         return Reconfig::BIRD_CPU_2D;
     } else {
         throw std::invalid_argument(
