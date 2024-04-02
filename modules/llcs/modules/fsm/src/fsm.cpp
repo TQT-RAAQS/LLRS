@@ -441,7 +441,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     awg->init_and_load_all(pnData, samples_per_segment);
 
     l->setup("21_atoms_problem", llrs_idle_seg, llrs_idle_step);
-    l->get_1d_static_wfm(pnData, WF_PER_SEG);
+    l->get_1d_static_wfm(pnData);
     trigger_detector->setup(pnData);
 
     awg->start_stream();
@@ -534,7 +534,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
     awg->init_and_load_all(pnData, samples_per_segment);
 
     l->setup("reset_config", llrs_idle_seg, llrs_idle_step);
-    l->get_1d_static_wfm(pnData, WF_PER_SEG);
+    l->get_1d_static_wfm(pnData);
     trigger_detector->setup(pnData);
 
     awg->reset_card();
@@ -558,7 +558,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
     awg->fill_transfer_buffer(pnData, samples_per_segment, 0);
     awg->init_and_load_all(pnData, samples_per_segment);
 
-    l->get_1d_static_wfm(pnData, WF_PER_SEG);
+    l->get_1d_static_wfm(pnData);
     trigger_detector->setup(pnData);
 
     awg->start_stream();
@@ -603,7 +603,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     assert(current_step == llrs_idle_step);
     awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, 0,
                        SPCSEQ_ENDLOOPALWAYS); // this is slow
-    trigger_detector->busyWait(WAVEFORM_DUR * WF_PER_SEG * 1e6);
+    trigger_detector->busyWait();
 
     current_step = awg->get_current_step();
     assert(current_step == 0);
@@ -611,7 +611,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
     awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, llrs_idle_step,
                        SPCSEQ_ENDLOOPALWAYS);
-    trigger_detector->busyWait(WAVEFORM_DUR * WF_PER_SEG * 1e6);
+    trigger_detector->busyWait();
 
     l->clean();
     return;

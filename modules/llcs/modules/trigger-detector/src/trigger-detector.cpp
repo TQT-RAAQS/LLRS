@@ -41,13 +41,14 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::setup(int16 *pnData) {
 
     // Ensure there is enough time for the first idle segment's pointer to
     // update
-    busyWait(WAVEFORM_DUR * WF_PER_SEG * 1e6);
+    busyWait();
 
     return SYS_OK;
 }
 
-template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait(float timeout) {
-
+template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
+    float timeout =
+        awg->get_waveform_duration() * awg->get_waveforms_per_segment() * 1e6;
     // std::cout << "TD Busy Waiting for " << timeout << " microseconds" <<
     // std::endl;
     auto startTime = std::chrono::high_resolution_clock::now();

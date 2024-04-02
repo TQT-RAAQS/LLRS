@@ -16,7 +16,7 @@ template <typename AWG_T> class TriggerDetector {
     void generateSineWave(int16 *pnData, int samples, double sampleRate);
     int setup(int16 *pnData);
     int resetDetectionSegments();
-    int busyWait(float timeout = -1);
+    int busyWait();
     int detectTrigger(int timeout = -1);
     std::shared_ptr<AWG_T> &getAWG();
 };

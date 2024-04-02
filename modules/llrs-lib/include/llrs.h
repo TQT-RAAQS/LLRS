@@ -111,8 +111,9 @@ template <typename AWG_T> class LLRS {
     int getRepNum();
     void store_moves();
     const Metadata &getMetadata() const { return metadata; };
-    void get_1d_static_wfm(int16 *pnData, int num_wfms) {
-        awg_sequence->get_1d_static_wfm(pnData, num_wfms, metadata.getNtx());
+    void get_1d_static_wfm(int16 *pnData) {
+        awg_sequence->get_1d_static_wfm(
+            pnData, awg_sequence->get_wfm_per_segment(), metadata.getNtx());
     }
 };
 
