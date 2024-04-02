@@ -16,7 +16,7 @@ class AWG {
                           const std::vector<int> &amp);
     uint32 set_sample_rate(int sample_rate);
     uint32 set_external_clock_mode(int external_clock_freq);
-    uint32 set_internal_clock_mode(int external_clock_freq);
+    uint32 set_internal_clock_mode();
     uint32 set_trigger_settings();
     uint32 set_dout_trigger_mode(int32 line, int32 channel);
     uint32 set_dout_async(int32 line);
@@ -57,14 +57,11 @@ class AWG {
   private:
     struct awg_config_t {
         char *driver_path;
-        int sample_rate;
         int external_clock_freq;
-        int freq_resolution;
         std::vector<int> channels;
         std::vector<int> amp;
-        int amp_lim;
         int awg_num_segments;
-        double awg_sample_rate;
+        double sample_rate;
         int wfm_mask;
         double waveform_duration;
         int waveforms_per_segment;
@@ -72,6 +69,11 @@ class AWG {
         int idle_segment_length;
         int waveform_length;
         int samples_per_segment;
+        int trigger_size;
+        int vpp;
+        int acq_timeout;
+        int async_trig_amp;
+        int waveform_length;
 
         ~awg_config_t() { delete[] driver_path; }
     };

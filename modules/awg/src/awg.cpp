@@ -40,19 +40,13 @@ uint32 AWG::read_config(std::string filename) {
     std::string temp_driver_path = node["driver_path"].as<std::string>();
     config.driver_path = new char[temp_driver_path.size() + 1];
     std::strcpy(config.driver_path, temp_driver_path.c_str());
-
-    config.sample_rate = node["sample_rate"].as<int>();
     config.external_clock_freq = node["external_clock_freq"].as<int>();
-    config.freq_resolution = node["freq_resolution"].as<int>();
     config.channels = node["channels"].as<std::vector<int>>();
     config.amp = node["amp"].as<std::vector<int>>();
-    config.amp_lim = node["amp_lim"].as<int>();
-
     config.awg_num_segments = node["awg_num_segments"].as<int>();
-    config.awg_sample_rate = node["awg_sample_rate"].as<double>();
+    config.sample_rate = node["sample_rate"].as<double>();
     std::string wfm_mask_str = node["wfm_mask"].as<std::string>();
     config.wfm_mask = std::stoi(wfm_mask_str, 0, 16);
-
     config.waveform_duration = node["waveform_duration"].as<double>();
     config.waveforms_per_segment = node["waveforms_per_segment"].as<int>();
     config.null_segment_length = node["null_segment_length"].as<int>();
@@ -60,6 +54,10 @@ uint32 AWG::read_config(std::string filename) {
     config.waveform_length = config.sample_rate * config.waveform_duration;
     config.samples_per_segment =
         config.waveforms_per_segment * config.waveform_length;
+    config.trigger_size = node["trigger_size"].as<int>();
+    config.vpp = node["vpp"].as<int>();
+    config.acq_timeout = node["acq_timeout"].as<int>();
+    config.async_trig_amp = node["async_trig_amp"].as<int>();
 
     return AWG_OK;
 }
@@ -228,7 +226,7 @@ uint32 AWG::set_external_clock_mode(int external_clock_freq) {
  * @param
  * @return Error code
  */
-uint32 AWG::set_internal_clock_mode(int external_clock_freq) {
+uint32 AWG::set_internal_clock_mode() {
     return spcm_dwSetParam_i32(p_card, SPC_CLOCKMODE, SPC_CM_INTPLL);
 }
 
