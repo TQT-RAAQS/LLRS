@@ -130,7 +130,7 @@ int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
 
 Synthesis::WaveformTable
 Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
-                       double wf_duration, int wavefrom_length,
+                       double wf_duration, int waveform_length,
                        int waveform_mask, std::string coef_x_fname,
                        std::string coef_y_fname, bool is_transposed) {
 

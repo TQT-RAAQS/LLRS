@@ -54,7 +54,8 @@ using Table_key = std::pair<WfMoveType, int>;
  * WFM_MASK as well as converts sample type from double to short
  * @param src => vector (waveform) for which values (samples) to translate
  */
-std::vector<short> translate_waveform(const std::vector<double> &src);
+std::vector<short> translate_waveform(const std::vector<double> &src,
+                                      int waveform_mask);
 
 /**
  * @class WaveformTable
