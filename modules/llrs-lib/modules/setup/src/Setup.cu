@@ -77,11 +77,11 @@ int Setup::read_fparams(std::string file_name,
 
 int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
                           double wf_duration, int waveform_length,
-                          int waveform_mask, std::string coef_x_fname,
+                          int waveform_mask, int vpp, std::string coef_x_fname,
                           std::string coef_y_fname) {
 
     Synthesis::WaveformRepo wf_repo(Nt_x, Nt_y, sample_rate, wf_duration,
-                                    waveform_length, waveform_mask);
+                                    waveform_length, waveform_mask, vpp);
 
     std::string x_path = COEF_X_PATH(coef_x_fname);
     std::vector<Synthesis::WP> params_x;
@@ -131,7 +131,7 @@ int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
 Synthesis::WaveformTable
 Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
                        double wf_duration, int waveform_length,
-                       int waveform_mask, std::string coef_x_fname,
+                       int waveform_mask, int vpp, std::string coef_x_fname,
                        std::string coef_y_fname, bool is_transposed) {
 
     std::string file_name = "repo." + std::to_string(Nt_x) + "_" +
@@ -151,7 +151,7 @@ Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
         }
     }
     Synthesis::WaveformRepo wf_repo(Nt_x, Nt_y, sample_rate, wf_duration,
-                                    wavefrom_length, waveform_mask);
+                                    waveform_length, waveform_mask, vpp);
 
     wf_repo.load_waveform_repo(repo_path);
 

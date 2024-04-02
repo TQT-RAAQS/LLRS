@@ -105,19 +105,20 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
 
     algo = Util::get_algo_enum(user_input.read_problem_algo());
 
-    solver = Reconfig::Solver(Nt_x, Nt_y, p_collector);
+    solver = Reconfig::Solver(Nt_x, Nt_y, awg_sequence->get_, p_collector);
 
     double awg_sample_rate = awg_sequence->get_sample_rate();
     double waveform_duration = awg_sequence->get_waveform_duration();
     int waveform_length = awg_sequence->get_waveform_length();
     int wfm_mask = awg_sequence->get_waveform_mask();
+    int vpp = awg_sequence->get_vpp();
     /* Waveform Synthesis Initialization */
     const double table_sample_rate =
         _2d ? awg_sample_rate / 2 : awg_sample_rate;
 
     wf_table = Setup::create_wf_table(
         Nt_x, Nt_y, table_sample_rate, waveform_duration, waveform_length,
-        wfm_mask, user_input.read_experiment_coefx_path(),
+        wfm_mask, vpp, user_input.read_experiment_coefx_path(),
         user_input.read_experiment_coefy_path(), false);
 
     awg_sequence->setup(llrs_seg_off, llrs_step_off, _2d, Nt_x, Nt_y);

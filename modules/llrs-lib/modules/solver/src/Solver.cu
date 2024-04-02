@@ -69,11 +69,12 @@ Reconfig::Algo get_algo_enum(std::string name) {
  * @param Nt_x
  * @param Nt_y
  */
-Reconfig::Solver::Solver(int Nt_x, int Nt_y, Util::Collector *p_collector)
+Reconfig::Solver::Solver(int Nt_x, int Nt_y, int wfm_per_segment,
+                         Util::Collector *p_collector)
     : Nt_x{Nt_x}, Nt_y{Nt_y}, num_atoms_initial{0}, num_atoms_target{0},
-      matching_src(Nt_x * Nt_y, 0), matching_dst(Nt_x * Nt_y, 0),
-      src(Nt_x * Nt_x * Nt_y * Nt_y, 0), dst(Nt_x * Nt_x * Nt_y * Nt_y, 0),
-      blk(Nt_x * Nt_x * Nt_y * Nt_y, 0),
+      wfm_per_segment{wfm_per_segment}, matching_src(Nt_x * Nt_y, 0),
+      matching_dst(Nt_x * Nt_y, 0), src(Nt_x * Nt_x * Nt_y * Nt_y, 0),
+      dst(Nt_x * Nt_x * Nt_y * Nt_y, 0), blk(Nt_x * Nt_x * Nt_y * Nt_y, 0),
       batch_ptrs(Nt_x * Nt_x * Nt_y * Nt_y, 0),
       path_system(Nt_x * Nt_x * Nt_y * Nt_y, 0),
       path_length(Nt_x * Nt_y, 0), initial{}, p_collector{p_collector} {}
@@ -238,9 +239,10 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
 
     case LINEAR_EXACT_V2_1D:
     case LINEAR_EXACT_1D: {
-        size_t paddings_required = src.size() < WF_PER_SEG
-                                       ? 2 * WF_PER_SEG - src.size()
-                                       : WF_PER_SEG - src.size() % WF_PER_SEG;
+        size_t paddings_required =
+            src.size() < wfm_per_segment
+                ? 2 * wfm_per_segment - src.size()
+                : wfm_per_segment - src.size() % wfm_per_segment;
         ret.reserve(src.size() + paddings_required);
         for (size_t k = 0; k < src.size(); ++k) {
             size_t src_val = src[k];

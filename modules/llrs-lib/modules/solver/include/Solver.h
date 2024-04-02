@@ -53,6 +53,7 @@ class Solver {
     int Nt_y = 0;
     int num_atoms_initial = 0;
     int num_atoms_target = 0;
+    int wfm_per_segment;
     std::vector<int32_t> matching_src;
     std::vector<int32_t> matching_dst;
     std::vector<int32_t> src;
@@ -72,7 +73,8 @@ class Solver {
      * @param Nt_y
      * @param num_targets
      */
-    Solver(int Nt_x, int Nt_y, Util::Collector *p_collector);
+    Solver(int Nt_x, int Nt_y, int wfm_per_segment,
+           Util::Collector *p_collector);
 
     /**
      * @brief Construct a new Solver object (Default Constructor)

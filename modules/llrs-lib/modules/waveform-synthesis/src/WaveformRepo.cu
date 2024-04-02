@@ -24,10 +24,11 @@ void Synthesis::element_wise_add(std::vector<double> src,
 
 Synthesis::WaveformRepo::WaveformRepo(std::size_t n_x, std::size_t n_y,
                                       double sample_rate, double wf_duration,
-                                      int waveform_length, int waveform_mask)
+                                      int waveform_length, int waveform_mask,
+                                      int vpp)
     : _n_x(n_x), _n_y(n_y), _sample_rate(sample_rate),
       _wf_duration(wf_duration), _wf_len(waveform_length),
-      _wf_mask(waveform_mask) {
+      _wf_mask(waveform_mask), _vpp(vpp) {
     // reserves enough space in repo to fit all waveforms according to repo
     // dimensions
     _waveform_hashmap.reserve((5 * _n_x * _n_x + _n_x) / 2 +
@@ -70,7 +71,7 @@ int Synthesis::WaveformRepo::cache_waveform_repo(std::string fname) const {
         return LLRS_ERR;
 
 #ifdef POWER_SAFETY
-    WaveformPowerCalculator wpc;
+    WaveformPowerCalculator wpc{_vpp};
 #endif
     for (const auto &data : _waveform_hashmap) {
 
@@ -101,7 +102,7 @@ int Synthesis::WaveformRepo::cache_waveform_repo(std::string fname) const {
 int Synthesis::WaveformRepo::load_waveform_repo(std::string fname) {
     std::ifstream file(fname, std::ios::in | std::ios::binary);
 #ifdef POWER_SAFETY
-    WaveformPowerCalculator wpc;
+    WaveformPowerCalculator wpc(_vpp);
 #endif
 
     if (!file.is_open())

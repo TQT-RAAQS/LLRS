@@ -10,7 +10,7 @@ namespace Synthesis {
 class WaveformPowerCalculator {
 
   public:
-    WaveformPowerCalculator();
+    WaveformPowerCalculator(int config_vpp);
     double get_power_mw(const std::vector<short> &waveform);
     double get_power_mw(const std::vector<double> &waveform);
 
@@ -27,6 +27,7 @@ class WaveformPowerCalculator {
     double damage_threshold_dBm;
     double p0_mw;
     double vpp, vpp0;
+    int config_vpp;
 };
 inline double WaveformPowerCalculator::mw_to_dBm(double power_mw) {
     return 10 * log10(power_mw);

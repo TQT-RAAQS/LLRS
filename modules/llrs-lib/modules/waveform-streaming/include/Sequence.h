@@ -39,6 +39,8 @@ template <typename AWG_T> class Sequence {
     double get_sample_rate() const { awg->get_sample_rate(); }
     int get_waveform_length() const { awg->get_waveform_length(); }
     int get_waveform_mask() const { awg->get_wavefrom_mask(); }
+    int get_vpp() const { awg->get_vpp(); }
+    int get_wfm_per_segment() const { awg->get_waveforms_per_segment(); }
 
   private:
     std::shared_ptr<AWG_T> awg;
