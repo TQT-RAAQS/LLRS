@@ -19,8 +19,9 @@ class ActiveSilicon1XCLD {
 
   public:
     ActiveSilicon1XCLD(uint32_t roi_width, uint32_t roi_height,
-                       uint32_t roi_xoffset = 0, uint32_t roi_yoffset = 0,
-                       uint32_t vbin = 1, uint32_t hbin = 1);
+                       int acquisition_timeout, uint32_t roi_xoffset = 0,
+                       uint32_t roi_yoffset = 0, uint32_t vbin = 1,
+                       uint32_t hbin = 1);
     ActiveSilicon1XCLD() = default;
 
     /*
@@ -91,6 +92,7 @@ class ActiveSilicon1XCLD {
     uint32_t _roi_yoffset;
     uint32_t _vbin;
     uint32_t _hbin;
+    int _acquisition_timeout;
     stImageBuff *_image_buffers = new stImageBuff[2];
 
 #ifdef ENABLE_CUDA

@@ -271,11 +271,14 @@ uint32 AWG::set_dout_async(int32 line) {
  * SPMCM_XMODE_ASYNCOUT
  * @return Error code
  */
-uint32 AWG::generate_async_output_pulse(int32 voltage) {
-    spcm_dwSetParam_i32(this->p_card, SPCM_XX_ASYNCIO, 0);
-    spcm_dwSetParam_i32(this->p_card, SPCM_XX_ASYNCIO, voltage);
-    spcm_dwSetParam_i32(this->p_card, SPCM_XX_ASYNCIO, 0);
-
+uint32 AWG::generate_async_output_pulse(TriggerType type) {
+    switch (type) {
+    case EMCCD:
+        spcm_dwSetParam_i32(this->p_card, SPCM_XX_ASYNCIO, 0);
+        spcm_dwSetParam_i32(this->p_card, SPCM_XX_ASYNCIO,
+                            config.async_trig_amp);
+        spcm_dwSetParam_i32(this->p_card, SPCM_XX_ASYNCIO, 0);
+    }
     return AWG_OK;
 }
 

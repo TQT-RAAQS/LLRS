@@ -93,7 +93,8 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
     /* Camera FGC Settings */
     fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>(
         user_input.read_experiment_roi_width(),
-        user_input.read_experiment_roi_height());
+        user_input.read_experiment_roi_height(),
+        awg_sequence->get_acq_timeout());
 
     /* Image Processing Settings */
     img_proc_obj = Processing::ImageProcessor(

@@ -31,7 +31,7 @@ template <typename AWG_T> class Sequence {
     void pre_load();
     bool load_and_stream(std::vector<Reconfig::Move> &moves_list, int trial_num,
                          int rep_num, int cycle_num);
-    void emccd_trigger() { awg->generate_async_output_pulse(ASYNC_TRIG_AMP); }
+    void emccd_trigger() { awg->generate_async_output_pulse(EMCCD); }
     void reset();
 
     void get_1d_static_wfm(int16 *pnData, int num_wfms, int Nt_x);
@@ -41,6 +41,7 @@ template <typename AWG_T> class Sequence {
     int get_waveform_mask() const { awg->get_wavefrom_mask(); }
     int get_vpp() const { awg->get_vpp(); }
     int get_wfm_per_segment() const { awg->get_waveforms_per_segment(); }
+    int get_acq_timeout() const { awg->get_acq_timeout(); }
 
   private:
     std::shared_ptr<AWG_T> awg;

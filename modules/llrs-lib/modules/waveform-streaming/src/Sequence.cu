@@ -12,18 +12,19 @@ void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx,
     // --- Idle, Null and Empty segments init---
 
     // idle segment init
-    int num_idle_samples = IDLE_LEN;
+    int num_idle_samples = awg->get_idle_segment_length();
     int16 *idle_segment_data = nullptr;
     int idle_segment_buffer_size =
         awg->allocate_transfer_buffer(num_idle_samples, idle_segment_data);
-    get_1d_static_wfm(idle_segment_data, num_idle_samples / WAVEFORM_LEN,
+    get_1d_static_wfm(idle_segment_data,
+                      num_idle_samples / awg->get_waveform_length(),
                       Nt_x); // DKEA: for 1D integration
     // awg->fill_transfer_buffer(idle_segment_data, num_idle_samples, 0);
 
     // null segment init
     null_segment_idx = num_total_segments - 1;
     int NULL_MASK = 1 << 15; // 15th bit set to 1 for null segment counter
-    int num_null_samples = NULL_LEN;
+    int num_null_samples = awg->get_null_segment_length();
     int16 *null_segment_data = nullptr;
     int null_segment_buffer_size =
         awg->allocate_transfer_buffer(num_null_samples, null_segment_data);
@@ -132,8 +133,8 @@ void Stream::Sequence<AWG_T>::get_1d_static_wfm(int16 *pnData, int num_wfms,
     short *move_wf_ptr = wf_table.get_primary_wf_ptr(STATIC, 0, Nt_x, Nt_x);
 
     for (int i = 0; i < num_wfms; ++i) {
-        memcpy(pnData + i * WAVEFORM_LEN, move_wf_ptr,
-               WAVEFORM_LEN * sizeof(short));
+        memcpy(pnData + i * awg->get_waveform_length(), move_wf_ptr,
+               awg->get_waveform_length() * sizeof(short));
     }
 }
 
@@ -483,8 +484,8 @@ void Stream::Sequence<AWG_T>::wf_segment_lookup(
         short *move_wf_ptr = wf_table.get_waveform_ptr(
             std::get<0>(move), std::get<4>(move), std::get<1>(move),
             std::get<2>(move), std::get<3>(move));
-        memcpy(p_buffer_lookup + wf_idx * WAVEFORM_LEN, move_wf_ptr,
-               WAVEFORM_LEN * sizeof(short));
+        memcpy(p_buffer_lookup + wf_idx * awg->get_waveform_length(),
+               move_wf_ptr, awg->get_waveform_length() * sizeof(short));
     }
 }
 

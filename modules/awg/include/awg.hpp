@@ -6,6 +6,8 @@
 
 #define MAX_SEGMENT_DIVIDE 4096
 
+enum TriggerType { EMCCD };
+
 class AWG {
   public:
     AWG();
@@ -61,7 +63,7 @@ class AWG {
     uint32 enable_channels(const std::vector<int> &channels);
     uint32 enable_outputs(const std::vector<int> &channels,
                           const std::vector<int> &amp);
-    uint32 generate_async_output_pulse(int32 voltage);
+    uint32 generate_async_output_pulse(TriggerType type);
 
   private:
     struct awg_config_t {

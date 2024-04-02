@@ -18,10 +18,11 @@
  * top-left corner of the camera sensor.
  */
 Acquisition::ActiveSilicon1XCLD::ActiveSilicon1XCLD(
-    uint32_t roi_width, uint32_t roi_height, uint32_t roi_xoffset,
-    uint32_t roi_yoffset, uint32_t vbin, uint32_t hbin)
+    uint32_t roi_width, uint32_t roi_height, int acquisition_timeout,
+    uint32_t roi_xoffset, uint32_t roi_yoffset, uint32_t vbin, uint32_t hbin)
     : _roi_width(roi_width), _roi_height(roi_height), _roi_xoffset(roi_xoffset),
-      _roi_yoffset(roi_yoffset), _vbin(vbin), _hbin(hbin) {
+      _roi_yoffset(roi_yoffset), _vbin(vbin), _hbin(hbin),
+      _acq_timeout(acquisition_timeout) {
     /* Create handle and load default settings base on the PCF file */
     std::string NADA = "";
     std::string pcf_config_path = std::string(
@@ -228,7 +229,7 @@ int32_t Acquisition::ActiveSilicon1XCLD::check_and_wait() {
     int32_t event = 0;
     boost::asio::io_service io_service;
     boost::asio::deadline_timer timer(
-        io_service, boost::posix_time::milliseconds(ACQ_TIMEOUT));
+        io_service, boost::posix_time::milliseconds(_acquisition_timeout));
 
     std::thread event_thread([&] {
         PHX_StreamRead(this->_handle, PHX_CHECK_AND_WAIT, &event);
