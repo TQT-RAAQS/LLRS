@@ -144,7 +144,7 @@ Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
 
     if (!FILE_EXISTS(repo_path)) {
         int status = create_wf_repo(Nt_x, Nt_y, sample_rate, wf_duration,
-                                    waveform_length, waveform_mask,
+                                    waveform_length, waveform_mask, vpp,
                                     coef_x_fname, coef_y_fname);
         if (status != LLRS_OK) {
             throw std::runtime_error("Failed to create/cache waveform repo");

@@ -53,8 +53,8 @@ void LLRS<AWG_T>::small_setup(std::string json_input) {
 
     algo = Util::get_algo_enum(user_input.read_problem_algo());
 
-    solver =
-        Reconfig::Solver(metadata.getNtx(), metadata.getNty(), p_collector);
+    solver = Reconfig::Solver(metadata.getNtx(), metadata.getNty(),
+                              awg_sequence->get_wfm_per_segment(), p_collector);
 }
 
 template <typename AWG_T>
@@ -105,7 +105,8 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
 
     algo = Util::get_algo_enum(user_input.read_problem_algo());
 
-    solver = Reconfig::Solver(Nt_x, Nt_y, awg_sequence->get_, p_collector);
+    solver = Reconfig::Solver(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment(),
+                              p_collector);
 
     double awg_sample_rate = awg_sequence->get_sample_rate();
     double waveform_duration = awg_sequence->get_waveform_duration();
