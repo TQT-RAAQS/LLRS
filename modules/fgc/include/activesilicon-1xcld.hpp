@@ -2,9 +2,9 @@
 #define ACTIVESILICON_1XCLD_HPP_
 
 #define _PHX_LINUX
+#include "fgc/settings.hpp"
 #include "log.h"
 #include "phx_api.hpp"
-#include "settings.hpp"
 #include <boost/asio.hpp>
 #include <thread>
 
