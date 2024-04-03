@@ -16,6 +16,8 @@ spcm_lib = library('spcm_lib',
     include_directories: spcm_inc
 )
 
+# cuda dep
+cuda_dep = dependency('cuda', modules: ['cufft', 'cuda'])
 
 
-spcm_dep = declare_dependency(link_with: spcm_lib, link_args: spcm_provided_lib, include_directories: spcm_inc) 
+spcm_dep = declare_dependency(link_with: spcm_lib, link_args: spcm_provided_lib, include_directories: spcm_inc, dependencies: cuda_dep) 

@@ -16,15 +16,22 @@ fgc_src = [
     'src/trace.cu'
   ]
 
+# external dependencies
+cuda_dep = dependency('cuda', version: '>=11',modules: ['cufft', 'cudart'])
+boost_dep =  dependency('boost', modules: ['system'])
+gl_dep = dependency('gl')
+
 # targets
 fgc = library('fgc', 
     fgc_src,
     include_directories: fgc_inc,
-    dependencies: [activeSDK_dep])
+    link_args: ['-lpng', '-lXext'],
+    dependencies: [activeSDK_dep, cuda_dep, boost_dep, gl_dep])
 
 # dependencies
 fgc_dep = declare_dependency(
     include_directories: fgc_inc,
     link_with: fgc,
-    dependencies: [activeSDK_dep])
+    link_args: ['-lpng', '-lXext'],
+    dependencies: [activeSDK_dep, cuda_dep, boost_dep, gl_dep])
     
