@@ -59,10 +59,3 @@ namespace fs = std::experimental::filesystem;
 #define TRIAL_NAME(num) ("trial_" + std::to_string(num))
 #define REP_NAME(num) ("repetition_" + std::to_string(num))
 #define CYCLE_NAME(num) ("cycle_" + std::to_string(num))
-
-#define __FILENAME__                                                           \
-    (__builtin_strrchr(__FILE__, '/')                                          \
-         ? __builtin_strrchr(__FILE__, '/') + 1                                \
-         : __FILE__) // only show filename and not it's path (less clutter)
-
-#endif

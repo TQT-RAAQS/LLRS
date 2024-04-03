@@ -22,3 +22,10 @@ static std::time_t time_now = std::time(nullptr);
               << __LINE__ << ") >> "
 
 #endif
+
+#define __FILENAME__                                                           \
+    (__builtin_strrchr(__FILE__, '/')                                          \
+         ? __builtin_strrchr(__FILE__, '/') + 1                                \
+         : __FILE__) // only show filename and not it's path (less clutter)
+
+#endif
