@@ -1,0 +1,19 @@
+exposure_time: 0.02         # (float) time in s (recommended 0.02 s for acquisition)
+preamp_gain_index: 0        # (int) 0 - Gain 1.0, 1 - Gain 2.0
+hs_speed_index: 0           # (int) values for index found in getHSSpeed() member function
+vs_speed_index: 3           # (int) values for index found in getVSSpeed() member function
+acquisition_mode: 5         # (int) 1 - single scan, 2 - accumulate, 3 - kinetic series, 5 - run till abort
+readout_mode: 4             # (int) 4 - image
+amp_index: 0                # (int) 0 - EM, 1 - Conventional
+max_path: 256               # (int) maximum length of string the SDK will write to
+shutter_mode: 2             # (int) 0 - Fully Auto, 1 - open, 2 - closed, 4 - open for fvb series, 5 - open for any series
+kinetic_cycle_time: 0       # (int) 0 for run till abort
+crop_mode_type: 1           # (int) 0 - High Speed, 1- Low latency
+roi:
+  width: 1024               # (int) roi width
+  height: 1024              # (int) roi width
+  left: 1                   # (int) roi x offset
+  bottom: 1                 # (int) roi y offset
+binning:
+  hbin: 1                   # (int) horizontal binning
+  vbin : 1                  # (int) vertical binning
