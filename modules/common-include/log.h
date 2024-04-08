@@ -21,8 +21,6 @@ static std::time_t time_now = std::time(nullptr);
               << " [ERROR] " << __FILENAME__ << "(" << __FUNCTION__ << ":"     \
               << __LINE__ << ") >> "
 
-#endif
-
 #define __FILENAME__                                                           \
     (__builtin_strrchr(__FILE__, '/')                                          \
          ? __builtin_strrchr(__FILE__, '/') + 1                                \
