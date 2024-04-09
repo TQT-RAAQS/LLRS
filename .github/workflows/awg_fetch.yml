@@ -1,0 +1,21 @@
+name: AWG Driver Package
+on:
+  repository_dispatch:
+    types: awg-dispatch
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: download 
+        uses: robinraju/release-downloader@v1.9
+        with: 
+          repository: "TQT-RAAQS/Instruments"
+          latest: false
+          preRelease: false
+          tag: "awg"
+          tarBall: false
+          zipBall: true
+          out-file-path: "modules/awg-download"
+          extract: false
+          token: ${{ secrets.token }}
