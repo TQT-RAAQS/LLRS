@@ -1,6 +1,7 @@
 name: AWG Driver Package
-on: workflow_dispatch
-
+on:
+  repository_dispatch:
+    types: awg-release
 jobs:
   download_and_commit:
     runs-on: ubuntu-latest
