@@ -12,7 +12,9 @@ jobs:
           GH_TOKEN: ${{ secrets.instruments_token }}  
         run: gh release download fgc -R TQT-RAAQS/Instruments -A zip
       - name: Unarchive
-        run: unzip Instruments-fgc.zip 
+        run: unzip Instruments-fgc.zip
+      - name: Remove old module
+        run: rm -rf modules/fgc
       - name: Move FGC
         run: mv Instruments-fgc/fgc modules/ -f
       - name: Clean up
