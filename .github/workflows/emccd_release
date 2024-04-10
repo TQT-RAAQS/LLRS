@@ -1,0 +1,28 @@
+name: EMCCD Driver Package
+on:
+  repository_dispatch:
+    types: emccd-release
+jobs:
+  download_and_commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download Release Asset
+        env:
+          GH_TOKEN: ${{ secrets.instruments_token }}  
+        run: gh release download emccd -R TQT-RAAQS/Instruments -A zip
+      - name: Unarchive
+        run: unzip Instruments-emccd.zip 
+      - name: Move EMCCD
+        run: mv Instruments-emccd/camera modules/camera
+      - name: Clean up
+        run: rm -rf Instruments-emccd*
+      - name: Commit Release Asset
+        run: |
+          git config --global user.name "TQTRAAQS"
+          git config --global user.email "tqtraaqs@gmail.com"
+          git add modules/fgc
+          git commit -m "Add release asset from Instruments/emccd"
+          git push 
+
+      
