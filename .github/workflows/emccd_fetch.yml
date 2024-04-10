@@ -12,7 +12,9 @@ jobs:
           GH_TOKEN: ${{ secrets.instruments_token }}  
         run: gh release download emccd -R TQT-RAAQS/Instruments -A zip
       - name: Unarchive
-        run: unzip Instruments-emccd.zip 
+        run: unzip Instruments-emccd.zip
+      - name: Remove old module
+        run: rm -rf modules/camera
       - name: Move EMCCD
         run: mv Instruments-emccd/camera modules/ -f
       - name: Clean up
