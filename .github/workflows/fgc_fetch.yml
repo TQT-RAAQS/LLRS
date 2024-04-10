@@ -14,7 +14,7 @@ jobs:
       - name: Unarchive
         run: unzip Instruments-fgc.zip 
       - name: Move FGC
-        run: mv Instruments-fgc/fgc modules/fgc
+        run: mv Instruments-fgc/fgc modules/ -f
       - name: Clean up
         run: rm -rf Instruments-fgc*
       - name: Commit Release Asset
