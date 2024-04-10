@@ -2,19 +2,26 @@ name: AWG Driver Package
 on: workflow_dispatch
 
 jobs:
-  fetch:
+  download_and_commit:
     runs-on: ubuntu-latest
     steps:
-      - name: download 
-        uses: robinraju/release-downloader@v1.9
-        with: 
-          repository: "TQT-RAAQS/Instruments"
-          tag: "awg"
-          tarBall: false
-          zipBall: true
-          extract: true
-          token: ${{ secrets.instruments_token }}
-      - name: list
-        run: ls
+      - uses: actions/checkout@v3
+      - name: Download Release Asset
+        env:
+          GH_TOKEN: ${{ secrets.instruments_token }}  
+        run: gh release download awg -R TQT-RAAQS/Instruments -A zip
+      - name: Unarchive
+        run: unzip Instruments-awg.zip 
+      - name: Move AWG
+        run: mv Instruments-awg/awg modules/awg
+      - name: Clean up
+        run: rm -rf Instruments-awg*
+      - name: Commit Release Asset
+        run: |
+          git config --global user.name "TQT-RAAQS"
+          git config --global user.email "tqtraaqs@gmail.com"
+          git add modules/awg
+          git commit -m "Add release asset from Instruments/awg"
+          git push 
 
       
