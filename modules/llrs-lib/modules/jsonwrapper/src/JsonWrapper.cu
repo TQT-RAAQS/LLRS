@@ -142,7 +142,7 @@ double Util::JsonWrapper::read_problem_alpha() const {
                 .asString());
     } else {
         throw std::invalid_argument(
-            "Missing field: problem_definition.problem_params.Nt_x");
+            "Missing field: problem_definition.loss_atom_params.alpha");
     }
 }
 double Util::JsonWrapper::read_problem_nu() const {
@@ -153,7 +153,7 @@ double Util::JsonWrapper::read_problem_nu() const {
                         .asString());
     } else {
         throw std::invalid_argument(
-            "Missing field: problem_definition.problem_params.Nt_x");
+            "Missing field: problem_definition.loss_atom_params.nu");
     }
 }
 
@@ -167,7 +167,7 @@ double Util::JsonWrapper::read_problem_lifetime() const {
                 .asString());
     } else {
         throw std::invalid_argument(
-            "Missing field: problem_definition.problem_params.Nt_x");
+            "Missing field: problem_definition.loss_atom_params.lifetime");
     }
 }
 
