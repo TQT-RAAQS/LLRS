@@ -19,7 +19,7 @@ jobs:
         run: rm -rf Instruments-fgc*
       - name: Commit Release Asset
         run: |
-          git config --global user.name "TQT-RAAQS"
+          git config --global user.name "TQTRAAQS"
           git config --global user.email "tqtraaqs@gmail.com"
           git add modules/fgc
           git commit -m "Add release asset from Instruments/fgc"
