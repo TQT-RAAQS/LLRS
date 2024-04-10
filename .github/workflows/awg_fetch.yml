@@ -14,7 +14,7 @@ jobs:
       - name: Unarchive
         run: unzip Instruments-awg.zip 
       - name: Move AWG
-        run: mv Instruments-awg/awg modules/awg
+        run: mv Instruments-awg/awg modules/ -f
       - name: Clean up
         run: rm -rf Instruments-awg*
       - name: Commit Release Asset
