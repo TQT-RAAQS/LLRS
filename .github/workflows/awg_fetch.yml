@@ -11,11 +11,12 @@ jobs:
         uses: robinraju/release-downloader@v1.9
         with: 
           repository: "TQT-RAAQS/Instruments"
-          latest: false
-          preRelease: false
           tag: "awg"
           tarBall: false
           zipBall: true
-          out-file-path: "modules/awg-download"
-          extract: false
-          token: ${{ secrets.token }}
+          extract: true
+          token: ${{ secrets.instruments_token }}
+      - name: list
+        run: ls
+
+      
