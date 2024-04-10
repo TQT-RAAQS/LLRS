@@ -21,7 +21,7 @@ jobs:
         run: |
           git config --global user.name "TQTRAAQS"
           git config --global user.email "tqtraaqs@gmail.com"
-          git add modules/fgc
+          git add modules/camera
           git commit -m "Add release asset from Instruments/emccd"
           git push 
 
