@@ -3,7 +3,8 @@ The low-latency reconfiguration system (LLRS) is a closed-loop feedback control 
 
 ## Status
 
-[PLACEHOLDER]
+### Driver Releases
+[![AWG Driver Package](https://github.com/TQT-RAAQS/LLRS/actions/workflows/awg_fetch.yml/badge.svg)](https://github.com/TQT-RAAQS/LLRS/actions/workflows/awg_fetch.yml)  [![FGC Driver Package](https://github.com/TQT-RAAQS/LLRS/actions/workflows/fgc_fetch.yml/badge.svg)](https://github.com/TQT-RAAQS/LLRS/actions/workflows/fgc_fetch.yml)   [![EMCCD Driver Package](https://github.com/TQT-RAAQS/LLRS/actions/workflows/emccd_fetch.yml/badge.svg)](https://github.com/TQT-RAAQS/LLRS/actions/workflows/emccd_fetch.yml)
 
 ## Documentation
 
