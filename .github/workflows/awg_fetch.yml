@@ -13,6 +13,8 @@ jobs:
         run: gh release download awg -R TQT-RAAQS/Instruments -A zip
       - name: Unarchive
         run: unzip Instruments-awg.zip 
+      - name: Remove old module
+        run: rm -rf modules/awg
       - name: Move AWG
         run: mv Instruments-awg/awg modules/ -f
       - name: Clean up
