@@ -105,9 +105,9 @@ int main(int argc, char *argv[]) {
 
         // Create initial atom configuration with 60% loading efficiency
         std::vector<int32_t> trial_config(Nt_x * Nt_y);
-
+        double loading_efficiency = json_file.read_loading_efficiency();
         for (auto &it : trial_config) {
-            it = (0.6 >= (((double)rand()) / RAND_MAX)) ? 1 : 0;
+            it = (loading_efficiency >= (((double)rand()) / RAND_MAX)) ? 1 : 0;
         }
 
         // Start repetition loop

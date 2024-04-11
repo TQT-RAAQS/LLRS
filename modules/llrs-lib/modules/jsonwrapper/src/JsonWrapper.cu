@@ -171,6 +171,20 @@ double Util::JsonWrapper::read_problem_lifetime() const {
     }
 }
 
+double Util::JsonWrapper::read_loading_efficiency() const {
+    if (json_data.isMember("problem_definition") &&
+        json_data["problem_definition"].isMember("experiment_params") &&
+        json_data["problem_definition"]["experiment_params"].isMember(
+            "loading_efficiency")) {
+        return stod(
+            json_data["problem_definition"]["experiment_params"]["loading_efficiency"]
+                .asString());
+    } else {
+        throw std::invalid_argument(
+            "Missing field: problem_definition.experiment_params.loading_efficiency");
+    }
+}
+
 int Util::JsonWrapper::read_problem_num_trials() const {
     if (json_data.isMember("problem_definition") &&
         json_data["problem_definition"].isMember("problem_params") &&

@@ -44,6 +44,7 @@ class JsonWrapper {
     double read_problem_alpha() const;
     double read_problem_nu() const;
     double read_problem_lifetime() const;
+    double read_loading_efficiency() const;
     std::string read_problem_target_config_label() const;
     std::vector<int> read_problem_target_config() const;
     std::string read_problem_id() const;
