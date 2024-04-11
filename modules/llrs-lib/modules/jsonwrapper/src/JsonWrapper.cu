@@ -176,12 +176,13 @@ double Util::JsonWrapper::read_loading_efficiency() const {
         json_data["problem_definition"].isMember("experiment_params") &&
         json_data["problem_definition"]["experiment_params"].isMember(
             "loading_efficiency")) {
-        return stod(
-            json_data["problem_definition"]["experiment_params"]["loading_efficiency"]
-                .asString());
+        return stod(json_data["problem_definition"]["experiment_params"]
+                             ["loading_efficiency"]
+                                 .asString());
     } else {
         throw std::invalid_argument(
-            "Missing field: problem_definition.experiment_params.loading_efficiency");
+            "Missing field: "
+            "problem_definition.experiment_params.loading_efficiency");
     }
 }
 
