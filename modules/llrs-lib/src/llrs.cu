@@ -209,12 +209,14 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                 p_collector->end_timer("I", trial_num, rep_num, cycle_num);
 #endif
 
-#ifdef PRE_SOLVED 
+#ifdef PRE_SOLVED
                 char image_file[256];
-                std::string image_file_path = (std::string("") + PROJECT_BASE_DIR + "/resources/images/fake-image.png");
+                std::string image_file_path =
+                    (std::string("") + PROJECT_BASE_DIR +
+                     "/resources/images/fake-image.png");
                 strcpy(image_file, image_file_path.c_str());
                 current_image = fgc->acquire_stored_image(image_file);
-#endif 
+#endif
                 if (current_image.empty()) {
                     ERROR << "Image Acquisition Failed." << std::endl;
                     break;
