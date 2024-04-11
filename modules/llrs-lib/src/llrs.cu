@@ -279,7 +279,6 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                                        cycle_num);
 #endif
 
-
 #ifdef PRE_SOLVED
                 /* SWAP with pre-solved from processed */
                 std::vector<int32_t> current_config =
