@@ -204,22 +204,17 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                 awg_sequence->emccd_trigger();
                 std::vector<uint16_t> current_image =
                     fgc->acquire_single_image();
-                // char image_file[256];
-                // strcpy(image_file,
-                // "/home/tqtraaqs2/Z/Experiments/Rydberg/2023-12-12/12_45_23-atom_imaging/raw_data/atom_imaging_2023-12-12_0003_000/image_2023-12-12_124633775765.png");
-                // std::vector<uint16_t> current_image =
-                // fgc->acquire_stored_image(image_file);
-
-                // DEBUG: Making fake image
-                //  std::vector<uint16_t>
-                //  current_image(user_input.read_experiment_roi_width() *
-                //                                     user_input.read_experiment_roi_height(),
-                //                                     0);
 
 #ifdef LOGGING_RUNTIME
                 p_collector->end_timer("I", trial_num, rep_num, cycle_num);
 #endif
 
+#ifdef PRE_SOLVED 
+                char image_file[256];
+                std::string image_file_path = (std::string("") + PROJECT_BASE_DIR + "/resources/images/fake-image.png");
+                strcpy(image_file, image_file_path.c_str());
+                current_image = fgc->acquire_stored_image(image_file);
+#endif 
                 if (current_image.empty()) {
                     ERROR << "Image Acquisition Failed." << std::endl;
                     break;
@@ -271,7 +266,7 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
 #endif
 
 #endif
-#ifdef PRE_SOLVED
+
 #ifdef LOGGING_RUNTIME
                 p_collector->end_timer("I", trial_num, rep_num, cycle_num);
                 p_collector->start_timer("II-Deconvolution", trial_num, rep_num,
@@ -284,6 +279,8 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                                        cycle_num);
 #endif
 
+
+#ifdef PRE_SOLVED
                 /* SWAP with pre-solved from processed */
                 std::vector<int32_t> current_config =
                     Util::vector_transform(rep_soln[CYCLE_NAME(cycle_num)]);
