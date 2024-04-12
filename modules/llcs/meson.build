@@ -26,5 +26,5 @@ awg_dep = awg_proj.get_variable('awg_dep')
 llcs = executable('llcs',
     llcs_src,
     link_args: '-lstdc++fs',
-    dependencies: [trigger_detector_dep, llcs_server_dep, llcs_fsm_dep, awg_dep],
+    dependencies: [llcs_trigger_detector_dep, llcs_server_dep, llcs_fsm_dep, awg_dep],
     install: true)
