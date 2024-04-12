@@ -17,7 +17,7 @@ llcs_fsm_proj = subproject('fsm')
 awg_proj = subproject('awg')
 
 # external dependencies
-trigger_detector_dep = trigger_detector_proj.get_variable('trigger_detector_dep')
+llcs_trigger_detector_dep = trigger_detector_proj.get_variable('llcs_trigger_detector_dep')
 llcs_server_dep = llcs_server_proj.get_variable('llcs_server_dep')
 llcs_fsm_dep = llcs_fsm_proj.get_variable('llcs_fsm_dep')
 awg_dep = awg_proj.get_variable('awg_dep')
@@ -26,5 +26,5 @@ awg_dep = awg_proj.get_variable('awg_dep')
 llcs = executable('llcs',
     llcs_src,
     link_args: '-lstdc++fs',
-    dependencies: [trigger_detector_dep, llcs_server_dep, llcs_fsm_dep, awg_dep],
+    dependencies: [llcs_trigger_detector_dep, llcs_server_dep, llcs_fsm_dep, awg_dep],
     install: true)
