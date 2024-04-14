@@ -118,7 +118,7 @@ class OperationalBenchmarkingProblem(object):
         return metrics
 
 
-    def pre_solve(self, loss, t_alpha, t_nu, latency):
+    def pre_solve(self, loss, t_alpha, t_nu, latency, solver_wrapper_so_file):
         '''
         pre-solve operational_benchmarking_problem num_repetitions times, obtain the configuration of each cycle
 
@@ -180,7 +180,7 @@ class OperationalBenchmarkingProblem(object):
                 # src, dst, block_size, batch_ptr = solver.execute(simulated_binary_array, target_binary_array,
                 #                                                 self.Nt_x, self.Nt_y) 
                 solver_output = execute_wrapper(self.algorithm, simulated_binary_array, target_binary_array,
-                                                       self.Nt_x, self.Nt_y)
+                                                       self.Nt_x, self.Nt_y, solver_wrapper_so_file)
                 # print("Solver Output:")
                 # for i in range(0, len(solver_output), 5):
                 #     print(solver_output[i:i+5])
