@@ -37,19 +37,19 @@ namespace fs = std::experimental::filesystem;
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "wfm" + kPathSeparator1 + (fname))
 #define LOGGING_PATH(fname)                                                    \
-    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +  kPathSeparator1 + "logs" +                  \
-     kPathSeparator1 + (fname))
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+     kPathSeparator1 + "logs" + kPathSeparator1 + (fname))
 
 #define CONFIG_PATH(id)                                                        \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
      kPathSeparator1 + "llrs" + kPathSeparator1 + (id))
 #define SOLN_PATH(id)                                                          \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
-     kPathSeparator1 + "runtime-benchmark-solutions" + kPathSeparator1 + (id) +      \
-     ".json")
+     kPathSeparator1 + "runtime-benchmark-solutions" + kPathSeparator1 +       \
+     (id) + ".json")
 #define BENCHMARK_PATH(id)                                                     \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
-     kPathSeparator1 + "runtime-benchmark-data" + kPathSeparator1 + (id) +         \
+     kPathSeparator1 + "runtime-benchmark-data" + kPathSeparator1 + (id) +     \
      ".json")
 #define IMAGE_PATH(epoch)                                                      \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \

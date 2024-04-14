@@ -149,7 +149,7 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
     // Initialize the return vector
     std::vector<double> running_sums(this->_psf.size(), 0);
     //#pragma omp parallel for num_threads(FILTERING_NUM_THREADS) // - Code to
-    //run the Processing with multiple threads (32) in parallel
+    // run the Processing with multiple threads (32) in parallel
 
     // Iterate through all traps
     for (size_t kernel_idx = 0; kernel_idx < this->_psf.size(); kernel_idx++) {
