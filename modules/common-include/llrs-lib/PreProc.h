@@ -37,8 +37,7 @@ namespace fs = std::experimental::filesystem;
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "wfm" + kPathSeparator1 + (fname))
 #define LOGGING_PATH(fname)                                                    \
-    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
-     kPathSeparator1 + "runtime" + kPathSeparator1 + "logs" +                  \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +  kPathSeparator1 + "logs" +                  \
      kPathSeparator1 + (fname))
 
 #define CONFIG_PATH(id)                                                        \

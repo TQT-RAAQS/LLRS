@@ -701,7 +701,7 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
     std::vector<int32_t> current_config(init, init + Nt_x * Nt_y);
     std::vector<int32_t> target_config(target, target + Nt_x * Nt_y);
 
-    Reconfig::Solver solver(Nt_x, Nt_y, 32, nullptr);
+    Reconfig::Solver solver(Nt_x, Nt_y, 32, NULL);
 
     float batching_time = 0;
     solver.start_solver(algo, current_config, target_config, 0, 0, 0);

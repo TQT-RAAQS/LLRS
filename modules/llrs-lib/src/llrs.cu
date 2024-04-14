@@ -2,7 +2,7 @@
 
 template <typename AWG_T>
 LLRS<AWG_T>::LLRS()
-    : log_out(std::ofstream(LOGGING_PATH(std::string("main_log.txt")),
+    : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
                             std::ios::app)),
       p_collector{Util::Collector::get_instance()},
       awg_sequence{
@@ -12,7 +12,7 @@ LLRS<AWG_T>::LLRS()
 
 template <typename AWG_T>
 LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
-    : log_out(std::ofstream(LOGGING_PATH(std::string("main_log.txt")),
+    : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
                             std::ios::app)),
       p_collector{Util::Collector::get_instance()},
       awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(awg, p_collector,

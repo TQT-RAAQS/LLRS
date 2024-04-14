@@ -160,7 +160,7 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
             double psf_value;
             // Get the pixel index and corresponding psf_value
             std::tie(image_idx, psf_value) = pair;
-            cur_sum += p_input_img->at(image_idx) * psf_value;
+            cur_sum += (*p_input_img)[image_idx] * psf_value;
         }
 #if IMAGE_INVERTED_X == true
         running_sums[this->_psf.size() - 1 - kernel_idx] = cur_sum;
