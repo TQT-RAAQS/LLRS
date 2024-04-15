@@ -1,6 +1,6 @@
-# Config & Files
+# Configuration & Files
 
-The following is the current paths used in LLRS project to config and read data:
+The following is the current paths used in LLRS project to configure and read data:
  
 ## AWG
 
