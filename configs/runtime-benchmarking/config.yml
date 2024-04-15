@@ -1,6 +1,7 @@
+# Configuration parameters for the runtime benchmarking problem
 num_trials_per_problem: 1      
 repetitions_per_trial: 1
-# configuration for the runtime problem 
+
 problem_definition:
   experiment_params: 
     roi_width:                                # int 

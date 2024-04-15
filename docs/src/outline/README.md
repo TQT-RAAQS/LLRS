@@ -35,14 +35,16 @@ LLRS
 │  ├─ llrs 
 │  ├─ operational-benchmarking 
 │  ├─ runtime-benchmarking 
-│  ├─ awg 
+│  ├─ awg
+│  ├─ emccd 
 │  └─ fgc 
 ├─ tools
 │  └─ benchmarks 
 │     ├─ operational-benchmarking 
 │     └─ runtime-benchmarking 
 └─ modules
-    ├─ awg 
+    ├─ awg
+    ├─ camera
     ├─ fgc 
     ├─ llrs-lib
     │  ├─ image-acquisition
@@ -56,10 +58,6 @@ LLRS
     │  ├─ utility 
     │  └─ jsonwrapper 
     ├─ llcs 
-    │  └─ [PLACEHOLDER]
-    ├─ llrs-exe
-    │  └─ [PLACEHOLDER]
-    ├─ tests
     │  └─ [PLACEHOLDER]
     ├─ operational-benchmarking
     └─ runtime-benchmarking
