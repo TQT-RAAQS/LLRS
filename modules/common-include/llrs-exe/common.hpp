@@ -61,6 +61,20 @@ enum ModuleType { M_LLRS, M_CLO, M_RYDBERG };
 #define HW_TRIG3 3
 #define HW_TRIG4 4
 
+//AWG Settings
+#define AWG_NUM_SEGMENTS            int (256)                              //# of segments that AWG memory is split into
+#define AWG_SAMPLE_RATE             double (624e6)                         //Hz
+#define TRIGGER_SIZE                size_t (2000)                          //# of Waveforms repeated for the synchronized trigger
+#define WFM_MASK                    0x7FFF                                 // == 1 << 15 - 1 == 0111 1111 1111 1111
+#define VPP                         size_t (280)                            //peak to peak voltage in mV
+
+//Waveform Settings
+#define WAVEFORM_DUR                double (100e-6)                         //Seconds
+#define WAVEFORM_LEN                size_t (AWG_SAMPLE_RATE * WAVEFORM_DUR)//number of samples per waveform (sample in shorts)
+#define WF_PER_SEG                  int (32)
+#define NULL_LEN                    int (62400)                             //number of samples in null segment
+#define IDLE_LEN                    int (62400)                             //number of samples in idle segment
+
 // Return types
 #define SYS_OK 0
 #define SYS_ERR 1
