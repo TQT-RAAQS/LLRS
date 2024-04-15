@@ -1,6 +1,7 @@
 #include "awg.hpp"
 #include "llrs.h"
 #include "trigger-detector.hpp"
+#include "llrs-exe/common.hpp"
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -48,7 +49,7 @@ void executeLLRS(LLRS<AWG> *l, std::shared_ptr<AWG> awg) {
     delay(WAVEFORM_DUR * WF_PER_SEG * 1e6);
 }
 
-void poll(LLRS<AWG> *l, std::shared_ptr<AWG> awg) {
+void pollIdleSeg(LLRS<AWG> *l, std::shared_ptr<AWG> awg) {
 
     int current_step;
 
@@ -62,28 +63,10 @@ void poll(LLRS<AWG> *l, std::shared_ptr<AWG> awg) {
     }
 }
 
-int main(int argc, char *argv[]) {
+void streamAWG(LLRS<AWG> *l, std::shared_ptr<AWG> awg, bool flag, std::string problem_config, std::string problem_id){
 
-    // Read problem statement
-    std::string problem_id;
-    std::string problem_config;
-    bool flag;
-
-    if (argc > 3) {
-        problem_config = std::string(argv[1]); // = "21_atoms_problem";
-        problem_id = std::string(argv[2]);
-        flag = std::string(argv[3]) == "true";
-
-    } else {
-        ERROR << " No input was provided" << std::endl;
-        return LLRS_ERR;
-    }
-
-    std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
-    LLRS<AWG> *l = new LLRS<AWG>{awg};
     int16 *pnData = nullptr;
-    int qwBufferSize =
-        awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
+    int qwBufferSize = awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
     awg->fill_transfer_buffer(pnData, awg->get_samples_per_segment(), 0);
     awg->init_and_load_all(pnData, awg->get_samples_per_segment());
     vFreeMemPageAligned(pnData, qwBufferSize);
@@ -91,7 +74,7 @@ int main(int argc, char *argv[]) {
     l->setup(problem_config, llrs_idle_seg, llrs_idle_step, problem_id);
 
     if (flag == true) {
-        l->get_1d_static_wfm(pnData, WF_PER_SEG);
+        l->get_1d_static_wfm(pnData);
     }
 
     // Load Segment 0 and 1
@@ -108,7 +91,32 @@ int main(int argc, char *argv[]) {
     awg->print_awg_error();
     assert(awg->get_current_step() == 0);
 
-    poll(l, awg);
+    
+}
+int main(int argc, char *argv[]) {
+
+    // Read problem statement
+    std::string problem_id;
+    std::string problem_config;
+    bool flag_1D;
+
+    if (argc > 3) {
+        problem_config = std::string(argv[1]); // = "21_atoms_problem";
+        problem_id = std::string(argv[2]);
+        flag_1D = std::string(argv[3]) == "true";
+
+    } else {
+        ERROR << " No input was provided" << std::endl;
+        return LLRS_ERR;
+    }
+
+    std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
+
+    LLRS<AWG> *l = new LLRS<AWG>{awg};
+
+    streamAWG(l, awg, flag_1D, problem_config, problem_id);
+
+    pollIdleSeg(l, awg);
 
     return 0;
 }
