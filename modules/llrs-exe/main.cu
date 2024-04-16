@@ -63,7 +63,7 @@ void pollIdleSeg(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 
 template <typename AWG_T>
 void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag,
-               std::string problem_config, std::string problem_id) {
+               std::string problem_config) {
 
     int16 *pnData = nullptr;
     int qwBufferSize =
@@ -72,7 +72,7 @@ void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag,
     awg->init_and_load_all(pnData, awg->get_samples_per_segment());
     vFreeMemPageAligned(pnData, qwBufferSize);
 
-    l->setup(problem_config, llrs_idle_seg, llrs_idle_step, problem_id);
+    l->setup(problem_config, llrs_idle_seg, llrs_idle_step);
 
     if (flag == true) {
         l->get_1d_static_wfm(pnData);
@@ -100,10 +100,9 @@ int main(int argc, char *argv[]) {
     std::string problem_config;
     bool flag_1D = false;
 
-    if (argc > 3) {
+    if (argc > 2) {
         problem_config = std::string(argv[1]);
-        problem_id = std::string(argv[2]);
-        flag_1D = (std::string(argv[3]) == "true");
+        flag_1D = (std::string(argv[2]) == "true");
 
     } else {
         ERROR << " No input was provided" << std::endl;
@@ -112,7 +111,7 @@ int main(int argc, char *argv[]) {
 
     std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
     LLRS<AWG> *l = new LLRS<AWG>{awg};
-    streamAWG(l, awg, flag_1D, problem_config, problem_id);
+    streamAWG(l, awg, flag_1D, problem_config);
     pollIdleSeg(l, awg);
 
     return 0;
