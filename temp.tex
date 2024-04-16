@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{array}
+\usepackage[hyphens]{url}
+\usepackage{textcomp}
+\usepackage{geometry}
+\thispagestyle{empty}
+\geometry{right=20mm,left=15mm} % Adjust this value as needed
+
+\begin{document}
+
+\begin{table}
+    \centering
+        \begin{tabular}{|l|p{35mm}|p{35mm}|p{35mm}|} 
+            \hline
+               & \multicolumn{3}{c|}{Reconfiguration cycle time~(ms)} \\ 
+            \hline
+            & \multicolumn{1}{c|}{Linear 1D} & \multicolumn{1}{c|}{REDREC\_V2} & \multicolumn{1}{c|}{REDREC\_V2} \\ % Added another column header
+                & \multicolumn{1}{c|}{$N_a = 5 \times 5$} & \multicolumn{1}{c|}{$N_a = 8 \times 8$} & \multicolumn{1}{c|}{$N_a = 8 \times 8$} \\ 
+                & \multicolumn{1}{c|}{$N_t = 5 \times 11$} & \multicolumn{1}{c|}{$N_t = 8 \times 64$} & \multicolumn{1}{c|}{$N_t = 8 \times 64$} \\ 
+                & \multicolumn{1}{c|}{ROI~=~$1024\times16$} & \multicolumn{1}{c|}{ROI~=~$1024\times128$} & \multicolumn{1}{c|}{ROI~=~$1024\times128$} \\ 
+            \hline
+            \textbf{I. Image acquisition} & $0.000\pm0.000$ & $0.001\pm0.001$ & $0.001\pm0.001$ \\ 
+            \hline
+            \hspace{3mm} \small I.1 Exposure* &\small20.000 & \small20.000 & \small20.000 \\ 
+            \hspace{3mm} \small I.2 Vertical frame transfer* ($4.33~\mu s$ / px) &\small4.499 &\small4.499 &\small4.499\\ 
+            \hspace{3mm} \small I.3 Frame readouts* (30~Mpxps) &\small6.654&\small10.477&\small10.477\\ 
+            \hspace{3mm} \small I.4 DMA data transfer* &\small-31.153 &\small-34.975 &\small-34.975\\ 
+            \hline
+            \textbf{II. Image processing} & $0.001\pm0.000$ & $0.001\pm0.000$ & $0.001\pm0.000$ \\ 
+            \hspace{3mm} \small II.1 Deconvolution &\small0.000  &\small0.000 &\small0.000 \\ 
+            \hspace{3mm} \small II.2 Thresholding  &\small0.000 &\small0.000&\small0.000\\ 
+            \hline
+            \textbf{III. Problem solving} & $0.003\pm0.001 $ & $0.729\pm0.292$ & $0.729\pm0.292$ \\ 
+            \hline
+            \hspace{3mm} \small III.1 Generate matching&\small0.003  &\small0.686 &\small0.686 \\ 
+            \hspace{3mm} \small III.2 Batching &\small0.000 &\small0.043&\small0.043\\ 
+            \hline
+            \textbf{IV. Synthesis \& Waveform loading} &$18.757\pm2.896$ & $ 18.408\pm2.915$ & $ 18.408\pm2.915$ \\ 
+            \hline
+            \hspace{3mm} \small IV.1 Generate table keys &\small0.010 &\small0.022&\small0.022\\ 
+            \hspace{3mm} \small IV.2 Pre-lookup &\small7.563 &\small7.520&\small7.520\\ 
+            \hspace{3mm} \small IV.3 Pre-upload &\small11.174 &\small10.857&\small10.857\\ 
+            \hspace{3mm} \small IV.4 Pre-update &\small0.010 &\small0.009&\small0.009\\ 
+            \hline
+            \textbf{V. Concurrent load \& stream} &$8.024\pm3.942$ & $3.221\pm2.071$ & $3.221\pm2.071$ \\ 
+            \hline
+            \hspace{3mm} \small Theoretical streaming time &\small$4.873$ &\small$3.930$&\small$3.930$\\ 
+            \hspace{3mm} \small Other &\small$3.150\pm3.942$ &\small$-0.709\pm2.071$&\small$-0.709\pm2.071$\\ 
+            \hline
+            \textbf{Total} & $26.785\pm6.839$ & $22.360\pm5.279$ & $22.360\pm5.279$ \\ 
+            \hline
+            \hline
+        \end{tabular}
+    \caption{Low Latency Reconfiguration System Run-time}
+\end{table}
+
+\hspace{0mm}Path 1D: \path{/home/tqtraaqs1/LLRS/resources/pickled_results/2024-04-14/20-51-34-299566/6d823d09-284a-4425-8c87-8fa8826e7a37.pickle} \\
+
+\hspace{0mm}Path 2D: \path{/home/tqtraaqs1/LLRS/resources/pickled_results/2024-04-14/21-11-01-535629/0fec3a34-b1a3-4e7b-8d08-0fffd1b7abf3.pickle}
+
+\end{document}
+
