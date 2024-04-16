@@ -1,0 +1,12 @@
+---
+  temperature: 0              # (int) temperature to set cooler (celsius)
+  block_until_temperature_stabilized: False
+  em_gain_mode: 1             # (int) 0 - The EM Gain is controlled by DAC settings in the range 0-255. Default mode, 1 - The EM Gain is in the range 0-4095, 2 - Linear mode, 3 - Real EM gain
+  em_advanced: 1              # (int) 1 - Enable access to higher levels of EM gain (above 300)
+  em_gain: 0                  # (int) em gain of camera
+  frametransfer_mode: 1       # (int) 1 - on, 0 - off
+  trigger_mode:  1            # (int) 0 - internal, 1 - external, 6 - external start, 7 - external exposure, 10 - software trigger
+  baseline_clamp: 1           # (int) 1 - enable, 0 - disable
+  cameralink_mode: 1          # (int) 1 - enable, 0 - disable
+  cooler_mode: 1              # (int) 1 - maintain temperature after shutdown, 0 - bring back to ambient temperature
+  fan_mode: 2                 # (int) 0 - fan on full, 1 - fan on low, 2 - fan off

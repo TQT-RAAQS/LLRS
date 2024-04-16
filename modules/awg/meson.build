@@ -18,11 +18,7 @@ awg_inc = include_directories('include')
 
 # sources
 awg_src = [
-    'src/awg.cpp',
-    'src/common/ostools/spcm_ostools.cpp',
-    'src/common/spcm_cuda_common.cu',
-    'src/common/spcm_lib_card.cpp',
-    'src/common/spcm_lib_data.cpp'
+    'src/awg.cpp'
   ]
 
 # targets

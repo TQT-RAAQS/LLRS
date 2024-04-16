@@ -13,11 +13,10 @@ llcs_server_src = [
   ]
 
 # submodules
-hdf5_proj = cmake.subproject('hdf5')
 cppzmq_proj = cmake.subproject('cppzmq')
 
 # external dependencies
-hdf5_dep = hdf5_proj.dependency('hdf5-shared')
+hdf5_dep = dependency('hdf5', language: 'cpp')
 nlohmann_json_dep = dependency('nlohmann_json')
 cppzmq_dep = cppzmq_proj.dependency('cppzmq')
 

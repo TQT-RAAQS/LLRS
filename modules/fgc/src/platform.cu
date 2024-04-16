@@ -49,99 +49,91 @@
 #include "platform.hpp"
 
 #ifdef WIN32
-#include <windows.h>
-#include <stdint.h>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <stdint.h>
+#include <windows.h>
 
-DWORD WINAPI ThreadStartProc(LPVOID lpParameter)
-{
+DWORD WINAPI ThreadStartProc(LPVOID lpParameter) {
     thread_create_s p = *(thread_create_s *)lpParameter; // copy to stack
     delete (thread_create_s *)lpParameter;
     p.func(p.par);
     return 0;
 }
 
-void winlockProcessCPU() 
-{
+void winlockProcessCPU() {
     // There is no way to detect where the GPU is connected
     // on windows. DEVPKEY_Device_Numa_Node and DEVPKEY_Numa_Proximity_Domain
-    // are the closest property, but they return not existing for the GPU on win7
-    // and win8. This test runs on one GPU and we assume this is attached to the 
-    // first GPU. Note the system has to have the _PXM property set for this to 
-    // be detected by the OS properly.
+    // are the closest property, but they return not existing for the GPU on
+    // win7 and win8. This test runs on one GPU and we assume this is attached
+    // to the first GPU. Note the system has to have the _PXM property set for
+    // this to be detected by the OS properly.
 
     // First see if this is a numa machine at all
     ULONG highestNumaNode = 0;
     BOOL isNuma = GetNumaHighestNodeNumber(&highestNumaNode);
 
     if (isNuma && highestNumaNode > 0) {
-        printf ("WARNING!!! - Numa architecture detected, defaulting to CPU %d \n", highestNumaNode);
+        printf(
+            "WARNING!!! - Numa architecture detected, defaulting to CPU %d \n",
+            highestNumaNode);
         HANDLE process = GetCurrentProcess();
         ULONG currentProctAffinityMask = 0, currentSysAffinityMask = 0;
         ULONGLONG newMask = 0x3F; // 2nd CPU 0xFC0;
-        BOOL res = GetProcessAffinityMask(process, (PDWORD_PTR) &currentProctAffinityMask, (PDWORD_PTR) &currentSysAffinityMask);
+        BOOL res = GetProcessAffinityMask(process,
+                                          (PDWORD_PTR)&currentProctAffinityMask,
+                                          (PDWORD_PTR)&currentSysAffinityMask);
 
         if (res) {
             // get the mask for the first node
             res = GetNumaNodeProcessorMask(0, &newMask);
             if (res) {
-                res = SetProcessAffinityMask(process , (DWORD_PTR)newMask );
+                res = SetProcessAffinityMask(process, (DWORD_PTR)newMask);
 
-                printf ("Salling SetProcessAffinityMask prevmask 0x%lu sysmask 0x%lu newMask 0x%llu\n", currentProctAffinityMask, currentSysAffinityMask, newMask);
+                printf("Salling SetProcessAffinityMask prevmask 0x%lu sysmask "
+                       "0x%lu newMask 0x%llu\n",
+                       currentProctAffinityMask, currentSysAffinityMask,
+                       newMask);
                 if (!res) {
-                    printf ("SetProcessAffinityMask failed process 0x%p error 0x%x\n", process, GetLastError());
+                    printf("SetProcessAffinityMask failed process 0x%p error "
+                           "0x%x\n",
+                           process, GetLastError());
                 } else {
-                    printf ("SetProcessAffinityMask succeeded process 0x%p error 0x%x\n", process, GetLastError());
+                    printf("SetProcessAffinityMask succeeded process 0x%p "
+                           "error 0x%x\n",
+                           process, GetLastError());
                 }
             }
         }
     }
 }
 
-void winGetCurrentTimeTicks(LARGE_INTEGER *ticks)
-{
+void winGetCurrentTimeTicks(LARGE_INTEGER *ticks) {
     QueryPerformanceCounter(ticks);
 }
 
-void winSetFrequency(LARGE_INTEGER *ticks)
-{
-    QueryPerformanceFrequency(ticks); 
-}
+void winSetFrequency(LARGE_INTEGER *ticks) { QueryPerformanceFrequency(ticks); }
 
-void winSleep(int time)
-{
-    Sleep(time);
-}
+void winSleep(int time) { Sleep(time); }
 
 #else
-#include <sys/time.h>
 #include <assert.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <sys/time.h>
+#include <unistd.h>
 
-void winlockProcessCPU() 
-{
-    assert(!"unimplemented");
-}
- 
+void winlockProcessCPU() { assert(!"unimplemented"); }
+
 uint64_t perfFreq = 1000000;
 
-void winGetCurrentTimeTicks(uint64_t *ticks)
-{
+void winGetCurrentTimeTicks(uint64_t *ticks) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     *ticks = (uint64_t)tv.tv_sec * perfFreq + tv.tv_usec;
 }
 
-void winSetFrequency(uint64_t *ticks)
-{
-    *ticks=1000000;  
-}
+void winSetFrequency(uint64_t *ticks) { *ticks = 1000000; }
 
-void winSleep(int time)
-{
-    usleep(time*1000);
-}
+void winSleep(int time) { usleep(time * 1000); }
 
 #endif // WIN32

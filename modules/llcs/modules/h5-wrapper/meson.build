@@ -14,11 +14,10 @@ h5_wrapper_src = [
 
 # submodules
 yaml_cpp_proj = cmake.subproject('yaml-cpp')
-hdf5_proj = cmake.subproject('hdf5')
 
 # external dependencies
 yaml_cpp_dep = yaml_cpp_proj.dependency('yaml-cpp')
-hdf5_dep = hdf5_proj.dependency('hdf5-shared')
+hdf5_dep = dependency('hdf5', language: 'cpp')
 nlohmann_json_dep = dependency('nlohmann_json')
 jsoncpp_dep = dependency('jsoncpp')
 

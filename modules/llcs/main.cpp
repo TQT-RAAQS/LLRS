@@ -1,14 +1,13 @@
 /**
- * @brief   Entry point for the Low Latency FSM. 
+ * @brief   Entry point for the Low Latency FSM.
  * @date    Oct 2023
  */
 
-#include "llcs/common.hpp"
-#include "fsm.hpp"
-#include "server.hpp"
 #include "awg.hpp"
+#include "fsm.hpp"
+#include "llcs/common.hpp"
+#include "server.hpp"
 #include "trigger-detector.hpp"
-
 
 std::atomic<bool> g_interrupted(false);
 
@@ -17,8 +16,8 @@ void SignalHandler(int signum) {
     g_interrupted.store(true);
 }
 
-int main( int argc, char *argv[] ){
-    
+int main(int argc, char *argv[]) {
+
     Server *server = new Server();
     TriggerDetector<AWG> *td = new TriggerDetector<AWG>();
     FiniteStateMachine<AWG> *fsm = new FiniteStateMachine<AWG>(server, td);
@@ -31,5 +30,5 @@ int main( int argc, char *argv[] ){
 
     std::cout << "Program terminated gracefully" << std::endl;
 
-    return SYS_OK;    
-} 
+    return SYS_OK;
+}
