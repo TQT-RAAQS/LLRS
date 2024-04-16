@@ -1,7 +1,6 @@
 #include "awg.hpp"
-#include "llrs.h"
-#include "trigger-detector.hpp"
 #include "llrs-exe/common.hpp"
+#include "llrs.h"
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -63,10 +62,12 @@ void pollIdleSeg(LLRS<AWG> *l, std::shared_ptr<AWG> awg) {
     }
 }
 
-void streamAWG(LLRS<AWG> *l, std::shared_ptr<AWG> awg, bool flag, std::string problem_config, std::string problem_id){
+void streamAWG(LLRS<AWG> *l, std::shared_ptr<AWG> awg, bool flag,
+               std::string problem_config, std::string problem_id) {
 
     int16 *pnData = nullptr;
-    int qwBufferSize = awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
+    int qwBufferSize =
+        awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
     awg->fill_transfer_buffer(pnData, awg->get_samples_per_segment(), 0);
     awg->init_and_load_all(pnData, awg->get_samples_per_segment());
     vFreeMemPageAligned(pnData, qwBufferSize);
@@ -90,8 +91,6 @@ void streamAWG(LLRS<AWG> *l, std::shared_ptr<AWG> awg, bool flag, std::string pr
     awg->start_stream();
     awg->print_awg_error();
     assert(awg->get_current_step() == 0);
-
-    
 }
 int main(int argc, char *argv[]) {
 
