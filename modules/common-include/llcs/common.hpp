@@ -66,6 +66,6 @@ enum ModuleType { M_LLRS, M_CLO, M_RYDBERG };
 #define SYS_ERR 1
 
 #define LLRS_RESET_PATH (std::string(""))
-#define PSF_CONFIG_PATH (std::string(""))
+#define PSF_CONFIG_PATH (std::string("") + PROJECT_BASE_DIR + "/tools/psf_translator.py")
 
 #endif
