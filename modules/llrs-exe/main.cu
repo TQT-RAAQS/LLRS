@@ -1,5 +1,4 @@
 #include "awg.hpp"
-#include "llrs-exe/common.hpp"
 #include "llrs.h"
 #include <cstdlib>
 #include <fstream>
