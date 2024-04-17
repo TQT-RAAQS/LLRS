@@ -49,7 +49,7 @@ void executeLLRS(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 }
 
 template <typename AWG_T>
-void pollIdleSeg(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
+void runLLRSOnTrigger(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 
     int current_step;
     while (true) {
@@ -62,19 +62,16 @@ void pollIdleSeg(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 }
 
 template <typename AWG_T>
-void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag,
+void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag_1D,
                std::string problem_config) {
 
     int16 *pnData = nullptr;
-    int qwBufferSize =
-        awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
-    awg->fill_transfer_buffer(pnData, awg->get_samples_per_segment(), 0);
-    awg->init_and_load_all(pnData, awg->get_samples_per_segment());
-    vFreeMemPageAligned(pnData, qwBufferSize);
+
+    awg->setup_segment_data(pnData);
 
     l->setup(problem_config, llrs_idle_seg, llrs_idle_step);
 
-    if (flag == true) {
+    if (flag_1D == true) {
         l->get_1d_static_wfm(pnData);
     }
 
@@ -112,7 +109,7 @@ int main(int argc, char *argv[]) {
     std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
     LLRS<AWG> *l = new LLRS<AWG>{awg};
     streamAWG(l, awg, flag_1D, problem_config);
-    pollIdleSeg(l, awg);
+    runLLRSOnTrigger(l, awg);
 
     return 0;
 }
