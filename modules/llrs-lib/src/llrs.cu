@@ -20,6 +20,11 @@ LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
     std::cout << "LLRS: constructor" << std::endl;
 }
 
+/**
+ * @brief Quick LLRS setup designed to be done between
+ * experimental shots. 
+ * @param json_input => config filename
+*/
 template <typename AWG_T>
 void LLRS<AWG_T>::small_setup(std::string json_input) {
     std::cout << "LLRS: setup" << std::endl;
@@ -30,6 +35,7 @@ void LLRS<AWG_T>::small_setup(std::string json_input) {
 
     user_input = Util::JsonWrapper(CONFIG_PATH(json_input));
 
+    /* Configures the target array */
     const size_t num_target = user_input.read_problem_num_target();
     std::string target_config_label =
         user_input.read_problem_target_config_label();
@@ -57,6 +63,13 @@ void LLRS<AWG_T>::small_setup(std::string json_input) {
                               awg_sequence->get_wfm_per_segment(), p_collector);
 }
 
+/**
+ * @brief Sets up the LLRS
+ * @param input => config filename
+ * @param llrs_seg_off => index of idle segment (data memory)
+ * @param llrs_step_off => index of idle step (sequence memory)
+ * @param problem_id => metadata filepath
+*/
 template <typename AWG_T>
 void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
                         size_t llrs_step_off, std::string problem_id) {
@@ -69,15 +82,17 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
 
     user_input = Util::JsonWrapper(CONFIG_PATH(input));
 
+    /* Configures size of trap array */
     const size_t Nt_x = user_input.read_problem_Nt_x();
     metadata.setNtx(Nt_x);
     const size_t Nt_y = user_input.read_problem_Nt_y();
     metadata.setNty(Nt_y);
     num_trap = Nt_x * Nt_y;
+
+    /* Configures the target array */
     const size_t num_target = user_input.read_problem_num_target();
     std::string target_config_label =
         user_input.read_problem_target_config_label();
-
     if (target_config_label == "centre_compact") {
         target_config = get_target_config(CENTRE_COMPACT, num_target);
     } else if (target_config_label == "custom") {
@@ -135,6 +150,12 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
     metadata.setRuntimeData({});
 }
 
+/**
+ * @brief Creates desired target atom array, specified in the config
+ * file
+ * @param target => label of target config
+ * @param num_target => number of atoms in target array
+*/
 template <typename AWG_T>
 std::vector<int32_t> LLRS<AWG_T>::get_target_config(Target target,
                                                     int num_target) {
@@ -150,6 +171,11 @@ std::vector<int32_t> LLRS<AWG_T>::get_target_config(Target target,
     }
     return target_config;
 }
+
+/**
+ * @brief creates a center compact target array
+ * @param num_target => number of atoms in target array
+*/
 template <typename AWG_T>
 void LLRS<AWG_T>::create_center_target(std::vector<int32_t> &target_config,
                                        int num_target) {
@@ -161,6 +187,9 @@ void LLRS<AWG_T>::create_center_target(std::vector<int32_t> &target_config,
     }
 }
 
+/**
+ * @brief resets the LLRS and metadata between shots
+*/
 template <typename AWG_T> void LLRS<AWG_T>::reset() {
     awg_sequence->reset();
     trial_num = 0;
@@ -172,6 +201,9 @@ template <typename AWG_T> void LLRS<AWG_T>::reset() {
     metadata.setRuntimeData({});
 }
 
+/**
+ * @brief executes the LLRS loop
+*/
 template <typename AWG_T> void LLRS<AWG_T>::execute() {
     std::cout << "LLRS: execute" << std::endl;
     reset();
