@@ -149,7 +149,7 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
     // Initialize the return vector
     std::vector<double> running_sums(this->_psf.size(), 0);
     //#pragma omp parallel for num_threads(FILTERING_NUM_THREADS) // - Code to
-    //run the Processing with multiple threads (32) in parallel
+    // run the Processing with multiple threads (32) in parallel
 
     // Iterate through all traps
     for (size_t kernel_idx = 0; kernel_idx < this->_psf.size(); kernel_idx++) {
@@ -160,7 +160,7 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
             double psf_value;
             // Get the pixel index and corresponding psf_value
             std::tie(image_idx, psf_value) = pair;
-            cur_sum += p_input_img->at(image_idx) * psf_value;
+            cur_sum += (*p_input_img)[image_idx] * psf_value;
         }
 #if IMAGE_INVERTED_X == true
         running_sums[this->_psf.size() - 1 - kernel_idx] = cur_sum;

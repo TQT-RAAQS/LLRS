@@ -1,2 +1,5 @@
-runtime/
+runtime*
 psf/
+wfm/
+coef/
+pickled_results/

@@ -35,6 +35,6 @@ namespace fs = std::experimental::filesystem;
 #define AWG_ERR 1
 
 #define AWG_CONFIG_PATH                                                        \
-    (std::string("") + PROJECT_BASE_DIR + "config/awg/awg.yml")
+    (std::string("") + PROJECT_BASE_DIR + "/configs/awg/awg.yml")
 
 #endif

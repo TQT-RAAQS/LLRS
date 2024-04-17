@@ -1,7 +1,7 @@
 #include "awg.hpp"
 #include "llrs.h"
-#include "trigger-detector.hpp"
-#include "llrs-exe/common.hpp"
+#include "log.h"
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -26,52 +26,53 @@ void delay(float timeout) {
     }
 }
 
-void executeLLRS(LLRS<AWG> *l, std::shared_ptr<AWG> awg) {
+template <typename AWG_T>
+void executeLLRS(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 
     int current_step = awg->get_current_step();
-
     l->execute();
-
     l->reset();
-    std::cout << "Done LLRS::Execute" << std::endl;
-
+    INFO << "LLRS::Execute Completed." << std::endl;
     assert(current_step == llrs_idle_step);
     awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, 0,
-                       SPCSEQ_ENDLOOPALWAYS); // this is slow
-    delay(WAVEFORM_DUR * WF_PER_SEG * 1e6);
-
+                       SPCSEQ_ENDLOOPALWAYS);
+    delay(awg->get_waveform_duration() * awg->get_waveforms_per_segment() *
+          1e6);
     current_step = awg->get_current_step();
     assert(current_step == 0);
 
-    // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
+    // Ensure LLRS Idle is pointing to itself
     awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, llrs_idle_step,
                        SPCSEQ_ENDLOOPALWAYS);
-    delay(WAVEFORM_DUR * WF_PER_SEG * 1e6);
+    delay(awg->get_waveform_duration() * awg->get_waveforms_per_segment() *
+          1e6);
 }
 
-void pollIdleSeg(LLRS<AWG> *l, std::shared_ptr<AWG> awg) {
+template <typename AWG_T>
+void pollIdleSeg(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 
     int current_step;
-
     while (true) {
 
         current_step = awg->get_current_step();
-
         if (current_step == llrs_idle_seg) {
             executeLLRS(l, awg);
         }
     }
 }
 
-void streamAWG(LLRS<AWG> *l, std::shared_ptr<AWG> awg, bool flag, std::string problem_config, std::string problem_id){
+template <typename AWG_T>
+void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag,
+               std::string problem_config) {
 
     int16 *pnData = nullptr;
-    int qwBufferSize = awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
+    int qwBufferSize =
+        awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
     awg->fill_transfer_buffer(pnData, awg->get_samples_per_segment(), 0);
     awg->init_and_load_all(pnData, awg->get_samples_per_segment());
     vFreeMemPageAligned(pnData, qwBufferSize);
 
-    l->setup(problem_config, llrs_idle_seg, llrs_idle_step, problem_id);
+    l->setup(problem_config, llrs_idle_seg, llrs_idle_step);
 
     if (flag == true) {
         l->get_1d_static_wfm(pnData);
@@ -85,25 +86,23 @@ void streamAWG(LLRS<AWG> *l, std::shared_ptr<AWG> awg, bool flag, std::string pr
 
     // Ensure there is enough time for the first idle segment's pointer to
     // update
-    delay(WAVEFORM_DUR * WF_PER_SEG * 1e6);
+    delay(awg->get_waveform_duration() * awg->get_waveforms_per_segment() *
+          1e6);
 
     awg->start_stream();
     awg->print_awg_error();
     assert(awg->get_current_step() == 0);
-
-    
 }
 int main(int argc, char *argv[]) {
 
     // Read problem statement
     std::string problem_id;
     std::string problem_config;
-    bool flag_1D;
+    bool flag_1D = false;
 
-    if (argc > 3) {
-        problem_config = std::string(argv[1]); // = "21_atoms_problem";
-        problem_id = std::string(argv[2]);
-        flag_1D = std::string(argv[3]) == "true";
+    if (argc > 2) {
+        problem_config = std::string(argv[1]);
+        flag_1D = (std::string(argv[2]) == "true");
 
     } else {
         ERROR << " No input was provided" << std::endl;
@@ -111,11 +110,8 @@ int main(int argc, char *argv[]) {
     }
 
     std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
-
     LLRS<AWG> *l = new LLRS<AWG>{awg};
-
-    streamAWG(l, awg, flag_1D, problem_config, problem_id);
-
+    streamAWG(l, awg, flag_1D, problem_config);
     pollIdleSeg(l, awg);
 
     return 0;

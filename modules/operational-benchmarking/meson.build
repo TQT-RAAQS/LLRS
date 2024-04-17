@@ -22,7 +22,7 @@ jsonwrapper_proj = subproject('jsonwrapper')
 utility_proj = subproject('utility') 
 
 # dependencies
-solver_dep = solver_proj.get_variable('llrs_lib_solver_dep')
+solver_dep = solver_proj.get_variable('llrs_lib_solver_so_dep')
 utility_dep = utility_proj.get_variable('llrs_lib_utility_dep')
 jsonwrapper_dep = jsonwrapper_proj.get_variable('llrs_lib_jsonwrapper_dep')
 

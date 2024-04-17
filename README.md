@@ -8,4 +8,4 @@ The low-latency reconfiguration system (LLRS) is a closed-loop feedback control 
 
 ## Documentation
 
-The documentation for this project can be accessed at [this link](https://https://github.com/TQT-RAAQS/LLRS) [PLACEHOLDER LINK]
+The documentation for this project can be accessed at [this link](https://github.com/TQT-RAAQS/LLRS) [PLACEHOLDER LINK]
