@@ -11,6 +11,10 @@
 const int llrs_idle_seg = 1;
 const int llrs_idle_step = 1;
 
+/**
+ * @brief Timeout for a specified length
+ * @param timeout => delay time in microseconds
+*/
 void delay(float timeout) {
 
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -26,13 +30,22 @@ void delay(float timeout) {
     }
 }
 
+/**
+ * @brief execute and reset the LLRS and reset the AWG back to segment 0
+ * @param l => LLRS object
+ * @param awg => awg shared pointer
+*/
 template <typename AWG_T>
 void executeLLRS(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 
     int current_step = awg->get_current_step();
+
     l->execute();
     l->reset();
+    
     INFO << "LLRS::Execute Completed." << std::endl;
+    
+    // AWG should be pointing at segment 1 when LLRS execution is complete. We now want it to point at segment 0.
     assert(current_step == llrs_idle_step);
     awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, 0,
                        SPCSEQ_ENDLOOPALWAYS);
@@ -48,19 +61,33 @@ void executeLLRS(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
           1e6);
 }
 
+/**
+ * @brief Polls the current segment. If the AWG is on segment 1, then a hardware trigger was detected and the LLRS should be executed
+ * @param l => LLRS object
+ * @param awg => awg shared pointer
+*/
 template <typename AWG_T>
 void runLLRSOnTrigger(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 
     int current_step;
+    // Polling loop
     while (true) {
 
         current_step = awg->get_current_step();
         if (current_step == llrs_idle_seg) {
             executeLLRS(l, awg);
         }
+
     }
 }
 
+/**
+ * @brief Sets up the LLRS and streams static waveforms to the AWG
+ * @param l => LLRS object
+ * @param awg => awg shared pointer
+ * @param flag_1D => flag for if the problem is a 1D problem
+ * @param problem_config => filename of the config file
+*/
 template <typename AWG_T>
 void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag_1D,
                std::string problem_config) {
@@ -90,6 +117,7 @@ void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag_1D,
     awg->print_awg_error();
     assert(awg->get_current_step() == 0);
 }
+
 int main(int argc, char *argv[]) {
 
     // Read problem statement
