@@ -1,10 +1,5 @@
 runtime*
-<<<<<<< HEAD
-pickled_results
-=======
 psf/
 wfm/
 coef/
-pickled_results/
 image_acquisition_characterization/
->>>>>>> d6b0716 (git ignore change to ignore image acquisition characterization data)
