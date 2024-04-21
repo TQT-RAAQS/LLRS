@@ -94,7 +94,8 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
                                     std::vector<int32_t> target, int trial_num,
                                     int rep_num, int cycle_num) {
 
-    int sol_length, num_batches = 0;
+    int *sol_length = new int();
+    int *num_batches = new int();
 
     /// ensure that initial and target configurations are of the same size and
     /// that the initial configuration is  equivalent to the full array of traps
@@ -126,7 +127,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         lin_exact_block_batched_cpu(&initial[0], &target[0], initial.size(),
                                     num_atoms_initial, num_atoms_target,
                                     &src[0], &dst[0], &blk[0], &batch_ptrs[0],
-                                    &num_batches, &sol_length);
+                                    num_batches, sol_length);
 
         break;
 
@@ -146,7 +147,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         /// Batching
         lin_exact_1d_cpu_v2_block_output_generator(
             &matching_src[0], &matching_dst[0], num_atoms_target, &src[0],
-            &dst[0], &blk[0], &batch_ptrs[0], &num_batches, &sol_length);
+            &dst[0], &blk[0], &batch_ptrs[0], num_batches, sol_length);
         break;
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("III-Batching", trial_num, rep_num, cycle_num);
@@ -157,7 +158,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
 #endif
         redrec_v2 /// gets batching time internally
             (&initial[0], num_atoms_initial, Nt_x, Nt_y, reservoir_height,
-             &src[0], &dst[0], &batch_ptrs[0], &num_batches, &sol_length);
+             &src[0], &dst[0], &batch_ptrs[0], num_batches, sol_length);
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
 #endif
@@ -169,7 +170,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         aro_serial_cpu(&initial[0], &target[0], Nt_y, Nt_x, num_atoms_initial,
                        num_atoms_target, 1, 0,
                        1, /// do rerouting, don't do atom_isolation, do ordering
-                       &src[0], &dst[0], &sol_length, &path_system[0],
+                       &src[0], &dst[0], sol_length, &path_system[0],
                        &path_length[0]);
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
@@ -180,7 +181,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
 #endif
         redrec_cpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
-                   &matching_dst[0], &src[0], &dst[0], &sol_length,
+                   &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
@@ -191,7 +192,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
 #endif
         redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
-                   &matching_dst[0], &src[0], &dst[0], &sol_length,
+                   &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
@@ -202,7 +203,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
 #endif
         bird_cpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
-                 &matching_dst[0], &src[0], &dst[0], &sol_length,
+                 &matching_dst[0], &src[0], &dst[0], sol_length,
                  &path_system[0], &path_length[0]);
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
@@ -214,10 +215,10 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
 
     /// resize the member variables to be the length of the solution moveset
     /// given by the algorithm
-    this->src.resize(sol_length);
-    this->dst.resize(sol_length);
-    this->blk.resize(sol_length);
-    this->batch_ptrs.resize(num_batches);
+    this->src.resize(*sol_length);
+    this->dst.resize(*sol_length);
+    this->blk.resize(*sol_length);
+    this->batch_ptrs.resize(*num_batches);
 
     return LLRS_OK;
 }
