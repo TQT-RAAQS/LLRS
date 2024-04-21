@@ -440,7 +440,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     awg->fill_transfer_buffer(pnData, samples_per_segment, 0);
     awg->init_and_load_all(pnData, samples_per_segment);
 
-    l->setup("21_atoms_problem", llrs_idle_seg, llrs_idle_step);
+    l->setup("config.yml", llrs_idle_seg, llrs_idle_step);
     l->get_1d_static_wfm(pnData);
     trigger_detector->setup(pnData);
 
