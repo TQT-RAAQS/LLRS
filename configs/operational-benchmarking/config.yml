@@ -4,4 +4,4 @@ base_problem_definition: 32_width.yml        # filename for one of the reconfigu
 num_trials: 1000                                      #  number of trials      : int
 num_repetition: 1                                  #  number of repetitions : int
 variable_param: Nt_y                            #  The name of the variable param (For figure generation purposes) : str, In the base_probelm_definition file the variable_param field should have {} instead of a numerical value to indicate that it is varied over.
-range_param: [50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80]         #  range_param: Provide a range of values for the variable_param.  : int[]
+range_param: [50,60,70,80]         #  range_param: Provide a range of values for the variable_param.  : int[]
