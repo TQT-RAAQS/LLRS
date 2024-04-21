@@ -55,6 +55,7 @@ class AWG {
     uint32 init_and_load_all(short *p_segment, int num_samples);
     uint32 init_and_load_range(short *p_segment, int num_samples, int start,
                                int end);
+    void setup_segment_memory(int16 *pnData);
     uint32 wait_for_data_load();
     int allocate_transfer_buffer(int num_samples, int16 *&pnData);
     uint32 fill_transfer_buffer(int16 *pnData, int num_samples, int16 value);

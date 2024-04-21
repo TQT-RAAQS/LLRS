@@ -51,8 +51,8 @@ uint32 AWG::read_config(std::string filename) {
     config.waveforms_per_segment = node["waveforms_per_segment"].as<int>();
     config.null_segment_length = node["null_segment_length"].as<int>();
     config.idle_segment_length = node["idle_segment_length"].as<int>();
-    config.waveform_length = static_cast<int>(config.sample_rate *
-                             config.waveform_duration);
+    config.waveform_length =
+        static_cast<int>(config.sample_rate * config.waveform_duration);
     config.samples_per_segment =
         config.waveforms_per_segment * config.waveform_length;
     config.trigger_size = node["trigger_size"].as<int>();
@@ -439,6 +439,18 @@ uint32 AWG::init_and_load_range(short *p_segment, int num_samples, int start,
     }
 
     return status;
+}
+
+/**
+ * @brief Fills segment memory with null segments
+ * @param pnData => data pointer
+ */
+void AWG::setup_segment_memory(int16 *pnData) {
+    int qwBufferSize =
+        allocate_transfer_buffer(get_samples_per_segment(), pnData);
+    fill_transfer_buffer(pnData, get_samples_per_segment(), 0);
+    init_and_load_all(pnData, get_samples_per_segment());
+    vFreeMemPageAligned(pnData, qwBufferSize);
 }
 
 /**
