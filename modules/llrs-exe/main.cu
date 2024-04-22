@@ -94,7 +94,7 @@ void streamAWG(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg, bool flag_1D,
 
     int16 *pnData = nullptr;
 
-    awg->setup_segment_data(pnData);
+    awg->setup_segment_memory(pnData);
 
     l->setup(problem_config, llrs_idle_seg, llrs_idle_step);
 
