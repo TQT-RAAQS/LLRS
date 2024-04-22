@@ -1,7 +1,6 @@
 # Problem Configuration for Operational Benchmarking
-# Changes to this file should not be commited
-base_problem_definition: 32_width.yml        # filename for one of the reconfigurable problem definitions in the resources/problems directory, if your desired problem is not there, you can create a new one and add it to the directory. If you want to iterate over a range of values for a parameter, you can put "{}" instead of the value in the config file and provide a range of values for the parameter in the range_param field.
-num_trials: 1000                                      #  number of trials      : int
-num_repetition: 1                                  #  number of repetitions : int
-variable_param: Nt_y                            #  The name of the variable param (For figure generation purposes) : str, In the base_probelm_definition file the variable_param field should have {} instead of a numerical value to indicate that it is varied over.
-range_param: [50,60,70,80]         #  range_param: Provide a range of values for the variable_param.  : int[]
+base_problem_definition: example.yml        # filename for one of the reconfigurable problem definitions in the resources/problems directory, if your desired problem is not there, you can create a new one and add it to the directory. If you want to iterate over a range of values for a parameter, you can put "{}" instead of the value in the config file and provide a range of values for the parameter in the range_param field.
+num_trials:      10                         #  number of trials      : int
+num_repetition:  10                         #  number of repetitions : int
+variable_param: Nt_y                        #  The name of the variable param (For figure generation purposes) : str, In the base_probelm_definition file the variable_param field should have {} instead of a numerical value to indicate that it is varied over.
+range_param: [50,60,70,80]                  #  range_param: Provide a range of values for the variable_param.  : int[]
