@@ -9,9 +9,12 @@
 int roi_y = 1024;
 int roi_x = 1024;
 
-// Default ROI Binning Values
 int hor_bin = 1;
 int ver_bin = 1;
+
+int fgc_timeout = 600; // ms
+
+int reps = 10;
 
 /**
 * @brief Function that takes command line input and modifies the default ROI parameters
@@ -22,27 +25,27 @@ void cmd_line(int argc, char * argv[])
 	while (i < argc)
 	{
 		if (strcmp(argv[i],"-rx") == 0){
-			i++;
-			roi_x = std::stoi(argv[i++]);
-		} else if (strcmp(argv[i],"-ry") == 0) {
-			i++;
-			roi_y = std::stoi(argv[i++]);
-		} else if (strcmp(argv[i],"-hb") == 0) {
-			i++;
-			hor_bin = std::stoi(argv[i++]);
-		} else if (strcmp(argv[i],"-vb") == 0) {
-			i++;
-			ver_bin = std::stoi(argv[i++]);
+			roi_x = std::stoi(argv[++i]);
+		} else if (strcmp(argv[i], "-ry") == 0) {
+			roi_y = std::stoi(argv[++i]);
+		} else if (strcmp(argv[i], "-hb") == 0) {
+			hor_bin = std::stoi(argv[++i]);
+		} else if (strcmp(argv[i], "-vb") == 0) {
+			ver_bin = std::stoi(argv[++i]);
+        } else if (strcmp(argv[i], "-fgct") == 0) {
+            fgc_timeout = std::stoi(argv[++i]);
+        } else if (strcmp(argv[i], "-n") == 0) {
+            reps = std::stoi(argv[++i]);
         }
-}
+
+        i++;
+    }
 }
 
 int main(int argc, char * argv[]){
 
     // Take command line input to change paramaters as necessary
     cmd_line(argc, argv);
-
-    int reps = 100;
 
     std::unique_ptr<AWG> awg = std::make_unique<AWG>();
     std::unique_ptr<Acquisition::ActiveSilicon1XCLD> fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>(roi_x, roi_y, 600, 0, 0, ver_bin, hor_bin);
