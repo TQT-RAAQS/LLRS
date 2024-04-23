@@ -116,7 +116,6 @@ def generate_psf(file_path, params, print_kernels=True, rotate=True, binary=True
         print("psf_val: ", psf_val)
         print()
 
-    return
 
     # serialize tuples
     file_name = file_path + params["name"] + f".{params['num_trap_x']}_{params['num_trap_y']}"
