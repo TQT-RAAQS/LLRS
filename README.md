@@ -26,6 +26,8 @@ Each of these submodules is defined in [`modules/llrs-lib/modules`](https://gith
  
 - NVCC CUDA Compiler | [Installation Guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
  
+- Nvidia CUDA Toolkit | [Installation Guide](https://developer.nvidia.com/cuda-downloads)
+ 
 - Python3 (Version 3.8 or newer) | [Installation Guide](https://wiki.python.org/moin/BeginnersGuide/Download)
  
 - Meson Build System | [Installation Guide](https://mesonbuild.com/Getting-meson.html)
