@@ -68,16 +68,19 @@ void executeLLRS(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
 */
 template <typename AWG_T>
 void runLLRSOnTrigger(LLRS<AWG_T> *l, std::shared_ptr<AWG_T> awg) {
-
-    int current_step;
+    uint32 previous_step=0;
+    uint32 current_step;
     // Polling loop
     while (true) {
 
         current_step = awg->get_current_step();
-        if (current_step == llrs_idle_seg) {
+        if (current_step == llrs_idle_step) {
             executeLLRS(l, awg);
         }
-
+        if(previous_step!=current_step){
+            std::cout<<"prev: "<<previous_step<<" cur: "<<current_step<<std::endl;
+        }
+        previous_step=current_step;
     }
 }
 
