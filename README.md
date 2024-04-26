@@ -86,6 +86,7 @@ LLRS
 ## Operating the LLRS
 
 ### Build the LLRS 
+- Clone the repo on you local machine.
 - Execute the command `meson setup bin` in the LLRS directory.
 - Navigate into the bin directory using `cd bin`.
 - Execute `meson compile` in order to compile the LLRS.
@@ -96,7 +97,8 @@ There is also a configuration file for the LLRS which allows the user to define 
 Note: The LLRS is setup to search the proper subdirectories for necessary support files. All resource files must be stored at the appropriate subdirectory, and only the file name must be provided in the field, not the full file path. 
 
 ### Run Experiment 
-Run the LLRS executable placed at `bin/modules/llrs-exe/llrs-exe`. This causes the LLRS to begin waiting for an AWG trigger which will start the experiment execution.
+Run the LLRS executable placed at `bin/modules/llrs-exe/llrs-exe`. 
+This causes the LLRS to begin waiting for an AWG trigger (jump from segment 0 to 1) which will start the reconfiguration execution.
 
 
 ## Peripherals
