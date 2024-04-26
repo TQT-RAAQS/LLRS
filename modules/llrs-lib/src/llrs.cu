@@ -232,7 +232,6 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                 p_collector->start_timer("I", trial_num, rep_num, cycle_num);
 #endif
 
-#ifndef PRE_SOLVED
                 awg_sequence->emccd_trigger();
                 std::vector<uint16_t> current_image =
                     fgc->acquire_single_image();
@@ -299,23 +298,10 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                      << std::endl;
 #endif
 
-#endif
-
-#ifdef LOGGING_RUNTIME
-                p_collector->end_timer("I", trial_num, rep_num, cycle_num);
-                p_collector->start_timer("II-Deconvolution", trial_num, rep_num,
-                                         cycle_num);
-                p_collector->end_timer("II-Deconvolution", trial_num, rep_num,
-                                       cycle_num);
-                p_collector->start_timer("II-Threshold", trial_num, rep_num,
-                                         cycle_num);
-                p_collector->end_timer("II-Threshold", trial_num, rep_num,
-                                       cycle_num);
-#endif
 
 #ifdef PRE_SOLVED
                 /* SWAP with pre-solved from processed */
-                std::vector<int32_t> current_config =
+                current_config =
                     Util::vector_transform(rep_soln[CYCLE_NAME(cycle_num)]);
 #endif
 
@@ -352,10 +338,6 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                     INFO << "Below minimum required number of atoms -> exit()"
                          << std::endl;
 #endif /* Target num atom > Current num atoms, exit the loop */
-#ifdef LOGGING_RUNTIME
-                    p_collector->end_timer("III-Total", trial_num, rep_num,
-                                           cycle_num);
-#endif
                     break;
                 }
 
@@ -379,14 +361,16 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
 #ifdef LOGGING_RUNTIME
                 p_collector->end_timer("III-Total", trial_num, rep_num,
                                        cycle_num);
-                p_collector->start_timer("IV-Translate", trial_num, rep_num,
-                                         cycle_num);
 #endif
-
                 metadata.moves_per_cycle.push_back({});
                 metadata.moves_per_cycle.back().insert(
                     metadata.moves_per_cycle.back().end(), moves_list.begin(),
                     moves_list.end());
+
+#ifdef LOGGING_RUNTIME
+                p_collector->start_timer("IV-Translate", trial_num, rep_num,
+                                         cycle_num);
+#endif
 
                 awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
                                               cycle_num);

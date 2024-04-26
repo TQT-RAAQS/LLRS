@@ -63,7 +63,7 @@ template <typename AWG_T> class Sequence {
     short *p_contbuf_one;
     short *p_buffer_lookup;
     short *p_buffer_upload;
-    int16 *p_buffer_double;
+    short *p_buffer_double;
     int buffer_lookup_size;
     int buffer_upload_size;
     int buffer_double_size;
