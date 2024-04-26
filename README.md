@@ -98,11 +98,12 @@ There is also a configuration file for the LLRS which allows the user to define 
 The following configuration files must be stored in the following directories:
 - PSF files must be stored in the `LLRS/resources/PSF/` 
 - CSV files must be stored in the `LLRS/resources/coef/primary/` directory for `coef_x` and `LLRS/resources/coef/secondary/` directory for `coef_y`.
+  
 Note: The LLRS is set up to search the proper subdirectories for necessary support files. All resource files must be stored at the appropriate subdirectory, and only the file name must be provided in the field, not the full file path. 
 
 ### Run Experiment 
 Run the LLRS executable placed at `bin/modules/llrs-exe/llrs-exe`. 
-This causes the LLRS to begin waiting for an AWG trigger (jump from segment 0 to 1) which will start the reconfiguration execution.
+This causes the LLRS to begin waiting for an AWG trigger (jump from segment 0 to 1). The LLRS will wait for 60 seconds for a trigger, after which it will halt. Upon receiving an AWG trigger, the reconfiguration will execute. Following the termination of the program, it will output the success rate of the experiment.  
 
 
 ## Peripherals
