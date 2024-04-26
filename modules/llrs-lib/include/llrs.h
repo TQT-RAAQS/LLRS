@@ -101,7 +101,7 @@ template <typename AWG_T> class LLRS {
     void setup(std::string json_input, size_t llrs_seg_offset,
                size_t llrs_step_offset, std::string problem_id = "");
     void small_setup(std::string json_input);
-    void execute();
+    int execute();
     void reset();
     std::vector<int32_t> get_target_config(Target target, int num_target);
     void create_center_target(std::vector<int32_t> &target_config,
@@ -113,7 +113,7 @@ template <typename AWG_T> class LLRS {
     const Metadata &getMetadata() const { return metadata; };
     void get_1d_static_wfm(int16 *pnData) {
         awg_sequence->get_1d_static_wfm(
-            pnData, awg_sequence->get_wfm_per_segment(), metadata.getNtx());
+            pnData, awg_sequence->get_wfm_per_segment(), metadata.getNtx() * metadata.getNty());
     }
 };
 

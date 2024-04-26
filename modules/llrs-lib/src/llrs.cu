@@ -204,7 +204,7 @@ template <typename AWG_T> void LLRS<AWG_T>::reset() {
 /**
  * @brief executes the LLRS loop
  */
-template <typename AWG_T> void LLRS<AWG_T>::execute() {
+template <typename AWG_T> int LLRS<AWG_T>::execute() {
     std::cout << "LLRS: execute" << std::endl;
     reset();
 
@@ -314,7 +314,7 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
                 if (Util::target_met(current_config, target_config)) {
                     INFO << "Success: Met Target Configuration -> exit()"
                          << std::endl;
-                    break;
+                    return 0;
                 }
 
                 if (cycle_num >= ATTEMPT_LIMIT) {
@@ -396,7 +396,7 @@ template <typename AWG_T> void LLRS<AWG_T>::execute() {
 
     metadata.num_cycles++;
 
-    return;
+    return 1;
 }
 
 template <typename AWG_T> int LLRS<AWG_T>::getTrialNum() { return trial_num; }
