@@ -118,7 +118,7 @@ class OperationalBenchmarkingProblem(object):
         return metrics
 
 
-    def pre_solve(self, loss, t_alpha, t_nu, latency, solver_wrapper_so_file):
+    def pre_solve(self, loss, t_alpha, t_nu, latency, solver_wrapper_so_file, _2d):
         '''
         pre-solve operational_benchmarking_problem num_repetitions times, obtain the configuration of each cycle
 
@@ -190,14 +190,23 @@ class OperationalBenchmarkingProblem(object):
                 # aod_ops = alg_output_to_aod_ops(self.algorithm, self.simulated_static_trap, src, dst, 
                 #                                 block_size, batch_ptr)
                 
-    
-                operational_time, intermediate_configs = apply_aod_operation(
-                    self.simulated_static_trap, 
-                    self.dynamic_trap, 
-                    operations = aod_ops, 
-                    t_alpha=t_alpha,
-                    t_nu=t_nu
-                )
+                if _2d: 
+                    operational_time, intermediate_configs = apply_aod_operation(
+                        self.simulated_static_trap, 
+                        self.simulated_static_trap, 
+                        operations = aod_ops, 
+                        t_alpha=t_alpha,
+                        t_nu=t_nu
+                    )
+                else:
+                    operational_time, intermediate_configs = apply_aod_operation(
+                        self.simulated_static_trap, 
+                        self.dynamic_trap, 
+                        operations = aod_ops, 
+                        t_alpha=t_alpha,
+                        t_nu=t_nu
+                    )
+ 
         
                 operational_time += latency
 

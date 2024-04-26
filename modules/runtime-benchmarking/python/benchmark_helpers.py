@@ -333,8 +333,6 @@ def save_full_problem_definitions(problem_dict_list, benchmark_params, reconfig_
         result_json = deepcopy(benchmark_params)
 
         # remove problem range section from 
-        result_json.pop('enable_problem_range')
-        result_json.pop('problem_range')
 
         # save all problem parameters
         result_json["problem_definition"] = problem_dict
