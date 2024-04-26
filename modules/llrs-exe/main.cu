@@ -6,20 +6,18 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <vector>
 #include <signal.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
-
+#include <vector>
 
 const int llrs_idle_seg = 1;
 const int llrs_idle_step = 1;
 
-void my_handler(int s){
-    printf("Caught signal %d\n",s);
-    exit(1); 
-
+void my_handler(int s) {
+    printf("Caught signal %d\n", s);
+    exit(1);
 }
 
 void delay(float timeout) {
@@ -55,7 +53,9 @@ int main(int argc, char *argv[]) {
     } else if (argc > 1) {
         problem_config = std::string(argv[1]);
     } else {
-        ERROR << "No input was provided: Please provide the config file as the argument." << std::endl;
+        ERROR << "No input was provided: Please provide the config file as the "
+                 "argument."
+              << std::endl;
         return LLRS_ERR;
     }
 
@@ -63,14 +63,15 @@ int main(int argc, char *argv[]) {
     LLRS<AWG> *l = new LLRS<AWG>{awg};
     int16 *pnData = nullptr;
     const int64_t samples_per_segment = awg->get_samples_per_segment();
-    
-    int qwBufferSize = awg->allocate_transfer_buffer(samples_per_segment, pnData);
+
+    int qwBufferSize =
+        awg->allocate_transfer_buffer(samples_per_segment, pnData);
     awg->fill_transfer_buffer(pnData, samples_per_segment, 0);
     awg->init_and_load_all(pnData, samples_per_segment);
 
     l->setup(problem_config, llrs_idle_seg, llrs_idle_step);
     l->get_1d_static_wfm(pnData);
-    awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);    
+    awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
 
     awg->start_stream();
     awg->print_awg_error();
@@ -79,7 +80,7 @@ int main(int argc, char *argv[]) {
     // LLRS Execution
     int num_of_executions, num_of_successes = 0;
     bool flag = false;
-    while( true ){
+    while (true) {
         flag = false;
         std::cout << "Waiting for trigger to run LLRS" << std::endl;
         int current_seg = 0;
@@ -88,7 +89,7 @@ int main(int argc, char *argv[]) {
         while (true) {
             // Timeout loop break
             if (std::chrono::high_resolution_clock::now() - startTime >=
-                    targetDuration) {
+                targetDuration) {
                 flag = true;
                 break;
             }
@@ -106,13 +107,15 @@ int main(int argc, char *argv[]) {
                 l->reset();
                 std::cout << "Done LLRS::Execute" << std::endl;
                 ++num_of_executions;
-                if (success == 0) ++num_of_successes;
+                if (success == 0)
+                    ++num_of_successes;
 
                 current_seg = awg->get_current_step();
-                assert( current_seg == llrs_idle_step );
-                awg->seqmem_update( llrs_idle_step, llrs_idle_seg, 1, 0, SPCSEQ_ENDLOOPALWAYS ); 
-                awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, llrs_idle_step, SPCSEQ_ENDLOOPALWAYS);
-    
+                assert(current_seg == llrs_idle_step);
+                awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, 0,
+                                   SPCSEQ_ENDLOOPALWAYS);
+                awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1,
+                                   llrs_idle_step, SPCSEQ_ENDLOOPALWAYS);
             }
         }
         if (flag) {
@@ -121,9 +124,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    std::cout << "Number of successful LLRS executions: " << num_of_successes << " out of " << num_of_executions << std::endl;
+    std::cout << "Number of successful LLRS executions: " << num_of_successes
+              << " out of " << num_of_executions << std::endl;
     std::cout << "Program terminated gracefully.\n";
 
-    return 0; 
-    
-} 
+    return 0;
+}
