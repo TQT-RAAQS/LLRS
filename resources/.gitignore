@@ -1,2 +1,5 @@
 runtime*
-pickled_results
+psf/
+wfm/
+coef/
+image_acquisition_characterization/
