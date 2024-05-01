@@ -15,6 +15,8 @@ class Server {
     std::string metadata_file_path;
     std::string config_file_path;
 
+    std::string adjust_address(std::string filename);
+
   protected:
   public:
     Server();
