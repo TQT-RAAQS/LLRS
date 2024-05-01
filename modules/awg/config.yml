@@ -2,7 +2,7 @@
 driver_path:              /dev/spcm0    # the device file system handle : string 
 external_clock_freq:      10000000      # Hz : int
 channels:                 [0]           # list of channels : int[]
-amp:                      [280]         # list of amp for each channel in mV : int[]
+amp:                      [140]         # list of amp for each channel in mV : int[]
 
 # Segment Settings
 awg_num_segments:         256           # number of segments : int
@@ -16,9 +16,9 @@ idle_segment_length:      62400         # idle segment length : int
 
 # Trigger Settings
 trigger_size:             2000          # number of Waveforms repeated for the synchronized trigger: int
-vpp:                      280           # peak to peak voltage in mV : int
+vpp:                      140           # peak to peak voltage in mV : int
 
 
 # EMCCD Trigger Settings
 acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int
-async_trig_amp:           3             # trigger Amp in volts : int
+async_trig_amp:           7             # trigger Amp in volts : int
