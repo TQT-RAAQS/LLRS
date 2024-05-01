@@ -4,7 +4,7 @@
 
 std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
                                                  int waveform_mask) {
-    short new_max = waveform_mask >> 1;
+    short new_max = waveform_mask;
     std::vector<short> sv;
 
     for (size_t i = 0; i < src.size(); ++i) {
@@ -19,17 +19,18 @@ std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
 /// WaveformTable Class
 
 Synthesis::WaveformTable::WaveformTable(WaveformRepo *p_repo,
-                                        bool is_transposed, int waveform_mask)
-    : secondary_chan{(is_transposed) ? CHAN_1 : CHAN_0},
-      primary_chan{(is_transposed) ? CHAN_0 : CHAN_1},
-      secondary_size{(is_transposed) ? (*p_repo).get_dimension_y()
-                                     : (*p_repo).get_dimension_x()},
-      primary_size{(is_transposed) ? (*p_repo).get_dimension_x()
-                                   : (*p_repo).get_dimension_y()},
-      primary_static{init_primary(STATIC, primary_size, p_repo)},
-      primary_extract{init_primary(EXTRACT, primary_size, p_repo)},
-      primary_implant{init_primary(IMPLANT, primary_size, p_repo)},
-      base_table{}, waveform_mask{waveform_mask} {
+                                        bool is_transposed, int waveform_mask) {
+    
+    this->waveform_mask = waveform_mask;
+    this->secondary_chan = (is_transposed) ? CHAN_1 : CHAN_0;
+    this->primary_chan = (is_transposed) ? CHAN_0 : CHAN_1;
+    this->secondary_size = (is_transposed) ? (*p_repo).get_dimension_y()
+                                     : (*p_repo).get_dimension_x();
+    this->primary_size = (is_transposed) ? (*p_repo).get_dimension_x()
+                                   : (*p_repo).get_dimension_y();
+    this->primary_static = init_primary(STATIC, primary_size, p_repo);
+    this->primary_extract = init_primary(EXTRACT, primary_size, p_repo);
+    this->primary_implant = init_primary(IMPLANT, primary_size, p_repo);
 
     primary_forward.resize(primary_size + 1);
     for (int i = 2; i <= primary_size; ++i) {
