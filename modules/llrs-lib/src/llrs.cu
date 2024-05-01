@@ -136,7 +136,7 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
     wf_table = Setup::create_wf_table(
         Nt_x, Nt_y, table_sample_rate, waveform_duration, waveform_length,
         wfm_mask, vpp, user_input.read_experiment_coefx_path(),
-        user_input.read_experiment_coefy_path(), false);
+        user_input.read_experiment_coefy_path(), true);
 
     awg_sequence->setup(llrs_seg_off, llrs_step_off, _2d, Nt_x, Nt_y);
 
@@ -379,6 +379,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                  * taken */
                 /* Clean up the solver buffer */
                 solver.reset();
+                metadata.num_cycles++;
             }
 
 #ifdef PRE_SOLVED
@@ -393,8 +394,6 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
     Util::write_json_file(timing_data, output_fname);
     metadata.setRuntimeData(timing_data);
 #endif
-
-    metadata.num_cycles++;
 
     return 1;
 }
