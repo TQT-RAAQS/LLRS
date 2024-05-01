@@ -231,7 +231,7 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
 
     // point short circuit null to idle
     awg->seqmem_update(short_circuit_null_step, idle_segment_idx, 1,
-                       idle_segment_idx, SPCSEQ_ENDLOOPALWAYS);
+                       idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
 
 #ifdef LOGGING_RUNTIME
     p_collector->end_timer("V-First-Update", trial_num, rep_num, cycle_num);
