@@ -87,7 +87,6 @@ int main(int argc, char * argv[]){
         is_transpose
     );
     short *move_wf_ptr = wf_table.get_primary_wf_ptr(wf_type, wf_index, block_size, extraction_extent);
-    // short *move_wf_ptr = wf_table.get_primary_wf_ptr(FORWARD, 0, 21, 21);
 
     save_to_file(move_wf_ptr, waveform_length);
 }

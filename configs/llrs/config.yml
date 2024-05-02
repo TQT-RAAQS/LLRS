@@ -3,7 +3,7 @@ problem_definition:
   experiment_params: 
     roi_width:    1024                            # int 
     roi_height:   1024                            # int 
-    detection_threshold: 518                     # float
+    detection_threshold: 530                     # float
     psf:        psfs.bin                              # psf.bin,     see generate_psf
     coef_x:            21_traps.csv                       # default.csv 
     coef_y:         21_traps.csv                          # default.csv
