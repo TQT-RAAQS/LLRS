@@ -86,6 +86,8 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
         new State([this]() { this->st_BEGIN(); }, []() { return 1; }, f);
     State *idle_state = new State([this]() { this->st_IDLE(); },
                                   [this]() { return server->listen(); }, f);
+    State *llrs_state = new State([this]() { this->st_LLRS_EXEC(); },
+                                  [this]() { return 1; }, f);                                  
     State *config_hw_state =
         new State([this]() { this->st_CONFIG_HW(); }, []() { return 1; }, f);
     State *config_sm_state =
@@ -106,7 +108,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     State *trigger_done_state =
         new State([this]() { this->st_TRIGGER_DONE(); }, []() { return 1; }, f);
     State *last_trigger_done_state = new State(
-        [this]() { this->st_LAST_TRIGGER_DONE(); }, []() { return 1; }, f);
+        [this]() { this->st_LAST_TRIGGER_DONE(); }, [this]() { return server->listen(); }, f);
     State *reset_state =
         new State([this]() { this->st_RESET(); }, []() { return 1; }, f);
     State *close_awg = new State([this]() { this->st_CLOSE_AWG(); },
@@ -142,7 +144,10 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     config_hw_state->addStateTransition(1, config_sm_state);
     config_sm_state->addStateTransition(1, idle_state);
 
-    last_trigger_done_state->addStateTransition(1, idle_state);
+    ready_state->addStateTransition(1, llrs_state);
+    llrs_state->addStateTransition(1, last_trigger_done_state);
+
+    last_trigger_done_state->addStateTransition(3, idle_state);
 
     reset_state->addStateTransition(1, idle_state);
 
@@ -375,15 +380,19 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
 
             cycle_data["starting_atom_config"] = atomConfigs[cycle_index];
 
-            nlohmann::json jsonMoves;
-            for (const auto &move : movesPerCycle[cycle_index]) {
-                jsonMoves.push_back({std::get<0>(move), std::get<1>(move),
-                                     std::get<2>(move), std::get<3>(move),
-                                     std::get<4>(move)});
+            if (movesPerCycle.size() > cycle_index) {
+                nlohmann::json jsonMoves;
+                for (const auto &move : movesPerCycle[cycle_index]) {
+                    jsonMoves.push_back({std::get<0>(move), std::get<1>(move),
+                                        std::get<2>(move), std::get<3>(move),
+                                        std::get<4>(move)});
+                }
+                cycle_data["moves"] = jsonMoves;
             }
-            cycle_data["moves"] = jsonMoves;
-            cycle_data["final_atom_configuration"] =
-                atomConfigs[cycle_index + 1];
+            if (cycle_index < numCycles - 1) {
+                cycle_data["final_atom_configuration"] =
+                    atomConfigs[cycle_index + 1];
+            }
 
             json_data["Cycle " + std::to_string(cycle_index)] = cycle_data;
         }
@@ -457,16 +466,16 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_HW() {
     std::cout << "FSM:: CONFIG_HW state" << std::endl;
 
     // receive hdf5 filepath from the workstation
-    std::string filepath = server->get_config_file_path();
+    // std::string filepath = server->get_config_file_path();
 
     // filepath is now the yaml config file
-    filepath = H5Wrapper::convertHWConfig(filepath);
+    // filepath = H5Wrapper::convertHWConfig(filepath);
 
     // configure the AWG
-    auto awg = trigger_detector->getAWG();
-    awg->read_config(filepath);
+    // auto awg = trigger_detector->getAWG();
+    // awg->read_config(filepath);
 
-    l->small_setup(filepath);
+    // l->small_setup(filepath);
 
     HWconfigured = true;
 
@@ -478,12 +487,12 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_SM() {
 
     // If the FSM loop has already been run before then reset transition map.
 
-    if (numExperiments > 1) {
-        resetTransitions();
-    }
-    std::string filepath = server->get_config_file_path();
+    // if (numExperiments > 1) {
+    //     resetTransitions();
+    // }
+    // std::string filepath = server->get_config_file_path();
 
-    programStates(filepath);
+    // programStates(filepath);
     SMconfigured = true;
     numExperiments = 1;
     return;
@@ -492,7 +501,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_SM() {
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_READY() {
     std::cout << "FSM:: READY state" << std::endl;
 
-    std::cout << "Awating Hardware Trigger..." << std::endl;
+    std::cout << "Awaiting Hardware Trigger..." << std::endl;
     return;
 }
 
@@ -585,7 +594,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
 
     std::shared_ptr<AWG_T> awg{trigger_detector->getAWG()};
 
-    LLRS<AWG_T> *l = new LLRS<AWG_T>{awg};
+    // LLRS<AWG_T> *l = new LLRS<AWG_T>{awg};
 
     std::cout << "      FSM:: LLRS_EXEC state" << std::endl;
     int current_step = awg->get_current_step();
@@ -595,17 +604,17 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     std::cout << "Starting the LLRS" << std::endl;
     l->execute();
     llrs_metadata.emplace_back(l->getMetadata());
-    l->reset();
     std::cout << "Done LLRS::Execute" << std::endl;
 
     // should be on llrs idle segment 4
     // td->resetDetectionSegments();
     assert(current_step == llrs_idle_step);
-    awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, 0,
+    awg->seqmem_update(llrs_idle_step, 0, 1, 0,
                        SPCSEQ_ENDLOOPALWAYS); // this is slow
     trigger_detector->busyWait();
 
     current_step = awg->get_current_step();
+    std::cout << "Current step is: " << current_step << std::endl;
     assert(current_step == 0);
 
     // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
@@ -613,7 +622,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
                        SPCSEQ_ENDLOOPALWAYS);
     trigger_detector->busyWait();
 
+#ifdef LOGGING_RUNTIME
     l->clean();
+#endif
     return;
 }
 

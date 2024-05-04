@@ -48,7 +48,7 @@ int main(int argc, char * argv[]){
     cmd_line(argc, argv);
 
     std::unique_ptr<AWG> awg = std::make_unique<AWG>();
-    std::unique_ptr<Acquisition::ActiveSilicon1XCLD> fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>(roi_x, roi_y, 600, 0, 0, ver_bin, hor_bin);
+    std::unique_ptr<Acquisition::ActiveSilicon1XCLD> fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>(roi_x, roi_y, fgc_timeout, 0, 0, ver_bin, hor_bin);
 
 
     std::vector<std::string> time_list;

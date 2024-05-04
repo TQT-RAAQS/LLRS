@@ -1,6 +1,8 @@
 #ifndef AWGSEQUENCE_H_
 #define AWGSEQUENCE_H_
 
+#define LOAD_SINGLE_SEGMENT
+
 #include "Collector.h"
 #include "Setup.h"
 #include "Solver.h"

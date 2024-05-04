@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import struct
 import numpy as np
 import sys
@@ -13,41 +15,37 @@ import pickle
 def process_args(argv):
     num_args = len(argv)
     program = argv[0]
-    file_path = -1
+    file_path = Addresses.llrs_psfs_bin_file
+    pickle_path = Addresses.traps_psf
 
-    help = f'''
-    usage: python3 {program} <file path>
-            
-    notes: 
-        <file path> = 'default' puts the psf files under LLRS/resources/psf
-        <file path> should be entered as a relative path to the calling location. do not put a '/' at the end")
-        the file path provided is not validated so make sure to enter it correctly!")
-    '''
-
-    if num_args > 1:    # two or more
-        current_directory = os.getcwd()
-        if argv[1] == '--help':
+    i = 1
+    while i < len(argv):
+        if argv[i] == '--help':
             print(help)
             exit()
-        elif argv[1] == 'default':
-            file_path = home + '/Experiment/experiment/modules/LLRS/resources/psf/'
+        elif argv[i] == '--address':
+            i += 1
+            file_path = argv[i]
+        elif argv[i] == '--pickle':
+            i += 1
+            pickle_path = argv[i]
         else:           # interperet as file path
-            file_path = current_directory + '/' + argv[1] + '/'
-    else:   # demand that args be included
-        print(help)
-        exit()
+            current_directory = os.getcwd()
+            file_path = current_directory + '/' + argv[1] 
+        i += 1
 
-    return [file_path]
+    return [file_path, pickle_path]
 
 # 
 # Writes a binary and txt psf file to the desired file path
 # Return: 
 # 
-def generate_psf(file_path, params, binary=True):
+def generate_psf(file_path, pickle_path, params, binary=True):
 
     # psf_dict            = pickle.load(open(Addresses.traps_psf.replace("raaqs","raaqs3"), "rb"))
     
-    psf_dict            = pickle.load(open(Addresses.traps_psf, "rb"))
+    psf_dict            = pickle.load(open(pickle_path, "rb"))
+    print(pickle_path)
 #    psf_dict            = pickle.load(open("/home/tqtraaqs2/Z/Configs/2023-12-12/traps_psf.pickle", "rb"))
     centers             = psf_dict.get("centers")
     psf_values          = psf_dict.get("psfs")
@@ -94,10 +92,10 @@ def generate_psf(file_path, params, binary=True):
     # print(output_tuples)
 
     # serialize tuples
-    file_name = os.path.join(file_path,"psfs.bin")
+    #file_name = os.path.join(file_path,"psfs.bin")
 
     if binary:
-        with open(file_name, 'wb') as file:
+        with open(file_path, 'wb') as file:
             
             for (atom_idx, coord, psf_val) in output_tuples:
                 atom_idx_binary = struct.pack("N", atom_idx)
@@ -120,7 +118,7 @@ psf_params_dict = {
 }
 home = os.path.expanduser("~")
 
-[file_path] = process_args(sys.argv)
-generate_psf(file_path, psf_params_dict, binary=True) 
+[file_path, pickle_path] = process_args(sys.argv)
+generate_psf(file_path, pickle_path, psf_params_dict, binary=True) 
 print(f"psf files saved to {file_path}")
 print("generate_psf() complete...")

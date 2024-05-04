@@ -27,7 +27,6 @@ awg_dep = awg_proj.get_variable('awg_dep')
 # targets
 llrs_lib_waveform_streaming = library('llrs-lib-waveform-streaming', 
     llrs_lib_waveform_streaming_src,
-    cuda_args: ['-D LOGGING_RUNTIME'],
     include_directories: [llrs_lib_waveform_streaming_inc],
     dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
 
