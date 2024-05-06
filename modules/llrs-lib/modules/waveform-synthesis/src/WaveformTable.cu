@@ -20,14 +20,14 @@ std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
 
 Synthesis::WaveformTable::WaveformTable(WaveformRepo *p_repo,
                                         bool is_transposed, int waveform_mask) {
-    
+
     this->waveform_mask = waveform_mask;
     this->secondary_chan = (is_transposed) ? CHAN_1 : CHAN_0;
     this->primary_chan = (is_transposed) ? CHAN_0 : CHAN_1;
     this->secondary_size = (is_transposed) ? (*p_repo).get_dimension_y()
-                                     : (*p_repo).get_dimension_x();
+                                           : (*p_repo).get_dimension_x();
     this->primary_size = (is_transposed) ? (*p_repo).get_dimension_x()
-                                   : (*p_repo).get_dimension_y();
+                                         : (*p_repo).get_dimension_y();
     this->primary_static = init_primary(STATIC, primary_size, p_repo);
     this->primary_extract = init_primary(EXTRACT, primary_size, p_repo);
     this->primary_implant = init_primary(IMPLANT, primary_size, p_repo);

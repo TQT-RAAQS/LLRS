@@ -219,8 +219,8 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
     // point short circuit null to idle
     awg->seqmem_update(short_circuit_step, short_circuit_seg_idx, 1,
                        idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
-    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                       short_circuit_step, SPCSEQ_ENDLOOPALWAYS);
+    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, short_circuit_step,
+                       SPCSEQ_ENDLOOPALWAYS);
     awg->wait_for_data_load();
 
 #ifdef LOGGING_RUNTIME

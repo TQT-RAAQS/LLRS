@@ -87,7 +87,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     State *idle_state = new State([this]() { this->st_IDLE(); },
                                   [this]() { return server->listen(); }, f);
     State *llrs_state = new State([this]() { this->st_LLRS_EXEC(); },
-                                  [this]() { return 1; }, f);                                  
+                                  [this]() { return 1; }, f);
     State *config_hw_state =
         new State([this]() { this->st_CONFIG_HW(); }, []() { return 1; }, f);
     State *config_sm_state =
@@ -107,8 +107,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
                   f);
     State *trigger_done_state =
         new State([this]() { this->st_TRIGGER_DONE(); }, []() { return 1; }, f);
-    State *last_trigger_done_state = new State(
-        [this]() { this->st_LAST_TRIGGER_DONE(); }, [this]() { return server->listen(); }, f);
+    State *last_trigger_done_state =
+        new State([this]() { this->st_LAST_TRIGGER_DONE(); },
+                  [this]() { return server->listen(); }, f);
     State *reset_state =
         new State([this]() { this->st_RESET(); }, []() { return 1; }, f);
     State *close_awg = new State([this]() { this->st_CLOSE_AWG(); },
@@ -384,8 +385,8 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
                 nlohmann::json jsonMoves;
                 for (const auto &move : movesPerCycle[cycle_index]) {
                     jsonMoves.push_back({std::get<0>(move), std::get<1>(move),
-                                        std::get<2>(move), std::get<3>(move),
-                                        std::get<4>(move)});
+                                         std::get<2>(move), std::get<3>(move),
+                                         std::get<4>(move)});
                 }
                 cycle_data["moves"] = jsonMoves;
             }

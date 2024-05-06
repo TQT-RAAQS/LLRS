@@ -298,7 +298,6 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                      << std::endl;
 #endif
 
-
 #ifdef PRE_SOLVED
                 /* SWAP with pre-solved from processed */
                 current_config =
