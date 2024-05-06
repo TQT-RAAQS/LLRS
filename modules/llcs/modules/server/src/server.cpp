@@ -65,29 +65,13 @@ void replaceStr(std::string &requestStr, std::string toReplace,
 
 void Server::getMetadataAddress(std::string &requestStr1) {
     replaceStr(requestStr1, "\\", "/");
-    replaceStr(requestStr1, "Z:", "/home/tqtraaqs1/Z");
+    replaceStr(requestStr1, "Z:", "~/Z");
     replaceStr(requestStr1, "labscript_shot_outputs", "llrs_data");
     replaceStr(requestStr1, ".h5", "/metadata.json");
     std::cout << requestStr1 << std::endl;
     metadata_file_path = requestStr1;
 }
 std::string Server::get_metadata_file_path() { return metadata_file_path; }
-
-std::string Server::adjust_address(std::string filename) {
-    std::string adjusted_filename = "";
-
-    int start_index = 0;
-    if (filename.substr(0, 3) == "Z:\\") {
-        start_index = 3;
-        adjusted_filename = "/home/tqtraaqs1/Z/";
-    }
-
-    for (int i = start_index; i < filename.length(); i++) {
-        adjusted_filename += (filename[i] == '\\') ? '/' : filename[i];
-    }
-
-    return adjusted_filename;
-}
 
 std::string Server::get_config_file_path() { return config_file_path; }
 /**
@@ -170,7 +154,7 @@ int Server::listen() {
             std::string tempo = requestStr;
             getMetadataAddress(tempo);
             std::cout << tempo << std::endl;
-            config_file_path = adjust_address(requestStr);
+            config_file_path = requestStr;
             std::cout << statusMsg << std::endl;
             zmq::message_t status(statusMsg.size());
             memcpy(status.data(), statusMsg.data(), statusMsg.size());
@@ -183,7 +167,7 @@ int Server::listen() {
             memcpy(status1.data(), statusMsg.data(), statusMsg.size());
             socket.send(status1);
             std::cout << "Got it" << std::endl;
-            transition = 2;
+            transition = 0;
         } else if (requestStr == "SEND_DATA") {
             std::string statusMsg = metadata_file_path;
             zmq::message_t status(statusMsg.size());

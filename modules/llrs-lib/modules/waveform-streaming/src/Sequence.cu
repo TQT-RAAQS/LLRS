@@ -216,17 +216,22 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
     // load single segment
     awg->load_data_async_start(short_circuit_seg_idx, p_buffer_double,
                                samples_per_segment * 2 * sizeof(short));
-    // point short circuit null to idle
-    awg->seqmem_update(short_circuit_step, short_circuit_seg_idx, 1,
-                       idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
-    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                       short_circuit_step, SPCSEQ_ENDLOOPALWAYS);
     awg->wait_for_data_load();
 
 #ifdef LOGGING_RUNTIME
     p_collector->end_timer("V-First-Upload", trial_num, rep_num, cycle_num);
     p_collector->start_timer("V-First-Update", trial_num, rep_num, cycle_num);
 #endif
+
+    last_control_step = short_circuit_step;
+
+    // point idle segment to short-circuit segment
+    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, short_circuit_step,
+                       SPCSEQ_ENDLOOPALWAYS);
+
+    // point short circuit null to idle
+    awg->seqmem_update(short_circuit_null_step, idle_segment_idx, 1,
+                       idle_segment_idx, SPCSEQ_ENDLOOPALWAYS);
 
 #ifdef LOGGING_RUNTIME
     p_collector->end_timer("V-First-Update", trial_num, rep_num, cycle_num);
