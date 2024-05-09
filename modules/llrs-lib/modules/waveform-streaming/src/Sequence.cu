@@ -1,14 +1,20 @@
 #include "Sequence.h"
 
+template <typename AWG_T> void Stream::Sequence<AWG_T>::configure() {
+    num_total_segments = awg->get_num_segments();
+    waveforms_per_segment = awg->get_waveforms_per_segment();
+    samples_per_segment = awg->get_samples_per_segment();
+    null_segment_idx = num_total_segments - 1;
+    short_circuit_seg_idx = num_total_segments - 2;
+    short_circuit_step = short_circuit_seg_idx * 2 - 1;
+    short_circuit_null_step = short_circuit_seg_idx * 2;
+}
+
 template <typename AWG_T>
 void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx,
                                     bool _2d, int Nt_x, int Nt_y) {
     this->idle_segment_idx = idle_segment_idx;
     this->idle_step_idx = idle_step_idx;
-    num_total_segments = awg->get_num_segments();
-    waveforms_per_segment = awg->get_waveforms_per_segment();
-    samples_per_segment = awg->get_samples_per_segment();
-
     // --- Idle, Null and Empty segments init---
 
     // idle segment init
@@ -19,10 +25,8 @@ void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx,
     get_1d_static_wfm(idle_segment_data,
                       num_idle_samples / awg->get_waveform_length(),
                       Nt_x); // DKEA: for 1D integration
-    // awg->fill_transfer_buffer(idle_segment_data, num_idle_samples, 0);
 
     // null segment init
-    null_segment_idx = num_total_segments - 1;
     int NULL_MASK = 1 << 15; // 15th bit set to 1 for null segment counter
     int num_null_samples = awg->get_null_segment_length();
     int16 *null_segment_data = nullptr;
@@ -52,9 +56,6 @@ void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx,
     int empty_segment_buffer_size =
         awg->allocate_transfer_buffer(num_empty_samples, empty_segment_data);
     awg->fill_transfer_buffer(empty_segment_data, num_empty_samples, 0);
-
-    // short circuit segment init
-    short_circuit_seg_idx = num_total_segments - 2;
 
     current_step = 0;
 
@@ -108,9 +109,6 @@ void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx,
     }
 
     // set up sequence memory for short circuit segment
-    short_circuit_step = short_circuit_seg_idx * 2 - 1;
-    short_circuit_null_step = short_circuit_seg_idx * 2;
-
     // point short circuit to it's own null
     awg->seqmem_update(short_circuit_step, short_circuit_seg_idx, 1,
                        short_circuit_null_step, SPCSEQ_ENDLOOPALWAYS);

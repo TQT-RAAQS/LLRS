@@ -13,7 +13,6 @@ template <typename AWG_T> class TriggerDetector {
 
   public:
     TriggerDetector();
-    void generateSineWave(int16 *pnData, int samples, double sampleRate);
     int setup(int16 *pnData);
     int resetDetectionSegments();
     int busyWait();

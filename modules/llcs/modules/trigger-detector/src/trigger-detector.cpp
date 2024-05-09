@@ -8,29 +8,6 @@ TriggerDetector<AWG_T>::TriggerDetector()
     : awg{std::make_shared<AWG_T>()}, samples_per_td_segment{
                                           awg->get_samples_per_segment()} {}
 
-template <typename AWG_T>
-void TriggerDetector<AWG_T>::generateSineWave(int16 *pnData, int samples,
-                                              double sampleRate) {
-    double frequency = sampleRate / samples * 10000; // about 30MHz signal
-    double amplitude = 8000;
-    double twoPi = 2.0 * M_PI;
-
-    int lSetChannels = awg->get_num_channels();
-    int dwFactor = 1;
-    int dwSegmentLenSample = dwFactor * samples;
-    for (int i = 0; i < dwSegmentLenSample; i++) {
-        double t = static_cast<double>(i) / sampleRate;
-        double angle = twoPi * frequency * t;
-        double sineValue = sin(angle);
-        // pnData[i] = sineValue * amplitude;
-        // pnData[2*i] = sineValue * amplitude;
-        // pnData[2*i + 1] = sineValue * amplitude;
-        for (int lChannel = 0; lChannel < lSetChannels; ++lChannel) {
-            pnData[i * lSetChannels + lChannel] = sineValue * amplitude;
-        }
-    }
-}
-
 template <typename AWG_T> int TriggerDetector<AWG_T>::setup(int16 *pnData) {
 
     // DATA MEMORY
@@ -43,14 +20,13 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::setup(int16 *pnData) {
     // update
     busyWait();
 
+    awg->start_stream();
     return SYS_OK;
 }
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
     float timeout =
         awg->get_waveform_duration() * awg->get_waveforms_per_segment() * 1e6;
-    // std::cout << "TD Busy Waiting for " << timeout << " microseconds" <<
-    // std::endl;
     auto startTime = std::chrono::high_resolution_clock::now();
     auto targetDuration = std::chrono::duration<float, std::micro>(timeout);
 

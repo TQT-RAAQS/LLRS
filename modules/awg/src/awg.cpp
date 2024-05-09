@@ -9,7 +9,16 @@
 /**
  * @brief Constructor for AWG class
  */
-AWG::AWG() { configure(); }
+AWG::AWG() {
+    configure();
+
+    /// fill the awg memory with zeros
+    pnData = nullptr;
+    qwBufferSize = allocate_transfer_buffer(samples_per_segment, pnData);
+    fill_transfer_buffer(pnData, samples_per_segment, 0);
+    init_and_load_all(pnData, samples_per_segment);
+    vFreeMemPageAligned(pnData, qwBufferSize);
+}
 
 /**
  * @brief Destructor for AWG class
@@ -114,6 +123,12 @@ int AWG::configure() {
            (AWG_MEMORY_SIZE / bps) /
                config.awg_num_segments); // assert that the samples per segments
                                          // matches the size of the AWG memory
+
+    /// Allocate the continuous buffer
+    spcm_dwGetContBuf_i65(p_card, SPCM_BUF_DATA, &continuousBuffer,
+                          &continuousBufferSize);
+    INFO << "Physically continuous buffer if size " << vFreeMemPageAligned
+         << " was successfully allocated." << std::endl;
 
     return status;
 }
@@ -461,13 +476,10 @@ int AWG::get_current_step() {
  * @param pnData Pointer to allocated transfer buffer
  * @return Size of allocated transfer buffer
  */
-int AWG::allocate_transfer_buffer(int num_samples, int16 *&pnData) {
-    int qwBufferSize = lSetChannels * dwFactor * num_samples * bps;
-
-    void *pvBuffer = (void *)pvAllocMemPageAligned(qwBufferSize);
-    pnData = (int16 *)pvBuffer;
-
-    return qwBufferSize;
+TransferBuffer AWG::allocate_transfer_buffer(int num_samples) {
+    size_t qwBufferSize = lSetChannels * dwFactor * num_samples * bps;
+    return TransferBuffer(this, qwBufferSize,
+                          qwBufferSize <= continuousBufferSize);
 }
 
 /**
@@ -477,15 +489,15 @@ int AWG::allocate_transfer_buffer(int num_samples, int16 *&pnData) {
  * @param value Value to fill the transfer buffer with
  * @return status code
  */
-int AWG::fill_transfer_buffer(int16 *pnData, int num_samples, int16 value) {
+int AWG::fill_transfer_buffer(TransferBuffer &tb, int num_samples,
+                              int16 value) {
     int dwSegmentLenSample = dwFactor * num_samples;
     for (int i = 0; i < dwSegmentLenSample; i++) {
         for (int lChannel = 0; lChannel < lSetChannels; ++lChannel) {
-            pnData[i * lSetChannels + lChannel] = value;
+            (*tb)[bps * (i * lSetChannels + lChannel)] = value;
         }
     }
-
-    return AWG_OK;
+    return 0;
 }
 
 /**
@@ -495,4 +507,24 @@ void AWG::print_awg_error() {
     char error_text[ERRORTEXTLEN];
     spcm_dwGetErrorInfo_i32(p_card, NULL, NULL, error_text);
     std::cerr << error_text << std::endl;
+}
+
+AWG::TransferBuffer::TransferBuffer(AWG &awg, size_t size, bool contBuf)
+    : data{nullptr}, size{size}, contBuf{contBuf} {
+    if (contBuf) {
+        data = awg.continuousBuffer;
+        awg.continuousBuffer = awg.continousBuffer + size;
+        awg.continuousBufferSize -= size;
+    } else {
+        data = (void *)pvAllocMemPageAligned(qwBufferSize);
+    }
+}
+
+AWG::TransferBuffer::~TransferBuffer() {
+    if (!contBuf) {
+        vFreeMemPageAligned(data, size);
+    }
+    /// The continuous buffer can not be freed, we can design our own allocation
+    /// system for the buffer but it's not worth the effort as it will very
+    /// rarely be useful.
 }

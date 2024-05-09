@@ -16,21 +16,20 @@ namespace Stream {
 
 template <typename AWG_T> class Sequence {
   public:
-    /**
-     * @brief Construct a new Sequence object
-     * @param p_collector The pointer to the collector singleton object
-     * @param wf_table  The reference to the waveform table object
-     */
     Sequence(Util::Collector *p_collector, Synthesis::WaveformTable &wf_table)
-        : p_collector{p_collector}, wf_table{wf_table} {}
+        : p_collector{p_collector}, wf_table{wf_table} {
+        configure();
+    }
 
     Sequence(std::shared_ptr<AWG_T> &awg, Util::Collector *p_collector,
              Synthesis::WaveformTable &wf_table)
-        : awg{awg}, p_collector{p_collector}, wf_table{wf_table} {}
+        : awg{awg}, p_collector{p_collector}, wf_table{wf_table} {
+        configure();
+    }
 
+    void configure();
     void setup(int idle_segment_idx, int idle_step_idx, bool _2d, int Nt_x,
                int Nt_y);
-    void pre_load();
     bool load_and_stream(std::vector<Reconfig::Move> &moves_list, int trial_num,
                          int rep_num, int cycle_num);
     void emccd_trigger() { awg->generate_async_output_pulse(EMCCD); }
@@ -61,7 +60,7 @@ template <typename AWG_T> class Sequence {
     size_t last_control_step;
     int short_circuit_null_step;
     int short_circuit_step;
-    int current_step;
+    int current_step = 0;
     short *p_contbuf_one;
     short *p_buffer_lookup;
     short *p_buffer_upload;
