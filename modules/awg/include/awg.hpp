@@ -28,8 +28,6 @@ class AWG {
                             int end);
     void setup_segment_memory(int16 *pnData);
     int wait_for_data_load();
-    int allocate_transfer_buffer(int num_samples, int16 *&pnData);
-    int fill_transfer_buffer(int16 *pnData, int num_samples, int16 value);
     void generate_async_output_pulse(TriggerType type);
 
     /// Getters
@@ -68,7 +66,9 @@ class AWG {
         ~TransferBuffer();
         friend class AWG;
     };
-
+    TransferBuffer allocate_transfer_buffer(int num_samples, int16 *&pnData);
+    int fill_transfer_buffer(TransferBuffer& tb, int num_samples, int16 value);
+ 
   private:
     int set_sample_rate(int sample_rate);
     int set_external_clock_mode(int external_clock_freq);
