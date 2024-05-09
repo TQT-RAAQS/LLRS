@@ -67,8 +67,8 @@ class AWG {
         friend class AWG;
     };
     TransferBuffer allocate_transfer_buffer(int num_samples, int16 *&pnData);
-    int fill_transfer_buffer(TransferBuffer& tb, int num_samples, int16 value);
- 
+    int fill_transfer_buffer(TransferBuffer &tb, int num_samples, int16 value);
+
   private:
     int set_sample_rate(int sample_rate);
     int set_external_clock_mode(int external_clock_freq);

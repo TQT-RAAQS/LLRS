@@ -494,7 +494,7 @@ int AWG::fill_transfer_buffer(TransferBuffer &tb, int num_samples,
     int dwSegmentLenSample = dwFactor * num_samples;
     for (int i = 0; i < dwSegmentLenSample; i++) {
         for (int lChannel = 0; lChannel < lSetChannels; ++lChannel) {
-            ((short*)*tb)[i * lSetChannels + lChannel] = value;
+            ((short *)*tb)[i * lSetChannels + lChannel] = value;
         }
     }
     return 0;
