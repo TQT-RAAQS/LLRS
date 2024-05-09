@@ -54,6 +54,21 @@ class AWG {
     int get_last_step() const { return max_step - 1; };
     void print_awg_error();
 
+    class TransferBuffer {
+        void *buffer;
+        size_t size;
+        bool contBuf; // Is it a physically continuous buffer? See Spectrum's
+                      // "Continuous memory for increased data transfer rate"
+                      // feature
+
+        TransferBuffer(AWG &awg, size_t size, bool contBuf = false);
+
+      public:
+        void *operator*() { return buffer; }
+        ~TransferBuffer();
+        friend class AWG;
+    };
+
   private:
     int set_sample_rate(int sample_rate);
     int set_external_clock_mode(int external_clock_freq);
@@ -92,6 +107,9 @@ class AWG {
     int bps;
     int lSetChannels;
     int dwFactor;
+    void *continuousBuffer = nullptr;
+    uint64 continuousBufferSize = 0;
     int configure();
+    friend class TransferBuffer;
 };
 #endif

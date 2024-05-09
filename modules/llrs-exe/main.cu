@@ -64,11 +64,6 @@ int main(int argc, char *argv[]) {
     int16 *pnData = nullptr;
     const int64_t samples_per_segment = awg->get_samples_per_segment();
 
-    int qwBufferSize =
-        awg->allocate_transfer_buffer(samples_per_segment, pnData);
-    awg->fill_transfer_buffer(pnData, samples_per_segment, 0);
-    awg->init_and_load_all(pnData, samples_per_segment);
-
     l->setup(problem_config, llrs_idle_seg, llrs_idle_step);
     l->get_1d_static_wfm(pnData);
     awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);

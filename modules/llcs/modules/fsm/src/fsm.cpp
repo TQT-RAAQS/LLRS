@@ -445,16 +445,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
 
     const int64_t samples_per_segment = awg->get_samples_per_segment();
 
-    pnData = nullptr;
-    qwBufferSize = awg->allocate_transfer_buffer(samples_per_segment, pnData);
-    awg->fill_transfer_buffer(pnData, samples_per_segment, 0);
-    awg->init_and_load_all(pnData, samples_per_segment);
-
     l->setup("config.yml", llrs_idle_seg, llrs_idle_step);
     l->get_1d_static_wfm(pnData);
     trigger_detector->setup(pnData);
-
-    awg->start_stream();
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
