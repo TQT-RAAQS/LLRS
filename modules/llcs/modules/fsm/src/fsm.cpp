@@ -9,10 +9,6 @@
 using namespace std::this_thread; // sleep_for, sleep_until
 using namespace std::chrono;      // nanoseconds, system_clock, seconds
 
-// AWG Sequence Mode Global Configuration.
-const int llrs_idle_seg = 1;
-const int llrs_idle_step = 1;
-
 /**
  * @brief Constructor of the Finite State Machine class
  *
@@ -439,21 +435,24 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::runFSM() {
  * * * * * * * */
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
-    std::cout << "Starting AWG stream" << std::endl;
+    std::cout << "Starting LLRS setup" << std::endl;
     auto awg = trigger_detector->getAWG();
     l = new LLRS<AWG_T>{awg};
+    l->setup("config.yml", false, llrs_idle_step);
 
-    const int64_t samples_per_segment = awg->get_samples_per_segment();
-
-    l->setup("config.yml", llrs_idle_seg, llrs_idle_step);
-    l->get_1d_static_wfm(pnData);
-    trigger_detector->setup(pnData);
+    std::cout << "Starting AWG stream" << std::endl;
+    if (awg->get_idle_segment_wfm()) {
+        AWG_T::TransferBuffer tb = awg->allocate_transfer_buffer(
+            trigger_detector->get_samples_per_idle_segment());
+        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
+        trigger_detector->stream(tb);
+    } else {
+        trigger_detector->stream();
+    }
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
     std::cout << "FSM:: IDLE state" << std::endl;
-
-    return;
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_HW() {
@@ -472,8 +471,6 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_HW() {
     // l->small_setup(filepath);
 
     HWconfigured = true;
-
-    return;
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_SM() {
@@ -489,21 +486,17 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_SM() {
     // programStates(filepath);
     SMconfigured = true;
     numExperiments = 1;
-    return;
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_READY() {
     std::cout << "FSM:: READY state" << std::endl;
 
     std::cout << "Awaiting Hardware Trigger..." << std::endl;
-    return;
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_TRIGGER_DONE() {
     std::cout << "FSM:: TRIGGER_DONE state" << std::endl;
     numExperiments++;
-
-    return;
 }
 
 template <typename AWG_T>
@@ -515,8 +508,6 @@ void FiniteStateMachine<AWG_T>::st_LAST_TRIGGER_DONE() {
 
     saveMetadata(server->get_metadata_file_path());
     llrs_metadata.clear();
-
-    return;
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
