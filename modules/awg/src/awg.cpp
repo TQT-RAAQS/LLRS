@@ -9,16 +9,7 @@
 /**
  * @brief Constructor for AWG class
  */
-AWG::AWG() {
-    configure();
-
-    /// fill the awg memory with zeros
-    pnData = nullptr;
-    qwBufferSize = allocate_transfer_buffer(samples_per_segment, pnData);
-    fill_transfer_buffer(pnData, samples_per_segment, 0);
-    init_and_load_all(pnData, samples_per_segment);
-    vFreeMemPageAligned(pnData, qwBufferSize);
-}
+AWG::AWG() { configure(); }
 
 /**
  * @brief Destructor for AWG class
@@ -68,6 +59,7 @@ int AWG::read_config(std::string filename) {
     config.vpp = node["vpp"].as<int>();
     config.acq_timeout = node["acq_timeout"].as<int>();
     config.async_trig_amp = node["async_trig_amp"].as<int>();
+    config.idle_segment_wfm = node["idle_segment_wfm"].as<bool>();
 
     return 0;
 }
@@ -476,10 +468,11 @@ int AWG::get_current_step() {
  * @param pnData Pointer to allocated transfer buffer
  * @return Size of allocated transfer buffer
  */
-AWG::TransferBuffer AWG::allocate_transfer_buffer(int num_samples) {
+AWG::TransferBuffer AWG::allocate_transfer_buffer(int num_samples,
+                                                  bool contBuf) {
     size_t qwBufferSize = lSetChannels * dwFactor * num_samples * bps;
     return TransferBuffer(this, qwBufferSize,
-                          qwBufferSize <= continuousBufferSize);
+                          qwBufferSize <= continuousBufferSize && contBuf);
 }
 
 /**

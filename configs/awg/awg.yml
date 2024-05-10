@@ -12,7 +12,7 @@ waveform_duration:        100e-6        # waveform duration : float
 waveforms_per_segment:    32            # waveforms per segment : int 
 null_segment_length:      62400         # null segment length : int
 idle_segment_length:      62400         # idle segment length : int
-
+idle_segment_wfm:         true          # whether or not to fill the IDLE segment with static wfms
 
 # Trigger Settings
 trigger_size:             2000          # number of Waveforms repeated for the synchronized trigger: int

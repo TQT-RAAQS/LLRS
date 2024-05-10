@@ -50,6 +50,7 @@ class AWG {
     int get_current_step();
     int get_last_seg() const { return config.awg_num_segments - 1; };
     int get_last_step() const { return max_step - 1; };
+    bool get_idle_segment_wfm() const { return config.idle_segment_wfm(); }
     void print_awg_error();
 
     class TransferBuffer {
@@ -62,11 +63,12 @@ class AWG {
         TransferBuffer(AWG &awg, size_t size, bool contBuf = false);
 
       public:
-        void *operator*() { return buffer; }
+        short *operator*() { return (short *)buffer; }
         ~TransferBuffer();
         friend class AWG;
     };
-    TransferBuffer allocate_transfer_buffer(int num_samples, int16 *&pnData);
+    TransferBuffer allocate_transfer_buffer(int num_samples,
+                                            bool contBuf = false);
     int fill_transfer_buffer(TransferBuffer &tb, int num_samples, int16 value);
 
   private:
@@ -99,6 +101,7 @@ class AWG {
         int vpp;
         int acq_timeout;
         int async_trig_amp;
+        bool idle_segment_wfm;
         ~awg_config_t() { delete[] driver_path; }
     } config;
     drv_handle p_card;

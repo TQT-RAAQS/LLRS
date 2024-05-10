@@ -4,92 +4,113 @@ template <typename AWG_T> void Stream::Sequence<AWG_T>::configure() {
     num_total_segments = awg->get_num_segments();
     waveforms_per_segment = awg->get_waveforms_per_segment();
     samples_per_segment = awg->get_samples_per_segment();
+
+    idle_segment_idx = 0;
     null_segment_idx = num_total_segments - 1;
     short_circuit_seg_idx = num_total_segments - 2;
+
     short_circuit_step = short_circuit_seg_idx * 2 - 1;
     short_circuit_null_step = short_circuit_seg_idx * 2;
+
+    // --- Filling Transfer Buffers with zeros ---
+    awg->fill_transfer_buffer(lookup_buffer, samples_per_segment, 0);
+    awg->fill_transfer_buffer(upload_buffer, samples_per_segment, 0);
+    awg->fill_transfer_buffer(double_size_buffer, samples_per_segment * 2, 0);
 }
 
 template <typename AWG_T>
-void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx,
-                                    bool _2d, int Nt_x, int Nt_y) {
-    this->idle_segment_idx = idle_segment_idx;
+int Stream::Sequence<AWG_T>::setup(bool setup_idle_segment, int idle_step_idx,
+                                   bool _2d, int Nt_x, int Nt_y) {
     this->idle_step_idx = idle_step_idx;
-    // --- Idle, Null and Empty segments init---
+    this->setup_idle_segment = setup_idle_segment;
+
+    init_segments();
+    init_steps();
+    reset();
+}
+
+template <typename AWG_T> int init_segments() {
+
+    int status = 0;
 
     // idle segment init
-    int num_idle_samples = awg->get_idle_segment_length();
-    int16 *idle_segment_data = nullptr;
-    int idle_segment_buffer_size =
-        awg->allocate_transfer_buffer(num_idle_samples, idle_segment_data);
-    get_1d_static_wfm(idle_segment_data,
-                      num_idle_samples / awg->get_waveform_length(),
-                      Nt_x); // DKEA: for 1D integration
+    if (setup_idle_segment) { // Is LLRS responsible for init-ing the IDLE
+                              // segment?
+        int num_idle_samples = awg->get_idle_segment_length();
+        AWG_T::TransferBuffer idleTB =
+            awg->allocate_transfer_buffer(num_idle_samples, false);
 
-    // null segment init
-    int NULL_MASK = 1 << 15; // 15th bit set to 1 for null segment counter
-    int num_null_samples = awg->get_null_segment_length();
-    int16 *null_segment_data = nullptr;
-    int null_segment_buffer_size =
-        awg->allocate_transfer_buffer(num_null_samples, null_segment_data);
-    awg->fill_transfer_buffer(null_segment_data, num_null_samples, 0);
-
-    // make half the samples have the hardware trigger
-    for (int null_index = num_null_samples / 2; null_index < num_null_samples;
-         null_index++) {
-        if (_2d) {
-            // in 2 channels, we arm every other sample otherwise triggers
-            // aren't consistent
-            if (null_index % 2 == 0) {
-                null_segment_data[null_index] =
-                    NULL_MASK | null_segment_data[null_index];
-            }
+        if (awg->get_idle_segment_wfm()) { // depending on user config, either
+                                           // fill the buffer with 0s or STATIC
+                                           // wfms
+            get_static_wfm(*idleTB,
+                           num_idle_samples / awg->get_waveform_length(),
+                           Nt_x * Nt_y);
         } else {
-            null_segment_data[null_index] =
-                NULL_MASK | null_segment_data[null_index];
+            status |= awg->fill_transfer_buffer(idleTB, num_idle_samples, 0);
         }
+
+        status |= awg->init_and_load_range(
+            *idleTB, num_idle_samples, idle_segment_idx, idle_segment_idx + 1);
     }
 
-    // empty segment init
-    int num_empty_samples = samples_per_segment * 2;
-    int16 *empty_segment_data = nullptr;
-    int empty_segment_buffer_size =
-        awg->allocate_transfer_buffer(num_empty_samples, empty_segment_data);
-    awg->fill_transfer_buffer(empty_segment_data, num_empty_samples, 0);
+    // control segments init
+    {
+        AWG_T::TransferBuffer tb =
+            awg->allocate_transfer_buffer(samples_per_segment, false);
 
-    current_step = 0;
+        status |= awg->fill_transfer_buffer(tb, samples_per_segment, 0);
 
-    // --- Defining waveform buffers ---
-    p_buffer_lookup = nullptr;
-    p_buffer_upload = nullptr;
-    p_buffer_double = nullptr;
-    buffer_lookup_size =
-        awg->allocate_transfer_buffer(samples_per_segment, p_buffer_lookup);
-    buffer_upload_size =
-        awg->allocate_transfer_buffer(samples_per_segment, p_buffer_upload);
-    buffer_double_size =
-        awg->allocate_transfer_buffer(samples_per_segment * 2, p_buffer_double);
-    awg->fill_transfer_buffer(p_buffer_lookup, samples_per_segment, 0);
-    awg->fill_transfer_buffer(p_buffer_upload, samples_per_segment, 0);
-    awg->fill_transfer_buffer(p_buffer_double, samples_per_segment * 2, 0);
+        status |= awg->init_and_load_range(
+            *tb, samples_per_segment, idle_segment_idx, short_circuit_seg_idx);
+    }
 
-    // --- initialize AWG Memory ---
+    // double-sized segment init
+    {
+        int num_double_samples = samples_per_segment * 2;
 
-    // set first LLRS segment to idle
-    awg->init_and_load_range(idle_segment_data, num_idle_samples,
-                             idle_segment_idx, idle_segment_idx + 1);
-    vFreeMemPageAligned(idle_segment_data, idle_segment_buffer_size);
+        AWG_T::TransferBuffer doubleTB =
+            awg->allocate_transfer_buffer(num_double_samples, false);
 
-    // set last segment to null
-    awg->init_and_load_range(null_segment_data, num_null_samples,
-                             null_segment_idx, null_segment_idx + 1);
-    vFreeMemPageAligned(null_segment_data, null_segment_buffer_size);
+        status |= awg->fill_transfer_buffer(doubleTB, num_double_samples, 0);
 
-    // set second last segment to short-circuit segment
-    awg->init_and_load_range(empty_segment_data, num_empty_samples,
-                             short_circuit_seg_idx, short_circuit_seg_idx + 1);
-    vFreeMemPageAligned(empty_segment_data, empty_segment_buffer_size);
+        status |= awg->init_and_load_range(doubleTB, num_double_samples,
+                                           short_circuit_seg_idx,
+                                           short_circuit_seg_idx + 1);
+    }
 
+    // null segment init
+    {
+        int NULL_MASK = 1 << 15; // 15th bit set to 1 for null segment counter
+        int num_null_samples = awg->get_null_segment_length();
+
+        AWG_T::TransferBuffer nullTB =
+            awg->allocate_transfer_buffer(num_null_samples, false);
+
+        awg->fill_transfer_buffer(nullTB, num_null_samples, 0);
+
+        // make half the samples have the hardware trigger
+        for (int null_index = num_null_samples / 2;
+             null_index < num_null_samples; null_index++) {
+            if (_2d) {
+                // in 2 channels, we arm every other sample otherwise triggers
+                // aren't consistent
+                if (null_index % 2 == 0) {
+                    (*nullTB)[null_index] =
+                        NULL_MASK | null_segment_data[null_index];
+                }
+            } else {
+                null_segment_data[null_index] =
+                    NULL_MASK | (*nullTB)[null_index];
+            }
+        }
+
+        awg->init_and_load_range(*nullTB, num_null_samples, null_segment_idx,
+                                 null_segment_idx + 1);
+    }
+}
+
+template <typename AWG_T> int init_steps() {
     // make idle step point to itself
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
                        SPCSEQ_ENDLOOPALWAYS);
@@ -116,40 +137,15 @@ void Stream::Sequence<AWG_T>::setup(int idle_segment_idx, int idle_step_idx,
     // point short circuit null to itself
     awg->seqmem_update(short_circuit_null_step, idle_segment_idx, 1,
                        short_circuit_null_step, SPCSEQ_ENDLOOPALWAYS);
+}
+
+template <typename AWG_T> void Stream::Sequence<AWG_T>::reset() {
     move_idx = 0;
     load_seg_idx = 0;
     old_control = 0;
     new_control = 0;
     old_null = 0;
     played_first_seg = 0;
-}
-
-template <typename AWG_T>
-void Stream::Sequence<AWG_T>::get_1d_static_wfm(int16 *pnData, int num_wfms,
-                                                int Nt_x) {
-
-    short *move_wf_ptr = wf_table.get_primary_wf_ptr(STATIC, 0, Nt_x, Nt_x);
-
-    for (int i = 0; i < num_wfms; ++i) {
-        memcpy(pnData + i * awg->get_waveform_length(), move_wf_ptr,
-               awg->get_waveform_length() * sizeof(short));
-    }
-}
-
-template <typename AWG_T> void Stream::Sequence<AWG_T>::pre_load() {
-    // set up sequence memory to have even and odd be control and null steps
-    // respectively, throughout all AWG memory
-    for (int seg_idx = idle_segment_idx + 1; seg_idx <= num_total_segments - 2;
-         seg_idx++) {
-
-        // point control to corresponding null
-        awg->seqmem_update(seg_idx * 2 - 1, seg_idx, 1, seg_idx * 2,
-                           SPCSEQ_ENDLOOPALWAYS);
-
-        // point null to itself
-        awg->seqmem_update(seg_idx * 2, null_segment_idx, 1, seg_idx * 2,
-                           SPCSEQ_ENDLOOPALWAYS);
-    }
 }
 
 template <typename AWG_T>
@@ -201,9 +197,6 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
 #endif
 
     // lookup all waveforms
-    // std::fill(p_contbuf_one, p_contbuf_one + samples_per_segment * 2 , 0); //
-    // clear lookup buffer wf_segment_lookup(wf_table, p_contbuf_one,
-    // moves_list, waveforms_per_segment * 2, move_idx);
     std::fill(p_buffer_double, p_buffer_double + samples_per_segment * 2, 0);
     wf_segment_lookup(p_buffer_double, moves_list, waveforms_per_segment * 2);
 #ifdef LOGGING_RUNTIME
@@ -482,13 +475,16 @@ void Stream::Sequence<AWG_T>::wf_segment_lookup(
     }
 }
 
-template <typename AWG_T> void Stream::Sequence<AWG_T>::reset() {
-    move_idx = 0;
-    load_seg_idx = 0;
-    old_control = 0;
-    new_control = 0;
-    old_null = 0;
-    played_first_seg = 0;
+template <typename AWG_T>
+void Stream::Sequence<AWG_T>::get_static_wfm(int16 *pnData, size_t num_wfms,
+                                             int Nt_x) {
+
+    short *move_wf_ptr = wf_table.get_primary_wf_ptr(STATIC, 0, Nt_x, Nt_x);
+
+    for (int i = 0; i < num_wfms; ++i) {
+        memcpy(pnData + i * awg->get_waveform_length(), move_wf_ptr,
+               awg->get_waveform_length() * sizeof(short));
+    }
 }
 
 template class Stream::Sequence<AWG>;

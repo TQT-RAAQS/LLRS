@@ -9,15 +9,16 @@
 
 template <typename AWG_T> class TriggerDetector {
     std::shared_ptr<AWG_T> awg;
-    int64_t samples_per_td_segment;
+    size_t samples_per_idle_segment;
 
   public:
     TriggerDetector();
     int setup(int16 *pnData);
-    int resetDetectionSegments();
+    int resetDetectionStep();
     int busyWait();
     int detectTrigger(int timeout = -1);
-    std::shared_ptr<AWG_T> &getAWG();
+    std::shared_ptr<AWG_T> &getAWG() { return awg; }
+    size_t get_samples_per_idle_segment() { return samples_per_idle_segment(); }
 };
 
 #endif

@@ -5,28 +5,66 @@
  */
 template <typename AWG_T>
 TriggerDetector<AWG_T>::TriggerDetector()
-    : awg{std::make_shared<AWG_T>()}, samples_per_td_segment{
-                                          awg->get_samples_per_segment()} {}
-
-template <typename AWG_T> int TriggerDetector<AWG_T>::setup(int16 *pnData) {
+    : awg{std::make_shared<AWG_T>()}, samples_per_idle_segment{
+                                          awg->get_idle_segment_length() *
+                                          awg->get_waveform_length()} {
+    int status = 0;
 
     // DATA MEMORY
-    awg->init_and_load_range(pnData, samples_per_td_segment, 0, 1);
+    // trigger-detector initilizes and loads the first segment
+    AWG_T::TransferBuffer tb =
+        awg->allocate_transfer_buffer(samples_per_idle_segment, false);
+    status |= awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
 
     // SEQUENCE MEMORY
-    awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+    status |= awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
 
     // Ensure there is enough time for the first idle segment's pointer to
     // update
-    busyWait();
+    status |= busyWait();
 
-    awg->start_stream();
-    return SYS_OK;
+    if (!status) {
+        std::cerr << "Problem while trigger detector's setup." << std::endl;
+    }
+}
+
+template <typename AWG_T>
+int TriggerDetector<AWG_T>::stream(AWG_T::TransferBuffer &tb) {
+
+    int status = 0;
+
+    // DATA MEMORY
+    status |= awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
+
+    // SEQUENCE MEMORY
+    status |= awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+
+    // Ensure there is enough time for the first idle segment's pointer to
+    // update
+    status |= busyWait();
+    status |= awg->start_stream();
+
+    return status;
+}
+
+template <typename AWG_T> int TriggerDetector<AWG_T>::stream() {
+
+    int status = 0;
+
+    // SEQUENCE MEMORY
+    status |= awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+
+    // Ensure there is enough time for the first idle segment's pointer to
+    // update
+    status |= busyWait();
+    status |= awg->start_stream();
+
+    return status;
 }
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
     float timeout =
-        awg->get_waveform_duration() * awg->get_waveforms_per_segment() * 1e6;
+        awg->get_waveform_duration() * awg->get_idle_segment_length() * 1e6;
     auto startTime = std::chrono::high_resolution_clock::now();
     auto targetDuration = std::chrono::duration<float, std::micro>(timeout);
 
@@ -40,14 +78,12 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
         }
     }
 
-    return SYS_OK;
+    return 0;
 }
 
-template <typename AWG_T> int TriggerDetector<AWG_T>::resetDetectionSegments() {
+template <typename AWG_T> int TriggerDetector<AWG_T>::resetDetectionStep() {
 
-    awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
-
-    return SYS_OK;
+    return awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
 }
 
 /**
@@ -58,14 +94,8 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::resetDetectionSegments() {
  */
 template <typename AWG_T>
 int TriggerDetector<AWG_T>::detectTrigger(int timeout) {
-    int current_seg = -1;
-    int last_seg = -1;
-    int counter = 0;
-
-    spcm_dwGetParam_i32(awg->get_card(), SPC_SEQMODE_STATUS, &current_seg);
-    last_seg = current_seg;
-
-    // std::cout << "Starting Current Seg: " << current_seg << std::endl;
+    int current_step = awg->get_current_step();
+    int last_step = current_step;
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto targetDuration = std::chrono::seconds(timeout);
@@ -78,28 +108,20 @@ int TriggerDetector<AWG_T>::detectTrigger(int timeout) {
             break;
         }
 
-        spcm_dwGetParam_i32(awg->get_card(), SPC_SEQMODE_STATUS, &current_seg);
-        // std::cout << "Current Seg: " << current_seg << std::endl;
-
-        if ((current_seg != last_seg)) {
+        current_step = awg->get_current_step();
+        if ((current_step != last_step)) {
             // trigger event occured
             std::cout
-                << "TriggerDetector: trigger event occured - Current Seg: "
-                << current_seg << std::endl;
-            std::cout << "last_seg: " << last_seg << std::endl;
-            counter++;
-            last_seg = current_seg;
+                << "TriggerDetector: trigger event occured - Current Step: "
+                << current_step << std::endl;
+            std::cout << "last_step: " << last_step << std::endl;
+            last_step = current_step;
 
-            return current_seg;
+            return current_step;
         }
     }
 
-    return NO_HW_TRIG;
-}
-
-template <typename AWG_T>
-std::shared_ptr<AWG_T> &TriggerDetector<AWG_T>::getAWG() {
-    return awg;
+    return -1;
 }
 
 template class TriggerDetector<AWG>;

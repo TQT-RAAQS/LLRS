@@ -66,13 +66,14 @@ void LLRS<AWG_T>::small_setup(std::string json_input) {
 /**
  * @brief Sets up the LLRS
  * @param input => config filename
- * @param llrs_seg_off => index of idle segment (data memory)
+ * @param setup_idle_segment => Is LLRS setting up the idle segment?
  * @param llrs_step_off => index of idle step (sequence memory)
  * @param problem_id => metadata filepath
  */
 template <typename AWG_T>
-void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
-                        size_t llrs_step_off, std::string problem_id) {
+void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
+                        size_t llrs_seg_off, size_t llrs_step_off,
+                        std::string problem_id) {
     std::cout << "LLRS: setup" << std::endl;
 
     /* Direct std log to file as its buffer */
@@ -138,7 +139,7 @@ void LLRS<AWG_T>::setup(std::string input, size_t llrs_seg_off,
         wfm_mask, vpp, user_input.read_experiment_coefx_path(),
         user_input.read_experiment_coefy_path(), true);
 
-    awg_sequence->setup(llrs_seg_off, llrs_step_off, _2d, Nt_x, Nt_y);
+    awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, Nt_x, Nt_y);
 
     // extra control logic
     trial_num = 0;

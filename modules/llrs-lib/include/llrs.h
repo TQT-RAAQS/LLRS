@@ -98,8 +98,8 @@ template <typename AWG_T> class LLRS {
     LLRS(std::shared_ptr<AWG_T> &awg);
     void clean();
     ~LLRS() { clean(); }
-    void setup(std::string json_input, size_t llrs_seg_offset,
-               size_t llrs_step_offset, std::string problem_id = "");
+    void setup(std::string json_input, bool setup_idle_segment,
+               int llrs_step_offset, std::string problem_id = "");
     void small_setup(std::string json_input);
     int execute();
     void reset();
@@ -111,9 +111,9 @@ template <typename AWG_T> class LLRS {
     int getRepNum();
     void store_moves();
     const Metadata &getMetadata() const { return metadata; };
-    void get_1d_static_wfm(int16 *pnData) {
-        awg_sequence->get_1d_static_wfm(pnData,
-                                        awg_sequence->get_wfm_per_segment(),
+    void get_idle_wfm(AWG_T::TransferBuffer& tb, size_t samples_per_segment) {
+        awg_sequence->get_static_wfm(*tb,
+                                        samples_per_segment,
                                         metadata.getNtx() * metadata.getNty());
     }
 };
