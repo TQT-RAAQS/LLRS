@@ -241,9 +241,9 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
     case LINEAR_EXACT_V2_1D:
     case LINEAR_EXACT_1D: {
         size_t paddings_required =
-            src.size() < wfm_per_segment
+            src.size() < 2 * wfm_per_segment
                 ? 2 * wfm_per_segment - src.size()
-                : wfm_per_segment - src.size() % wfm_per_segment;
+                : wfm_per_segment - (src.size() % wfm_per_segment);
         ret.reserve(src.size() + paddings_required);
         for (size_t k = 0; k < src.size(); ++k) {
             size_t src_val = src[k];

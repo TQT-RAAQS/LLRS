@@ -368,6 +368,8 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                     moves_list.end());
 
 #ifdef LOGGING_RUNTIME
+                p_collector->end_timer("IV-Translate", trial_num, rep_num,
+                                       cycle_num);
                 p_collector->start_timer("IV-Translate", trial_num, rep_num,
                                          cycle_num);
 #endif
