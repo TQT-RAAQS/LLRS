@@ -438,11 +438,11 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     std::cout << "Starting LLRS setup" << std::endl;
     auto awg = trigger_detector->getAWG();
     l = new LLRS<AWG_T>{awg};
-    l->setup("config.yml", false, llrs_idle_step);
+    l->setup("config.yml", false, 1);
 
     std::cout << "Starting AWG stream" << std::endl;
     if (awg->get_idle_segment_wfm()) {
-        AWG_T::TransferBuffer tb = awg->allocate_transfer_buffer(
+        auto tb = awg->allocate_transfer_buffer(
             trigger_detector->get_samples_per_idle_segment());
         l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
         trigger_detector->stream(tb);
@@ -517,21 +517,18 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
     }
 
     auto awg = trigger_detector->getAWG();
-
     l = new LLRS<AWG_T>{awg};
+    l->setup("config.yml", false, 1);
 
-    const int64_t samples_per_segment = awg->get_samples_per_segment();
-
-    pnData = nullptr;
-    qwBufferSize = awg->allocate_transfer_buffer(samples_per_segment, pnData);
-    awg->fill_transfer_buffer(pnData, samples_per_segment, 0);
-    awg->init_and_load_all(pnData, samples_per_segment);
-
-    l->setup("reset_config", llrs_idle_seg, llrs_idle_step);
-    l->get_1d_static_wfm(pnData);
-    trigger_detector->setup(pnData);
-
-    awg->reset_card();
+    std::cout << "Starting AWG stream" << std::endl;
+    if (awg->get_idle_segment_wfm()) {
+        auto tb = awg->allocate_transfer_buffer(
+            trigger_detector->get_samples_per_idle_segment());
+        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
+        trigger_detector->stream(tb);
+    } else {
+        trigger_detector->stream();
+    }
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CLOSE_AWG() {
@@ -547,15 +544,15 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
     auto awg = trigger_detector->getAWG();
     const int64_t samples_per_segment = awg->get_samples_per_segment();
 
-    pnData = nullptr;
-    qwBufferSize = awg->allocate_transfer_buffer(samples_per_segment, pnData);
-    awg->fill_transfer_buffer(pnData, samples_per_segment, 0);
-    awg->init_and_load_all(pnData, samples_per_segment);
-
-    l->get_1d_static_wfm(pnData);
-    trigger_detector->setup(pnData);
-
-    awg->start_stream();
+    std::cout << "Starting AWG stream" << std::endl;
+    if (awg->get_idle_segment_wfm()) {
+        auto tb = awg->allocate_transfer_buffer(
+            trigger_detector->get_samples_per_idle_segment());
+        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
+        trigger_detector->stream(tb);
+    } else {
+        trigger_detector->stream();
+    }
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_FAULT() {
@@ -585,7 +582,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     int current_step = awg->get_current_step();
     std::cout << "current step: " << current_step << std::endl;
 
-    assert(current_step == llrs_idle_step);
+    assert(current_step == 1);
     std::cout << "Starting the LLRS" << std::endl;
     l->execute();
     llrs_metadata.emplace_back(l->getMetadata());
@@ -593,8 +590,8 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
 
     // should be on llrs idle segment 4
     // td->resetDetectionSegments();
-    assert(current_step == llrs_idle_step);
-    awg->seqmem_update(llrs_idle_step, 0, 1, 0,
+    assert(current_step == 1);
+    awg->seqmem_update(1, 0, 1, 0,
                        SPCSEQ_ENDLOOPALWAYS); // this is slow
     trigger_detector->busyWait();
 
@@ -603,7 +600,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     assert(current_step == 0);
 
     // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
-    awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1, llrs_idle_step,
+    awg->seqmem_update(1, 0, 1, 1,
                        SPCSEQ_ENDLOOPALWAYS);
     trigger_detector->busyWait();
 

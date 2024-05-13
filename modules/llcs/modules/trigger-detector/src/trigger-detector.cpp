@@ -12,7 +12,7 @@ TriggerDetector<AWG_T>::TriggerDetector()
 
     // DATA MEMORY
     // trigger-detector initilizes and loads the first segment
-    AWG_T::TransferBuffer tb =
+    auto tb =
         awg->allocate_transfer_buffer(samples_per_idle_segment, false);
     status |= awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
 
@@ -29,7 +29,7 @@ TriggerDetector<AWG_T>::TriggerDetector()
 }
 
 template <typename AWG_T>
-int TriggerDetector<AWG_T>::stream(AWG_T::TransferBuffer &tb) {
+int TriggerDetector<AWG_T>::stream(typename AWG_T::TransferBuffer &tb) {
 
     int status = 0;
 
