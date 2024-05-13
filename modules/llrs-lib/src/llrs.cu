@@ -72,7 +72,7 @@ void LLRS<AWG_T>::small_setup(std::string json_input) {
  */
 template <typename AWG_T>
 void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
-                        size_t llrs_seg_off, size_t llrs_step_off,
+                        int llrs_step_off,
                         std::string problem_id) {
     std::cout << "LLRS: setup" << std::endl;
 
@@ -192,7 +192,6 @@ void LLRS<AWG_T>::create_center_target(std::vector<int32_t> &target_config,
  * @brief resets the LLRS and metadata between shots
  */
 template <typename AWG_T> void LLRS<AWG_T>::reset() {
-    awg_sequence->reset();
     trial_num = 0;
     rep_num = 0;
     cycle_num = 0;
@@ -200,6 +199,7 @@ template <typename AWG_T> void LLRS<AWG_T>::reset() {
     metadata.setMovesPerCycle({});
     metadata.setAtomConfigs({});
     metadata.setRuntimeData({});
+    awg_sequence->reset();
 }
 
 /**
@@ -207,7 +207,7 @@ template <typename AWG_T> void LLRS<AWG_T>::reset() {
  */
 template <typename AWG_T> int LLRS<AWG_T>::execute() {
     std::cout << "LLRS: execute" << std::endl;
-    reset();
+    
 
 #ifdef PRE_SOLVED
     /* Loop through all of the solutions when pre-solved is toggled on */
@@ -221,7 +221,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
 
             for (cycle_num = 0; true; cycle_num++) {
 
-                awg_sequence->pre_load();
+				auto reset_result = std::async(std::launch::async, &LLRS<AWG_T>::reset, this);
 
 #ifdef LOGGING_VERBOSE
                 INFO << "~~~~~~~~~~~~Starting cycle " << cycle_num
@@ -240,6 +240,8 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
 #ifdef LOGGING_RUNTIME
                 p_collector->end_timer("I", trial_num, rep_num, cycle_num);
 #endif
+				
+				reset_result.wait();
 
 #ifdef PRE_SOLVED
                 char image_file[256];
@@ -373,7 +375,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 p_collector->start_timer("IV-Translate", trial_num, rep_num,
                                          cycle_num);
 #endif
-
+				
                 awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
                                               cycle_num);
 

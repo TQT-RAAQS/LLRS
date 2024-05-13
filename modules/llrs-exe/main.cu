@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <vector>
 
-const int llrs_idle_seg = 1;
+const int llrs_idle_seg = 0;
 const int llrs_idle_step = 1;
 
 void my_handler(int s) {
@@ -45,12 +45,8 @@ int main(int argc, char *argv[]) {
     // Read problem statement
     std::string problem_id;
     std::string problem_config;
-    bool flag_1D = true;
 
-    if (argc > 2) {
-        problem_config = std::string(argv[1]);
-        flag_1D = (std::string(argv[2]) == "true");
-    } else if (argc > 1) {
+	if (argc > 1) {
         problem_config = std::string(argv[1]);
     } else {
         ERROR << "No input was provided: Please provide the config file as the "
@@ -60,17 +56,51 @@ int main(int argc, char *argv[]) {
     }
 
     std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
+   	size_t samples_per_idle_segment = awg->get_idle_segment_length() *
+                                          awg->get_waveform_length();
+
+
+	auto tb =
+        awg->allocate_transfer_buffer(samples_per_idle_segment, false);
+	awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
+    awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
+
+
     LLRS<AWG> *l = new LLRS<AWG>{awg};
-    int16 *pnData = nullptr;
-    const int64_t samples_per_segment = awg->get_samples_per_segment();
+	l->setup(problem_config, false, llrs_idle_step);
 
-    l->setup(problem_config, llrs_idle_seg, llrs_idle_step);
-    l->get_1d_static_wfm(pnData);
+    std::cout << "Starting AWG stream" << std::endl;
+
+	if (awg->get_idle_segment_wfm()) {
+		l->get_idle_wfm(tb, samples_per_idle_segment);
+		awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
+	}
+
+	// SEQUENCE MEMORY
+	awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+
+	// Ensure there is enough time for the first idle segment's pointer to
+	// update
+    float timeout =
+        awg->get_waveform_duration() * awg->get_idle_segment_length() * 1e6;
+    auto startTime = std::chrono::high_resolution_clock::now();
+    auto targetDuration = std::chrono::duration<float, std::micro>(timeout);
+
+    while (true) {
+
+        // Timeout loop break
+        if (timeout != -1 &&
+            std::chrono::high_resolution_clock::now() - startTime >=
+                targetDuration) {
+            break;
+        }
+    }
+
+
+	awg->start_stream();
+
+
     awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
-
-    awg->start_stream();
-    awg->print_awg_error();
-    assert(awg->get_current_step() == 0);
 
     // LLRS Execution
     int num_of_executions, num_of_successes = 0;

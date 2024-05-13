@@ -21,14 +21,7 @@ int main(int argc, char *argv[]) {
 
     std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
     LLRS<AWG> l{awg};
-    int16 *pnData = nullptr;
-    int qwBufferSize =
-        awg->allocate_transfer_buffer(awg->get_samples_per_segment(), pnData);
-    awg->fill_transfer_buffer(pnData, awg->get_samples_per_segment(), 0);
-    awg->init_and_load_all(pnData, awg->get_samples_per_segment());
-    vFreeMemPageAligned(pnData, qwBufferSize);
-
-    l.setup(problem_config, 0, 0, problem_id);
+    l.setup(problem_config, true, 0, problem_id);
 
     awg->start_stream();
     awg->print_awg_error();
