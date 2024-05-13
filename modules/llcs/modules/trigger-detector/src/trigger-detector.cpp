@@ -12,9 +12,8 @@ TriggerDetector<AWG_T>::TriggerDetector()
 
     // DATA MEMORY
     // trigger-detector initilizes and loads the first segment
-    auto tb =
-        awg->allocate_transfer_buffer(samples_per_idle_segment, false);
-	awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
+    auto tb = awg->allocate_transfer_buffer(samples_per_idle_segment, false);
+    awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
     status |= awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
 
     // SEQUENCE MEMORY

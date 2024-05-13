@@ -86,9 +86,9 @@ template <typename AWG_T> class Sequence {
     size_t old_null;
     bool played_first_seg;
 
-	bool _2d;
-	int Nt_x;
-	int Nt_y;
+    bool _2d;
+    int Nt_x;
+    int Nt_y;
 
     void configure();
     int init_segments();

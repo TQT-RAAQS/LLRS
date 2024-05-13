@@ -119,8 +119,8 @@ int AWG::configure() {
     /// Allocate the continuous buffer
     spcm_dwGetContBuf_i64(p_card, SPCM_BUF_DATA, &continuousBuffer,
                           &continuousBufferSize);
-	std::cout << "Physically continuous buffer if size " << vFreeMemPageAligned
-         << " was successfully allocated." << std::endl;
+    std::cout << "Physically continuous buffer if size " << vFreeMemPageAligned
+              << " was successfully allocated." << std::endl;
 
     return status;
 }
@@ -432,7 +432,6 @@ int AWG::init_and_load_range(short *p_segment, int num_samples, int start,
 
     return status;
 }
-
 
 /**
  * @brief: Get current step that is streaming in the sequence memory of AWG

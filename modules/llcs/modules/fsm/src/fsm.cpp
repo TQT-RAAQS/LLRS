@@ -600,8 +600,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     assert(current_step == 0);
 
     // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
-    awg->seqmem_update(1, 0, 1, 1,
-                       SPCSEQ_ENDLOOPALWAYS);
+    awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
     trigger_detector->busyWait();
 
 #ifdef LOGGING_RUNTIME

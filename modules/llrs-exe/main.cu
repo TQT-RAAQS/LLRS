@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     std::string problem_id;
     std::string problem_config;
 
-	if (argc > 1) {
+    if (argc > 1) {
         problem_config = std::string(argv[1]);
     } else {
         ERROR << "No input was provided: Please provide the config file as the "
@@ -56,31 +56,28 @@ int main(int argc, char *argv[]) {
     }
 
     std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
-   	size_t samples_per_idle_segment = awg->get_idle_segment_length() *
-                                          awg->get_waveform_length();
+    size_t samples_per_idle_segment =
+        awg->get_idle_segment_length() * awg->get_waveform_length();
 
-
-	auto tb =
-        awg->allocate_transfer_buffer(samples_per_idle_segment, false);
-	awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
+    auto tb = awg->allocate_transfer_buffer(samples_per_idle_segment, false);
+    awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
     awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
 
-
     LLRS<AWG> *l = new LLRS<AWG>{awg};
-	l->setup(problem_config, false, llrs_idle_step);
+    l->setup(problem_config, false, llrs_idle_step);
 
     std::cout << "Starting AWG stream" << std::endl;
 
-	if (awg->get_idle_segment_wfm()) {
-		l->get_idle_wfm(tb, samples_per_idle_segment);
-		awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
-	}
+    if (awg->get_idle_segment_wfm()) {
+        l->get_idle_wfm(tb, samples_per_idle_segment);
+        awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
+    }
 
-	// SEQUENCE MEMORY
-	awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+    // SEQUENCE MEMORY
+    awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
 
-	// Ensure there is enough time for the first idle segment's pointer to
-	// update
+    // Ensure there is enough time for the first idle segment's pointer to
+    // update
     float timeout =
         awg->get_waveform_duration() * awg->get_idle_segment_length() * 1e6;
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -96,9 +93,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
-	awg->start_stream();
-
+    awg->start_stream();
 
     awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
 

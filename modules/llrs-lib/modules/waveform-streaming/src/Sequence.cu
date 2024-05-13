@@ -23,9 +23,9 @@ int Stream::Sequence<AWG_T>::setup(bool setup_idle_segment, int idle_step_idx,
                                    bool _2d, int Nt_x, int Nt_y) {
     this->idle_step_idx = idle_step_idx;
     this->setup_idle_segment = setup_idle_segment;
-	this->_2d = _2d;
-	this->Nt_x = Nt_x;
-	this->Nt_y = Nt_y;
+    this->_2d = _2d;
+    this->Nt_x = Nt_x;
+    this->Nt_y = Nt_y;
 
     reset();
 }
@@ -97,12 +97,10 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
                 // in 2 channels, we arm every other sample otherwise triggers
                 // aren't consistent
                 if (null_index % 2 == 0) {
-                    (*nullTB)[null_index] =
-                        NULL_MASK | (*nullTB)[null_index];
+                    (*nullTB)[null_index] = NULL_MASK | (*nullTB)[null_index];
                 }
             } else {
-                (*nullTB)[null_index] =
-                    NULL_MASK | (*nullTB)[null_index];
+                (*nullTB)[null_index] = NULL_MASK | (*nullTB)[null_index];
             }
         }
 
@@ -158,7 +156,7 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
     int cycle_num) {
 
     int num_moves = moves_list.size();
-	int current_step = awg->get_current_step();
+    int current_step = awg->get_current_step();
     bool finished = false;
     move_idx = 0;
     played_first_seg = 0;
@@ -354,103 +352,98 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
                                    idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
             }
         }
-	}
-        // --- All segments have been loaded past this point---
+    }
+    // --- All segments have been loaded past this point---
 #ifdef LOGGING_VERBOSE
-        INFO << "Loaded all " << num_segments_to_load << " segments"
-             << std::endl;
-        INFO << "Have we gone off idle? :" << played_first_seg << std::endl;
+    INFO << "Loaded all " << num_segments_to_load << " segments" << std::endl;
+    INFO << "Have we gone off idle? :" << played_first_seg << std::endl;
 #endif
 
-        // Query AWG step every 10 microseconds to see if we're finished
-        // streaming
-        bool streaming_too_long = false;
-        auto beginning = HRCLOCK_NOW();
-        auto start = HRCLOCK_NOW();
-        while (!(current_step == idle_segment_idx && finished)) {
+    // Query AWG step every 10 microseconds to see if we're finished
+    // streaming
+    bool streaming_too_long = false;
+    auto beginning = HRCLOCK_NOW();
+    auto start = HRCLOCK_NOW();
+    while (!(current_step == idle_segment_idx && finished)) {
 
-            auto now = HRCLOCK_NOW();
+        auto now = HRCLOCK_NOW();
 
-            if (microseconds_cast(now - start) > 10) {
-                start = now;
-                current_step = awg->get_current_step();
+        if (microseconds_cast(now - start) > 10) {
+            start = now;
+            current_step = awg->get_current_step();
 
-                // set "finished" flag if we have played the last segment
-                // TODO: The system should ideally wait for a hardware trigger
-                // to stop playing
-                if (current_step == last_control_step) {
-                    if (!finished) {
-                        finished = 1;
-                    }
-                }
-
-                // reset idle as soon as we can
-                if (!played_first_seg) {
-                    if (current_step > idle_segment_idx) {
-                        played_first_seg = 1;
-                        awg->seqmem_update(idle_segment_idx, idle_segment_idx,
-                                           1, idle_segment_idx,
-                                           SPCSEQ_ENDLOOPALWAYS);
-                    }
+            // set "finished" flag if we have played the last segment
+            // TODO: The system should ideally wait for a hardware trigger
+            // to stop playing
+            if (current_step == last_control_step) {
+                if (!finished) {
+                    finished = 1;
                 }
             }
 
-#ifdef LOGGING_VERBOSE
-            if (microseconds_cast(now - beginning) > (10 * num_moves) * 9 &&
-                !streaming_too_long) {
-                INFO << "Streaming time is 9 times longer than expected, "
-                        "exitting"
-                     << std::endl;
-                INFO << "Current step = " << current_step << std::endl;
-                INFO << "Last control step = " << last_control_step
-                     << std::endl;
-                INFO << "Short circuit seg idx = " << short_circuit_seg_idx
-                     << std::endl;
-                INFO << "Short circuit step = " << short_circuit_step
-                     << std::endl;
-                INFO << "Have we gone off idle? :" << played_first_seg
-                     << std::endl;
-                INFO << "Are we finished? :" << finished << std::endl;
-                streaming_too_long = 1;
-                break;
+            // reset idle as soon as we can
+            if (!played_first_seg) {
+                if (current_step > idle_segment_idx) {
+                    played_first_seg = 1;
+                    awg->seqmem_update(idle_segment_idx, idle_segment_idx, 1,
+                                       idle_segment_idx, SPCSEQ_ENDLOOPALWAYS);
+                }
             }
-#endif
         }
+
+#ifdef LOGGING_VERBOSE
+        if (microseconds_cast(now - beginning) > (10 * num_moves) * 9 &&
+            !streaming_too_long) {
+            INFO << "Streaming time is 9 times longer than expected, "
+                    "exitting"
+                 << std::endl;
+            INFO << "Current step = " << current_step << std::endl;
+            INFO << "Last control step = " << last_control_step << std::endl;
+            INFO << "Short circuit seg idx = " << short_circuit_seg_idx
+                 << std::endl;
+            INFO << "Short circuit step = " << short_circuit_step << std::endl;
+            INFO << "Have we gone off idle? :" << played_first_seg << std::endl;
+            INFO << "Are we finished? :" << finished << std::endl;
+            streaming_too_long = 1;
+            break;
+        }
+#endif
+    }
 
 #ifdef LOGGING_RUNTIME
-        p_collector->end_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
+    p_collector->end_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
 #endif
 
-        return streaming_too_long;
+    return streaming_too_long;
+}
+
+template <typename AWG_T>
+void Stream::Sequence<AWG_T>::wf_segment_lookup(
+    short *p_buffer_lookup, std::vector<Reconfig::Move> &moves_list,
+    int waveforms_per_segment) {
+
+    for (int wf_idx = 0;
+         wf_idx < waveforms_per_segment && move_idx < moves_list.size();
+         wf_idx++, move_idx++) {
+        Reconfig::Move move = moves_list[move_idx];
+        short *move_wf_ptr = wf_table.get_waveform_ptr(
+            std::get<0>(move), std::get<4>(move), std::get<1>(move),
+            std::get<2>(move), std::get<3>(move));
+        memcpy(p_buffer_lookup + wf_idx * awg->get_waveform_length(),
+               move_wf_ptr, awg->get_waveform_length() * sizeof(short));
     }
+}
 
-    template <typename AWG_T>
-    void Stream::Sequence<AWG_T>::wf_segment_lookup(
-        short *p_buffer_lookup, std::vector<Reconfig::Move> &moves_list,
-        int waveforms_per_segment) {
+template <typename AWG_T>
+void Stream::Sequence<AWG_T>::get_static_wfm(int16 *pnData, size_t num_wfms,
+                                             int Nt_x) {
 
-        for (int wf_idx = 0;
-             wf_idx < waveforms_per_segment && move_idx < moves_list.size();
-             wf_idx++, move_idx++) {
-            Reconfig::Move move = moves_list[move_idx];
-            short *move_wf_ptr = wf_table.get_waveform_ptr(
-                std::get<0>(move), std::get<4>(move), std::get<1>(move),
-                std::get<2>(move), std::get<3>(move));
-            memcpy(p_buffer_lookup + wf_idx * awg->get_waveform_length(),
-                   move_wf_ptr, awg->get_waveform_length() * sizeof(short));
-        }
+    short *move_wf_ptr = wf_table.get_primary_wf_ptr(STATIC, 0, Nt_x, Nt_x);
+
+    for (int i = 0; i < num_wfms; ++i) {
+        memcpy(pnData + i * awg->get_waveform_length(), move_wf_ptr,
+               awg->get_waveform_length() * sizeof(short));
     }
+}
 
-    template <typename AWG_T>
-    void Stream::Sequence<AWG_T>::get_static_wfm(int16 * pnData,
-                                                 size_t num_wfms, int Nt_x) {
-
-        short *move_wf_ptr = wf_table.get_primary_wf_ptr(STATIC, 0, Nt_x, Nt_x);
-
-        for (int i = 0; i < num_wfms; ++i) {
-            memcpy(pnData + i * awg->get_waveform_length(), move_wf_ptr,
-                   awg->get_waveform_length() * sizeof(short));
-        }
-    }
-
-    template class Stream::Sequence<AWG>;
+template class Stream::Sequence<AWG>;
