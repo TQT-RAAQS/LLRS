@@ -16,12 +16,12 @@
 #include "utility.h"
 #include <cstdlib>
 #include <fstream>
+#include <future>
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <vector>
 #include <yaml-cpp/yaml.h>
-#include <future>
 using json = nlohmann::json;
 
 /* Toggle for storing all images taken */
@@ -111,10 +111,10 @@ template <typename AWG_T> class LLRS {
     int getRepNum();
     void store_moves();
     const Metadata &getMetadata() const { return metadata; };
-    void get_idle_wfm(typename AWG_T::TransferBuffer& tb, size_t samples_per_segment) {
-        awg_sequence->get_static_wfm(*tb,
-                                        samples_per_segment,
-                                        metadata.getNtx() * metadata.getNty());
+    void get_idle_wfm(typename AWG_T::TransferBuffer &tb,
+                      size_t samples_per_segment) {
+        awg_sequence->get_static_wfm(*tb, samples_per_segment,
+                                     metadata.getNtx() * metadata.getNty());
     }
 };
 

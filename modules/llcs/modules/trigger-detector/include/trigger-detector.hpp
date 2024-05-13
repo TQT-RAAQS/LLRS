@@ -13,8 +13,8 @@ template <typename AWG_T> class TriggerDetector {
 
   public:
     TriggerDetector();
-	int stream();
-	int stream(typename AWG_T::TransferBuffer &tb);
+    int stream();
+    int stream(typename AWG_T::TransferBuffer &tb);
     int resetDetectionStep();
     int busyWait();
     int detectTrigger(int timeout = -1);
