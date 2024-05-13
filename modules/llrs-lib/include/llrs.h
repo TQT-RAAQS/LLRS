@@ -21,11 +21,11 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 #include <yaml-cpp/yaml.h>
+#include <future>
 using json = nlohmann::json;
 
 /* Toggle for storing all images taken */
 // #define STORE_IMAGES
-#define LOAD_SINGLE_SEGMENT
 
 enum Target { CENTRE_COMPACT };
 
