@@ -15,7 +15,7 @@ template <typename AWG_T> void Stream::Sequence<AWG_T>::configure() {
     // --- Filling Transfer Buffers with zeros ---
     awg->fill_transfer_buffer(lookup_buffer, samples_per_segment, 0);
     awg->fill_transfer_buffer(upload_buffer, samples_per_segment, 0);
-    awg->fill_transfer_buffer(double_size_buffer, samples_per_segment * 2, 0);
+    awg->fill_transfer_buffer(double_sized_buffer, samples_per_segment * 2, 0);
 }
 
 template <typename AWG_T>
@@ -23,11 +23,14 @@ int Stream::Sequence<AWG_T>::setup(bool setup_idle_segment, int idle_step_idx,
                                    bool _2d, int Nt_x, int Nt_y) {
     this->idle_step_idx = idle_step_idx;
     this->setup_idle_segment = setup_idle_segment;
+	this->_2d = _2d;
+	this->Nt_x = Nt_x;
+	this->Nt_y = Nt_y;
 
     reset();
 }
 
-template <typename AWG_T> int init_segments() {
+template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
 
     int status = 0;
 
@@ -35,7 +38,7 @@ template <typename AWG_T> int init_segments() {
     if (setup_idle_segment) { // Is LLRS responsible for init-ing the IDLE
                               // segment?
         int num_idle_samples = awg->get_idle_segment_length();
-        AWG_T::TransferBuffer idleTB =
+        typename AWG_T::TransferBuffer idleTB =
             awg->allocate_transfer_buffer(num_idle_samples, false);
 
         if (awg->get_idle_segment_wfm()) { // depending on user config, either
@@ -54,7 +57,7 @@ template <typename AWG_T> int init_segments() {
 
     // control segments init
     {
-        AWG_T::TransferBuffer tb =
+        typename AWG_T::TransferBuffer tb =
             awg->allocate_transfer_buffer(samples_per_segment, false);
 
         status |= awg->fill_transfer_buffer(tb, samples_per_segment, 0);
@@ -67,12 +70,12 @@ template <typename AWG_T> int init_segments() {
     {
         int num_double_samples = samples_per_segment * 2;
 
-        AWG_T::TransferBuffer doubleTB =
+        typename AWG_T::TransferBuffer doubleTB =
             awg->allocate_transfer_buffer(num_double_samples, false);
 
         status |= awg->fill_transfer_buffer(doubleTB, num_double_samples, 0);
 
-        status |= awg->init_and_load_range(doubleTB, num_double_samples,
+        status |= awg->init_and_load_range(*doubleTB, num_double_samples,
                                            short_circuit_seg_idx,
                                            short_circuit_seg_idx + 1);
     }
@@ -82,7 +85,7 @@ template <typename AWG_T> int init_segments() {
         int NULL_MASK = 1 << 15; // 15th bit set to 1 for null segment counter
         int num_null_samples = awg->get_null_segment_length();
 
-        AWG_T::TransferBuffer nullTB =
+        typename AWG_T::TransferBuffer nullTB =
             awg->allocate_transfer_buffer(num_null_samples, false);
 
         awg->fill_transfer_buffer(nullTB, num_null_samples, 0);
@@ -95,10 +98,10 @@ template <typename AWG_T> int init_segments() {
                 // aren't consistent
                 if (null_index % 2 == 0) {
                     (*nullTB)[null_index] =
-                        NULL_MASK | null_segment_data[null_index];
+                        NULL_MASK | (*nullTB)[null_index];
                 }
             } else {
-                null_segment_data[null_index] =
+                (*nullTB)[null_index] =
                     NULL_MASK | (*nullTB)[null_index];
             }
         }
@@ -108,7 +111,7 @@ template <typename AWG_T> int init_segments() {
     }
 }
 
-template <typename AWG_T> int init_steps() {
+template <typename AWG_T> int Stream::Sequence<AWG_T>::init_steps() {
     // make idle step point to itself
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
                        SPCSEQ_ENDLOOPALWAYS);
@@ -154,6 +157,8 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
     std::vector<Reconfig::Move> &moves_list, int trial_num, int rep_num,
     int cycle_num) {
 
+    int num_moves = moves_list.size();
+	int current_step = awg->get_current_step();
     bool finished = false;
     move_idx = 0;
     played_first_seg = 0;
@@ -179,7 +184,7 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
                                  cycle_num);
 #endif
 
-        wf_segment_lookup(*double_size_buffer, moves_list,
+        wf_segment_lookup(*double_sized_buffer, moves_list,
                           waveforms_per_segment * 2);
 
 #ifdef LOGGING_RUNTIME
@@ -213,7 +218,6 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
     } else { /// MULTI-SEGMENT LOADING
 
         // find number of segments to be loaded
-        int num_moves = moves_list.size();
         int extra_moves = num_moves % waveforms_per_segment;
         int num_whole_segments = num_moves / waveforms_per_segment;
         num_segments_to_load = num_whole_segments + (extra_moves != 0);
@@ -247,7 +251,7 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
         std::swap(lookup_pointer, upload_pointer);
 
         // pre - load first segment
-        awg->load_data_async_start(idle_segment_idx + 1, p_buffer_upload,
+        awg->load_data_async_start(idle_segment_idx + 1, upload_pointer,
                                    samples_per_segment * sizeof(short));
 
         // lookup second segment
@@ -350,7 +354,7 @@ bool Stream::Sequence<AWG_T>::load_and_stream(
                                    idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
             }
         }
-
+	}
         // --- All segments have been loaded past this point---
 #ifdef LOGGING_VERBOSE
         INFO << "Loaded all " << num_segments_to_load << " segments"

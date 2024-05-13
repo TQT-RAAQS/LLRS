@@ -45,8 +45,6 @@ template <typename AWG_T> class Sequence {
                          int rep_num, int cycle_num);
     void emccd_trigger() { awg->generate_async_output_pulse(EMCCD); }
     void reset();
-    void reset_steps();
-    void reset_segments() { init_segments(); }
 
     void get_static_wfm(int16 *pnData, size_t num_wfms, int Nt_x);
     double get_waveform_duration() const { awg->get_waveform_duration(); }
@@ -77,9 +75,9 @@ template <typename AWG_T> class Sequence {
     int short_circuit_null_step;
     int short_circuit_step;
 
-    AWG_T::TransferBuffer lookup_buffer;
-    AWG_T::TransferBuffer upload_buffer;
-    AWG_T::TransferBuffer double_sized_buffer;
+    typename AWG_T::TransferBuffer lookup_buffer;
+    typename AWG_T::TransferBuffer upload_buffer;
+    typename AWG_T::TransferBuffer double_sized_buffer;
 
     size_t move_idx;
     size_t load_seg_idx;
@@ -87,6 +85,10 @@ template <typename AWG_T> class Sequence {
     size_t new_control;
     size_t old_null;
     bool played_first_seg;
+
+	bool _2d;
+	int Nt_x;
+	int Nt_y;
 
     void configure();
     int init_segments();

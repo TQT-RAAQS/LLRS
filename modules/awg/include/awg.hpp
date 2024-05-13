@@ -26,7 +26,6 @@ class AWG {
     int init_and_load_all(short *p_segment, int num_samples);
     int init_and_load_range(short *p_segment, int num_samples, int start,
                             int end);
-    void setup_segment_memory(int16 *pnData);
     int wait_for_data_load();
     void generate_async_output_pulse(TriggerType type);
 
@@ -50,7 +49,7 @@ class AWG {
     int get_current_step();
     int get_last_seg() const { return config.awg_num_segments - 1; };
     int get_last_step() const { return max_step - 1; };
-    bool get_idle_segment_wfm() const { return config.idle_segment_wfm(); }
+    bool get_idle_segment_wfm() const { return config.idle_segment_wfm; }
     void print_awg_error();
 
     class TransferBuffer {

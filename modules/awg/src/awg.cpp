@@ -119,7 +119,7 @@ int AWG::configure() {
     /// Allocate the continuous buffer
     spcm_dwGetContBuf_i64(p_card, SPCM_BUF_DATA, &continuousBuffer,
                           &continuousBufferSize);
-    INFO << "Physically continuous buffer if size " << vFreeMemPageAligned
+	std::cout << "Physically continuous buffer if size " << vFreeMemPageAligned
          << " was successfully allocated." << std::endl;
 
     return status;
@@ -433,17 +433,6 @@ int AWG::init_and_load_range(short *p_segment, int num_samples, int start,
     return status;
 }
 
-/**
- * @brief Fills segment memory with null segments
- * @param pnData => data pointer
- */
-void AWG::setup_segment_memory(int16 *pnData) {
-    int qwBufferSize =
-        allocate_transfer_buffer(get_samples_per_segment(), pnData);
-    fill_transfer_buffer(pnData, get_samples_per_segment(), 0);
-    init_and_load_all(pnData, get_samples_per_segment());
-    vFreeMemPageAligned(pnData, qwBufferSize);
-}
 
 /**
  * @brief: Get current step that is streaming in the sequence memory of AWG
@@ -471,7 +460,7 @@ int AWG::get_current_step() {
 AWG::TransferBuffer AWG::allocate_transfer_buffer(int num_samples,
                                                   bool contBuf) {
     size_t qwBufferSize = lSetChannels * dwFactor * num_samples * bps;
-    return TransferBuffer(this, qwBufferSize,
+    return TransferBuffer(*this, qwBufferSize,
                           qwBufferSize <= continuousBufferSize && contBuf);
 }
 
