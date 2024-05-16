@@ -448,6 +448,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
     } else {
 		awg->fill_transfer_buffer(tb, trigger_detector->get_samples_per_idle_segment(), 0);
+    }
 
     trigger_detector->setup(tb);
     trigger_detector->stream();
@@ -530,7 +531,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
     } else {
 		awg->fill_transfer_buffer(tb, trigger_detector->get_samples_per_idle_segment(), 0);
-
+    }
     trigger_detector->setup(tb);
     trigger_detector->stream();
 
@@ -557,7 +558,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
     } else {
 		awg->fill_transfer_buffer(tb, trigger_detector->get_samples_per_idle_segment(), 0);
-
+    }
     trigger_detector->setup(tb);
     trigger_detector->stream();
 }

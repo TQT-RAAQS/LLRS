@@ -108,7 +108,7 @@ class AWG {
     int max_step;
     int bps;
     int lSetChannels;
-    int dwFactor;
+    int dwFactor = 1;
     void *continuousBuffer = nullptr;
     uint64 continuousBufferSize = 0;
     int configure();
