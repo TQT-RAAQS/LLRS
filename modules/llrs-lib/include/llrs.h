@@ -102,7 +102,7 @@ template <typename AWG_T> class LLRS {
                int llrs_step_offset, std::string problem_id = "");
     void small_setup(std::string json_input);
     int execute();
-    void reset();
+    void reset(bool reset_segments);
     std::vector<int32_t> get_target_config(Target target, int num_target);
     void create_center_target(std::vector<int32_t> &target_config,
                               int num_target);

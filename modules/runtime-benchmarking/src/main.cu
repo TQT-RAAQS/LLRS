@@ -28,5 +28,5 @@ int main(int argc, char *argv[]) {
     assert(awg->get_current_step() == 0);
 
     l.execute();
-    l.reset();
+    l.reset(true);
 }

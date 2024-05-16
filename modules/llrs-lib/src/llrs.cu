@@ -75,6 +75,7 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
                         int llrs_step_off, std::string problem_id) {
     std::cout << "LLRS: setup" << std::endl;
 
+
     /* Direct std log to file as its buffer */
     old_rdbuf = std::clog.rdbuf();
     std::clog.rdbuf(log_out.rdbuf());
@@ -137,7 +138,7 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
         Nt_x, Nt_y, table_sample_rate, waveform_duration, waveform_length,
         wfm_mask, vpp, user_input.read_experiment_coefx_path(),
         user_input.read_experiment_coefy_path(), true);
-
+    
     awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, Nt_x, Nt_y);
 
     // extra control logic
@@ -190,15 +191,12 @@ void LLRS<AWG_T>::create_center_target(std::vector<int32_t> &target_config,
 /**
  * @brief resets the LLRS and metadata between shots
  */
-template <typename AWG_T> void LLRS<AWG_T>::reset() {
-    trial_num = 0;
-    rep_num = 0;
-    cycle_num = 0;
+template <typename AWG_T> void LLRS<AWG_T>::reset(bool reset_segments) {
     metadata.setNumCycles(0);
     metadata.setMovesPerCycle({});
     metadata.setAtomConfigs({});
     metadata.setRuntimeData({});
-    awg_sequence->reset();
+    awg_sequence->reset(reset_segments);
 }
 
 /**
@@ -220,7 +218,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
             for (cycle_num = 0; true; cycle_num++) {
 
                 auto reset_result =
-                    std::async(std::launch::async, &LLRS<AWG_T>::reset, this);
+                    std::async(std::launch::async, &LLRS<AWG_T>::reset, this, false);
 
 #ifdef LOGGING_VERBOSE
                 INFO << "~~~~~~~~~~~~Starting cycle " << cycle_num
@@ -240,7 +238,16 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 p_collector->end_timer("I", trial_num, rep_num, cycle_num);
 #endif
 
+#ifdef LOGGING_RUNTIME
+               p_collector->start_timer("IV-Translate", trial_num, rep_num,
+                                         cycle_num);
+#endif
                 reset_result.wait();
+
+#ifdef LOGGING_RUNTIME
+                p_collector->end_timer("IV-Translate", trial_num, rep_num,
+                                       cycle_num);
+#endif
 
 #ifdef PRE_SOLVED
                 char image_file[256];
@@ -278,9 +285,6 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
 #ifdef LOGGING_RUNTIME
                 p_collector->end_timer("II-Deconvolution", trial_num, rep_num,
                                        cycle_num);
-#endif
-
-#ifdef LOGGING_RUNTIME
                 p_collector->start_timer("II-Threshold", trial_num, rep_num,
                                          cycle_num);
 #endif
@@ -342,6 +346,17 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                     break;
                 }
 
+                /* Translate algorithm output to waveform table key components
+                 */
+
+                std::vector<Reconfig::Move> moves_list =
+                    solver.gen_moves_list(algo, trial_num, rep_num, cycle_num);
+
+#ifdef LOGGING_RUNTIME
+                p_collector->end_timer("III-Total", trial_num, rep_num,
+                                       cycle_num);
+#endif
+
 #ifdef LOGGING_VERBOSE
                 INFO << "Ran Algorithm: " << user_input.read_problem_algo()
                      << std::endl;
@@ -353,27 +368,10 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                      << std::endl;
 #endif
 
-                /* Translate algorithm output to waveform table key components
-                 */
-
-                std::vector<Reconfig::Move> moves_list =
-                    solver.gen_moves_list(algo, trial_num, rep_num, cycle_num);
-
-#ifdef LOGGING_RUNTIME
-                p_collector->end_timer("III-Total", trial_num, rep_num,
-                                       cycle_num);
-#endif
                 metadata.moves_per_cycle.push_back({});
                 metadata.moves_per_cycle.back().insert(
                     metadata.moves_per_cycle.back().end(), moves_list.begin(),
                     moves_list.end());
-
-#ifdef LOGGING_RUNTIME
-                p_collector->end_timer("IV-Translate", trial_num, rep_num,
-                                       cycle_num);
-                p_collector->start_timer("IV-Translate", trial_num, rep_num,
-                                         cycle_num);
-#endif
 
                 awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
                                               cycle_num);

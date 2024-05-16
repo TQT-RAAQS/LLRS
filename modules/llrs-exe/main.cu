@@ -124,7 +124,6 @@ int main(int argc, char *argv[]) {
 
                 std::cout << "Starting the LLRS" << std::endl;
                 int success = l->execute();
-                l->reset();
                 std::cout << "Done LLRS::Execute" << std::endl;
                 ++num_of_executions;
                 if (success == 0)
@@ -136,6 +135,8 @@ int main(int argc, char *argv[]) {
                                    SPCSEQ_ENDLOOPALWAYS);
                 awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1,
                                    llrs_idle_step, SPCSEQ_ENDLOOPALWAYS);
+
+                l->reset(true);
             }
         }
         if (flag) {

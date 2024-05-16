@@ -119,7 +119,7 @@ int AWG::configure() {
     /// Allocate the continuous buffer
     spcm_dwGetContBuf_i64(p_card, SPCM_BUF_DATA, &continuousBuffer,
                           &continuousBufferSize);
-    std::cout << "Physically continuous buffer if size " << vFreeMemPageAligned
+    std::cout << "Physically continuous buffer of size " << continuousBufferSize 
               << " was successfully allocated." << std::endl;
 
     return status;
@@ -333,6 +333,7 @@ int AWG::seqmem_update(int64 lStep, int64 llSegment, int64 llLoop, int64 llNext,
  */
 int AWG::load_data(int seg_num, short *p_data, uint64 size) {
     /// select segment to upload to
+    spcm_dwSetParam_i32(p_card, SPC_SEQMODE_WRITESEGMENT, seg_num);
 #ifdef ENABLE_CUDA
     spcm_dwDefTransfer_i64(p_card, SPCM_BUF_DATA, SPCM_DIR_GPUTOCARD, 0, p_data,
                            0, size);
@@ -460,7 +461,7 @@ AWG::TransferBuffer AWG::allocate_transfer_buffer(int num_samples,
                                                   bool contBuf) {
     size_t qwBufferSize = lSetChannels * dwFactor * num_samples * bps;
     return TransferBuffer(*this, qwBufferSize,
-                          qwBufferSize <= continuousBufferSize && contBuf);
+                          (qwBufferSize <= continuousBufferSize) && contBuf);
 }
 
 /**
