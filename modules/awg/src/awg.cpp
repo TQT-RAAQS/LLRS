@@ -119,7 +119,7 @@ int AWG::configure() {
     /// Allocate the continuous buffer
     spcm_dwGetContBuf_i64(p_card, SPCM_BUF_DATA, &continuousBuffer,
                           &continuousBufferSize);
-    std::cout << "Physically continuous buffer of size " << continuousBufferSize 
+    std::cout << "Physically continuous buffer of size " << continuousBufferSize
               << " was successfully allocated." << std::endl;
 
     return status;

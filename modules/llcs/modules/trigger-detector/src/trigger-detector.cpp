@@ -13,9 +13,9 @@ TriggerDetector<AWG_T>::TriggerDetector()
     // trigger-detector initilizes and loads the first segment
     auto tb = awg->allocate_transfer_buffer(samples_per_idle_segment, false);
     awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
-	status |= setup(tb);
+    status |= setup(tb);
 
-	if (!status) {
+    if (!status) {
         std::cerr << "Problem while trigger detector's setup." << std::endl;
     }
 }
@@ -39,7 +39,7 @@ int TriggerDetector<AWG_T>::setup(typename AWG_T::TransferBuffer &tb) {
 }
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::stream() {
-	return awg->start_stream();
+    return awg->start_stream();
 }
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {

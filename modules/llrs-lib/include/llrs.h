@@ -113,8 +113,9 @@ template <typename AWG_T> class LLRS {
     const Metadata &getMetadata() const { return metadata; };
     void get_idle_wfm(typename AWG_T::TransferBuffer &tb,
                       size_t samples_per_segment) {
-        awg_sequence->get_static_wfm(*tb, samples_per_segment / awg_sequence->get_waveform_length(),
-                                     metadata.getNtx() * metadata.getNty());
+        awg_sequence->get_static_wfm(
+            *tb, samples_per_segment / awg_sequence->get_waveform_length(),
+            metadata.getNtx() * metadata.getNty());
     }
 };
 

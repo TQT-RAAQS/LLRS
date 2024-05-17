@@ -75,7 +75,6 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
                         int llrs_step_off, std::string problem_id) {
     std::cout << "LLRS: setup" << std::endl;
 
-
     /* Direct std log to file as its buffer */
     old_rdbuf = std::clog.rdbuf();
     std::clog.rdbuf(log_out.rdbuf());
@@ -138,7 +137,7 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
         Nt_x, Nt_y, table_sample_rate, waveform_duration, waveform_length,
         wfm_mask, vpp, user_input.read_experiment_coefx_path(),
         user_input.read_experiment_coefy_path(), true);
-    
+
     awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, Nt_x, Nt_y);
 
     // extra control logic
@@ -217,8 +216,8 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
 
             for (cycle_num = 0; true; cycle_num++) {
 
-                auto reset_result =
-                    std::async(std::launch::async, &LLRS<AWG_T>::reset, this, false);
+                auto reset_result = std::async(
+                    std::launch::async, &LLRS<AWG_T>::reset, this, false);
 
 #ifdef LOGGING_VERBOSE
                 INFO << "~~~~~~~~~~~~Starting cycle " << cycle_num
@@ -363,11 +362,11 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 metadata.moves_per_cycle.back().insert(
                     metadata.moves_per_cycle.back().end(), moves_list.begin(),
                     moves_list.end());
-                
+
 #ifdef LOGGING_RUNTIME
-            p_collector->get_external_time("IV-Translate", trial_num, rep_num,
-                                    cycle_num, 0);
-           
+                p_collector->get_external_time("IV-Translate", trial_num,
+                                               rep_num, cycle_num, 0);
+
 #endif
 
                 awg_sequence->load_and_stream(moves_list, trial_num, rep_num,

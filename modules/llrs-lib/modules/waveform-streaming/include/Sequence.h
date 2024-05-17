@@ -17,36 +17,42 @@ namespace Stream {
 template <typename AWG_T> class Sequence {
   public:
     Sequence(Util::Collector *p_collector, Synthesis::WaveformTable &wf_table)
-        : awg{std::make_shared<AWG>()}, p_collector{p_collector}, wf_table{wf_table},
-          lookup_buffer{
-              awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true)},
-          upload_buffer{
-              awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true)},
-          double_sized_buffer{
-              awg->allocate_transfer_buffer(awg->get_samples_per_segment() * 2, true)} {
+        : awg{std::make_shared<AWG>()}, p_collector{p_collector},
+          wf_table{wf_table}, lookup_buffer{awg->allocate_transfer_buffer(
+                                  awg->get_samples_per_segment(), true)},
+          upload_buffer{awg->allocate_transfer_buffer(
+              awg->get_samples_per_segment(), true)},
+          double_sized_buffer{awg->allocate_transfer_buffer(
+              awg->get_samples_per_segment() * 2, true)} {
         configure();
     }
 
     Sequence(std::shared_ptr<AWG_T> &awg, Util::Collector *p_collector,
              Synthesis::WaveformTable &wf_table)
         : awg{awg}, p_collector{p_collector}, wf_table{wf_table},
-          lookup_buffer{
-              awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true)},
-          upload_buffer{
-              awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true)},
-          double_sized_buffer{
-              awg->allocate_transfer_buffer(awg->get_samples_per_segment() * 2, true)} {
+          lookup_buffer{awg->allocate_transfer_buffer(
+              awg->get_samples_per_segment(), true)},
+          upload_buffer{awg->allocate_transfer_buffer(
+              awg->get_samples_per_segment(), true)},
+          double_sized_buffer{awg->allocate_transfer_buffer(
+              awg->get_samples_per_segment() * 2, true)} {
         configure();
     }
 
     int setup(bool setup_idle_segment, int idle_step_idx, bool _2d, int Nt_x,
               int Nt_y);
     bool load_and_stream(std::vector<Reconfig::Move> &moves_list, int trial_num,
-                         int rep_num, int cycle_num) {return moves_list.size() < waveforms_per_segment * 2? load_single_segment(moves_list, trial_num, rep_num, cycle_num): load_multiple_segments(moves_list, trial_num, rep_num, cycle_num);}
-    bool load_single_segment(std::vector<Reconfig::Move> &moves_list, int trial_num,
-                         int rep_num, int cycle_num);
-    bool load_multiple_segments(std::vector<Reconfig::Move> &moves_list, int trial_num,
-                         int rep_num, int cycle_num);
+                         int rep_num, int cycle_num) {
+        return moves_list.size() < waveforms_per_segment * 2
+                   ? load_single_segment(moves_list, trial_num, rep_num,
+                                         cycle_num)
+                   : load_multiple_segments(moves_list, trial_num, rep_num,
+                                            cycle_num);
+    }
+    bool load_single_segment(std::vector<Reconfig::Move> &moves_list,
+                             int trial_num, int rep_num, int cycle_num);
+    bool load_multiple_segments(std::vector<Reconfig::Move> &moves_list,
+                                int trial_num, int rep_num, int cycle_num);
     void emccd_trigger() { awg->generate_async_output_pulse(EMCCD); }
     void reset(bool reset_segments);
 
@@ -99,7 +105,7 @@ template <typename AWG_T> class Sequence {
     void configure();
     int init_segments();
     int init_steps();
-    void load_idle_wfm(short *p_buffer, int num_samples); 
+    void load_idle_wfm(short *p_buffer, int num_samples);
     void wf_segment_lookup(short *p_buffer_lookup,
                            std::vector<Reconfig::Move> &moves_list,
                            int waveforms_per_segment);
