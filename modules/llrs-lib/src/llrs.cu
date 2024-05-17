@@ -238,16 +238,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 p_collector->end_timer("I", trial_num, rep_num, cycle_num);
 #endif
 
-#ifdef LOGGING_RUNTIME
-               p_collector->start_timer("IV-Translate", trial_num, rep_num,
-                                         cycle_num);
-#endif
                 reset_result.wait();
-
-#ifdef LOGGING_RUNTIME
-                p_collector->end_timer("IV-Translate", trial_num, rep_num,
-                                       cycle_num);
-#endif
 
 #ifdef PRE_SOLVED
                 char image_file[256];
@@ -372,6 +363,12 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 metadata.moves_per_cycle.back().insert(
                     metadata.moves_per_cycle.back().end(), moves_list.begin(),
                     moves_list.end());
+                
+#ifdef LOGGING_RUNTIME
+            p_collector->get_external_time("IV-Translate", trial_num, rep_num,
+                                    cycle_num, 0);
+           
+#endif
 
                 awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
                                               cycle_num);
