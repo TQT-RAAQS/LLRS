@@ -441,13 +441,14 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     l->setup("21-problem.yml", false, 1);
 
     std::cout << "Starting AWG stream" << std::endl;
-	auto tb = awg->allocate_transfer_buffer(
-		trigger_detector->get_samples_per_idle_segment());
+    auto tb = awg->allocate_transfer_buffer(
+        trigger_detector->get_samples_per_idle_segment());
 
     if (awg->get_idle_segment_wfm()) {
-       l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
+        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
     } else {
-		awg->fill_transfer_buffer(tb, trigger_detector->get_samples_per_idle_segment(), 0);
+        awg->fill_transfer_buffer(
+            tb, trigger_detector->get_samples_per_idle_segment(), 0);
     }
 
     trigger_detector->setup(tb);
@@ -524,17 +525,17 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
     l->setup("21-problem.yml", false, 1);
 
     std::cout << "Starting AWG stream" << std::endl;
-   	auto tb = awg->allocate_transfer_buffer(
-		trigger_detector->get_samples_per_idle_segment());
+    auto tb = awg->allocate_transfer_buffer(
+        trigger_detector->get_samples_per_idle_segment());
 
     if (awg->get_idle_segment_wfm()) {
-       l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
+        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
     } else {
-		awg->fill_transfer_buffer(tb, trigger_detector->get_samples_per_idle_segment(), 0);
+        awg->fill_transfer_buffer(
+            tb, trigger_detector->get_samples_per_idle_segment(), 0);
     }
     trigger_detector->setup(tb);
     trigger_detector->stream();
-
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CLOSE_AWG() {
@@ -551,13 +552,14 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
     const int64_t samples_per_segment = awg->get_samples_per_segment();
 
     std::cout << "Starting AWG stream" << std::endl;
-   	auto tb = awg->allocate_transfer_buffer(
-		trigger_detector->get_samples_per_idle_segment());
+    auto tb = awg->allocate_transfer_buffer(
+        trigger_detector->get_samples_per_idle_segment());
 
     if (awg->get_idle_segment_wfm()) {
-       l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
+        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
     } else {
-		awg->fill_transfer_buffer(tb, trigger_detector->get_samples_per_idle_segment(), 0);
+        awg->fill_transfer_buffer(
+            tb, trigger_detector->get_samples_per_idle_segment(), 0);
     }
     trigger_detector->setup(tb);
     trigger_detector->stream();

@@ -55,8 +55,9 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
 
         status |= awg->fill_transfer_buffer(tb, samples_per_segment, 0);
 
-        status |= awg->init_and_load_range(
-            *tb, samples_per_segment, idle_segment_idx + 1, short_circuit_seg_idx);
+        status |= awg->init_and_load_range(*tb, samples_per_segment,
+                                           idle_segment_idx + 1,
+                                           short_circuit_seg_idx);
     }
 
     // double-sized segment init
@@ -97,18 +98,19 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_steps() {
     for (int seg_idx = idle_segment_idx + 1; seg_idx <= num_total_segments - 2;
          seg_idx++) {
 
-#ifdef DETECT_NULL // to detect nulls, everything points to the short circuit null step (which points to itself)
+#ifdef DETECT_NULL // to detect nulls, everything points to the short circuit
+                   // null step (which points to itself)
         awg->seqmem_update(seg_idx * 2 - 1 + idle_step_idx, seg_idx, 1,
-                                short_circuit_null_step, SPCSEQ_ENDLOOPALWAYS);
+                           short_circuit_null_step, SPCSEQ_ENDLOOPALWAYS);
 #else // DETECT_NULL
-        // point control to corresponding null
+      // point control to corresponding null
         awg->seqmem_update(seg_idx * 2 - 1 + idle_step_idx, seg_idx, 1,
                            seg_idx * 2 + idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
 #endif
         // point null to itself
         awg->seqmem_update(seg_idx * 2 + idle_step_idx, null_segment_idx, 1,
                            seg_idx * 2 + idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
-        }
+    }
 
     // set up sequence memory for short circuit segment
     // point short circuit to it's own null
@@ -120,10 +122,11 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_steps() {
                        short_circuit_null_step, SPCSEQ_ENDLOOPALWAYS);
 }
 
-template <typename AWG_T> void Stream::Sequence<AWG_T>::reset(bool reset_segments) {
-    if(reset_segments) {
+template <typename AWG_T>
+void Stream::Sequence<AWG_T>::reset(bool reset_segments) {
+    if (reset_segments) {
         init_segments();
-    } 
+    }
     init_steps();
 
     move_idx = 0;
@@ -143,54 +146,53 @@ bool Stream::Sequence<AWG_T>::load_single_segment(
 
     // sets last segment (double-size segment) to be loaded to point to idle
     awg->seqmem_update(short_circuit_step, short_circuit_seg_idx, 1,
-                        idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
+                       idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
 
 #ifdef LOGGING_VERBOSE
     INFO << "Started single segment loading using double-sized segment"
-            << std::endl;
+         << std::endl;
 #endif
 
     // lookup all waveforms and load it into the transfer buffer
 #ifdef LOGGING_RUNTIME
-    p_collector->start_timer("V-Load_Stream", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
     p_collector->start_timer("V-Latency", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Lookup", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
 #endif
 
     wf_segment_lookup(*double_sized_buffer, moves_list,
-                        waveforms_per_segment * 2);
+                      waveforms_per_segment * 2);
 
 #ifdef LOGGING_RUNTIME
     p_collector->end_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Upload", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-First-Upload", trial_num, rep_num, cycle_num);
 #endif
 
     // upload the segment
     awg->load_data(short_circuit_seg_idx, *double_sized_buffer,
-                                samples_per_segment * 2 * sizeof(short));
+                   samples_per_segment * 2 * sizeof(short));
 
     // point idle to the double sized segment
-    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                        short_circuit_step, SPCSEQ_ENDLOOPALWAYS);
+    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, short_circuit_step,
+                       SPCSEQ_ENDLOOPALWAYS);
 
 #ifdef LOGGING_RUNTIME
     p_collector->end_timer("V-First-Upload", trial_num, rep_num, cycle_num);
     p_collector->end_timer("V-Latency", trial_num, rep_num, cycle_num);
     p_collector->get_external_time("V-First-Update", trial_num, rep_num,
-                                    cycle_num, 0);
+                                   cycle_num, 0);
     p_collector->get_external_time("V-Second-Lookup", trial_num, rep_num,
-                                    cycle_num, 0);
+                                   cycle_num, 0);
     p_collector->get_external_time("V-Second-Upload", trial_num, rep_num,
-                                    cycle_num, 0);
+                                   cycle_num, 0);
 #endif
 
-    while (awg->get_current_step() == idle_step_idx) {}
-    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                        idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
-    while (awg->get_current_step() != idle_step_idx) {}
+    while (awg->get_current_step() == idle_step_idx) {
+    }
+    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
+                       SPCSEQ_ENDLOOPALWAYS);
+    while (awg->get_current_step() != idle_step_idx) {
+    }
 
 #ifdef LOGGING_RUNTIME
     p_collector->end_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
@@ -198,7 +200,6 @@ bool Stream::Sequence<AWG_T>::load_single_segment(
 
     return 0;
 }
-
 
 template <typename AWG_T>
 bool Stream::Sequence<AWG_T>::load_multiple_segments(
@@ -214,31 +215,30 @@ bool Stream::Sequence<AWG_T>::load_multiple_segments(
     int extra_moves = num_moves % waveforms_per_segment;
     int num_whole_segments = num_moves / waveforms_per_segment;
     num_segments_to_load = num_whole_segments + (extra_moves != 0);
-    int sample_filling_required = (waveforms_per_segment - extra_moves) * awg->get_waveform_length();
+    int sample_filling_required =
+        (waveforms_per_segment - extra_moves) * awg->get_waveform_length();
 
     // sets last segment to be loaded to point to idle
     last_control_step = idle_step_idx + (num_segments_to_load * 2) - 1;
-    awg->seqmem_update(last_control_step, num_segments_to_load + idle_segment_idx, 1,
-                        idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
+    awg->seqmem_update(last_control_step,
+                       num_segments_to_load + idle_segment_idx, 1,
+                       idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
 
     short *lookup_pointer = *lookup_buffer;
     short *upload_pointer = *upload_buffer;
 
     // lookup first segment
 #ifdef LOGGING_RUNTIME
-    p_collector->start_timer("V-Load_Stream", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
     p_collector->start_timer("V-Latency", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Lookup", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
 #endif
 
     wf_segment_lookup(lookup_pointer, moves_list, waveforms_per_segment);
 
 #ifdef LOGGING_RUNTIME
     p_collector->end_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Upload", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-First-Upload", trial_num, rep_num, cycle_num);
 #endif
 
     // swap buffers
@@ -246,49 +246,45 @@ bool Stream::Sequence<AWG_T>::load_multiple_segments(
 
     // pre - load first segment
     awg->load_data_async_start(idle_segment_idx + 1, upload_pointer,
-                                samples_per_segment * sizeof(short));
+                               samples_per_segment * sizeof(short));
 
     // lookup second segment
 #ifdef LOGGING_RUNTIME
-    p_collector->start_timer("V-Second-Lookup", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-Second-Lookup", trial_num, rep_num, cycle_num);
 #endif
 
     wf_segment_lookup(lookup_pointer, moves_list, waveforms_per_segment);
 
 #ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-Second-Lookup", trial_num, rep_num,
-                            cycle_num);
+    p_collector->end_timer("V-Second-Lookup", trial_num, rep_num, cycle_num);
 #endif
 
     // wait for old transfer to finish
     awg->wait_for_data_load();
 
 #ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-First-Upload", trial_num, rep_num,
-                            cycle_num);
+    p_collector->end_timer("V-First-Upload", trial_num, rep_num, cycle_num);
 
-    p_collector->start_timer("V-Second-Upload", trial_num, rep_num,
-                                cycle_num);
+    p_collector->start_timer("V-Second-Upload", trial_num, rep_num, cycle_num);
 #endif
 
     // load all segments except last
     for (load_seg_idx = idle_segment_idx + 2;
-            load_seg_idx <= num_segments_to_load + idle_segment_idx;
-            load_seg_idx++) {
+         load_seg_idx <= num_segments_to_load + idle_segment_idx;
+         load_seg_idx++) {
 
         // swap buffers
         std::swap(lookup_pointer, upload_pointer);
         // ---upload data---
         awg->load_data_async_start(load_seg_idx, upload_pointer,
-                                    samples_per_segment * sizeof(short));
+                                   samples_per_segment * sizeof(short));
 
         //---lookup waveforms for next segment
-        wf_segment_lookup(lookup_pointer, moves_list,
-                            waveforms_per_segment);
-        if(load_seg_idx == num_segments_to_load + idle_segment_idx) {
-            load_idle_wfm(lookup_pointer + extra_moves * awg->get_waveform_length(),
-                        sample_filling_required);
+        wf_segment_lookup(lookup_pointer, moves_list, waveforms_per_segment);
+        if (load_seg_idx == num_segments_to_load + idle_segment_idx) {
+            load_idle_wfm(lookup_pointer +
+                              extra_moves * awg->get_waveform_length(),
+                          sample_filling_required);
         }
 
         // wait for old upload to finish
@@ -297,9 +293,9 @@ bool Stream::Sequence<AWG_T>::load_multiple_segments(
 #ifdef LOGGING_RUNTIME
         if (load_seg_idx == idle_segment_idx + 2) {
             p_collector->end_timer("V-Second-Upload", trial_num, rep_num,
-                                    cycle_num);
+                                   cycle_num);
             p_collector->start_timer("V-First-Update", trial_num, rep_num,
-                                        cycle_num);
+                                     cycle_num);
         }
 #endif
 
@@ -310,49 +306,52 @@ bool Stream::Sequence<AWG_T>::load_multiple_segments(
 
         // point old control to new control
         awg->seqmem_update(old_control, load_seg_idx - 1, 1, new_control,
-                            SPCSEQ_ENDLOOPALWAYS);
+                           SPCSEQ_ENDLOOPALWAYS);
 
 #ifndef DETECT_NULL
         // point old null to new control
         awg->seqmem_update(old_null, null_segment_idx, 1, new_control,
-                            SPCSEQ_ENDLOOPALWAYS);
+                           SPCSEQ_ENDLOOPALWAYS);
 #endif
         // if it's the second segment that just loaded, take playback off
         // idle
         if (load_seg_idx == (idle_segment_idx + 2)) {
-            awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                                old_control, SPCSEQ_ENDLOOPALWAYS);
+            awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, old_control,
+                               SPCSEQ_ENDLOOPALWAYS);
 #ifdef LOGGING_RUNTIME
             p_collector->end_timer("V-First-Update", trial_num, rep_num,
-                                    cycle_num);
-            p_collector->end_timer("V-Latency", trial_num, rep_num,
-                                    cycle_num);
+                                   cycle_num);
+            p_collector->end_timer("V-Latency", trial_num, rep_num, cycle_num);
 #endif
-        } 
+        }
     }
 
 #ifdef DETECT_NULL
-    while (awg->get_current_step() == idle_step_idx) {}
-    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                        idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
-    while (awg->get_current_step() != idle_step_idx) { 
-        if(awg->get_current_step() == short_circuit_null_step) {
+    while (awg->get_current_step() == idle_step_idx) {
+    }
+    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
+                       SPCSEQ_ENDLOOPALWAYS);
+    while (awg->get_current_step() != idle_step_idx) {
+        if (awg->get_current_step() == short_circuit_null_step) {
             std::cerr << "Detected null" << std::endl;
             awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                                idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
+                               idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
             awg->seqmem_update(short_circuit_null_step, idle_segment_idx, 1,
-                                idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
-            while(awg->get_current_step() != idle_step_idx) {}
+                               idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
+            while (awg->get_current_step() != idle_step_idx) {
+            }
             return 1;
         }
     }
 #else // DETECT_NULL
 
-    while (awg->get_current_step() == idle_step_idx) {}
-    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1,
-                        idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
-    while (awg->get_current_step() != idle_step_idx) {}
-    
+    while (awg->get_current_step() == idle_step_idx) {
+    }
+    awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
+                       SPCSEQ_ENDLOOPALWAYS);
+    while (awg->get_current_step() != idle_step_idx) {
+    }
+
 #endif
 
 #ifdef LOGGING_RUNTIME
@@ -361,8 +360,6 @@ bool Stream::Sequence<AWG_T>::load_multiple_segments(
 
     return 0;
 }
-
-
 
 template <typename AWG_T>
 void Stream::Sequence<AWG_T>::wf_segment_lookup(
@@ -398,9 +395,8 @@ void Stream::Sequence<AWG_T>::load_idle_wfm(short *p_buffer, int num_samples) {
     if (awg->get_idle_segment_wfm()) { // depending on user config, either
                                        // fill the buffer with 0s or STATIC
                                        // wfms
-        get_static_wfm(p_buffer,
-                    num_samples / awg->get_waveform_length(),
-                    Nt_x * Nt_y);
+        get_static_wfm(p_buffer, num_samples / awg->get_waveform_length(),
+                       Nt_x * Nt_y);
     } else {
         std::fill(p_buffer, p_buffer + num_samples, 0);
     }
