@@ -438,7 +438,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     std::cout << "Starting LLRS setup" << std::endl;
     auto awg = trigger_detector->getAWG();
     l = new LLRS<AWG_T>{awg};
-    l->setup("config.yml", false, 1);
+    l->setup("21-problem.yml", false, 1);
 
     std::cout << "Starting AWG stream" << std::endl;
 	auto tb = awg->allocate_transfer_buffer(
@@ -521,7 +521,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
 
     auto awg = trigger_detector->getAWG();
     l = new LLRS<AWG_T>{awg};
-    l->setup("config.yml", false, 1);
+    l->setup("21-problem.yml", false, 1);
 
     std::cout << "Starting AWG stream" << std::endl;
    	auto tb = awg->allocate_transfer_buffer(
