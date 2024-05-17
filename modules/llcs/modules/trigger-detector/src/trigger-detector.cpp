@@ -6,8 +6,7 @@
 template <typename AWG_T>
 TriggerDetector<AWG_T>::TriggerDetector()
     : awg{std::make_shared<AWG_T>()}, samples_per_idle_segment{
-                                          awg->get_idle_segment_length() *
-                                          awg->get_waveform_length()} {
+                                          awg->get_idle_segment_length()} {
     int status = 0;
 
     // DATA MEMORY
