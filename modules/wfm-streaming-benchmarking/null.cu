@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) { // <Number of moves>, <numbers of waveforms
 
     int counter = 0;
     for (int i = 0; i < num_rep; i++) {
-        auto moves = generate_moves(t);
+        auto moves = generate_moves(number_of_moves);
         counter += awg_sequence.load_and_stream(moves, 0, 0, 0);
         awg_sequence.reset(false);
     }
