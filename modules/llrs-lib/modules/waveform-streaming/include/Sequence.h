@@ -43,7 +43,7 @@ template <typename AWG_T> class Sequence {
               int Nt_y);
     bool load_and_stream(std::vector<Reconfig::Move> &moves_list, int trial_num,
                          int rep_num, int cycle_num) {
-        return moves_list.size() < waveforms_per_segment * 2
+        return moves_list.size() <= waveforms_per_segment * 2
                    ? load_single_segment(moves_list, trial_num, rep_num,
                                          cycle_num)
                    : load_multiple_segments(moves_list, trial_num, rep_num,

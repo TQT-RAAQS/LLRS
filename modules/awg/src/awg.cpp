@@ -119,7 +119,7 @@ int AWG::configure() {
     /// Allocate the continuous buffer
     spcm_dwGetContBuf_i64(p_card, SPCM_BUF_DATA, &continuousBuffer,
                           &continuousBufferSize);
-    std::cout << "Physically continuous buffer of size " << continuousBufferSize
+    std::cerr << "Physically continuous buffer of size " << continuousBufferSize
               << " was successfully allocated." << std::endl;
 
     return status;
@@ -364,7 +364,7 @@ int AWG::load_data_async_start(int seg_num, short *p_data, uint64 size) {
 #else
     spcm_dwDefTransfer_i64(
         p_card, SPCM_BUF_DATA, SPCM_DIR_PCTOCARD, 0, p_data, 0,
-        dwSegLenByte); // DKEA: changed this, need to verify correctness
+        dwSegLenByte); 
 #endif
 
     return spcm_dwSetParam_i32(p_card, SPC_M2CMD, M2CMD_DATA_STARTDMA);

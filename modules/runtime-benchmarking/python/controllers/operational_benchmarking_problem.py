@@ -117,6 +117,13 @@ class OperationalBenchmarkingProblem(object):
             metrics[metric_name] = metric_functions[metric_name](aod_ops)
         return metrics
 
+    def get_num_ops (self, aod_ops):
+        nu_ops = self.get_nu_ops(aod_ops)
+        alpha_ops = self.get_alpha_ops(aod_ops)
+        if (alpha_ops + nu_ops < 64):
+            return 64
+        else:
+            return alpha_ops + nu_ops + 32 - ((alpha_ops + nu_ops) % 32)
 
     def pre_solve(self, loss, t_alpha, t_nu, latency, solver_wrapper_so_file, _2d):
         '''
@@ -138,6 +145,7 @@ class OperationalBenchmarkingProblem(object):
             "num_elementary_nu_operations": self.get_ele_nu_ops,
             "num_alpha_operations": self.get_alpha_ops,
             "num_elementary_alpha_operations": self.get_ele_alpha_ops,
+            "num_operations": self.get_num_ops,
         }
         
         target_binary_array = self.target_static_trap.get_occupation_list()
