@@ -445,11 +445,6 @@ def create_dataframe_from_json(runtime_data, config_data, metrics_data, aod_ops_
     }
 
     df.rename(columns=rename_dict, inplace=True)
-    if runtime_data:
-        if is_2D and ("III-Total" in df):
-            df["III-Matching"] = df["III-Total"] - df["III-Batching"]
-        elif "III-Matching" in df:
-            df["III-Total"] = df["III-Matching"] + df["III-Batching"]
 
     return df
 
