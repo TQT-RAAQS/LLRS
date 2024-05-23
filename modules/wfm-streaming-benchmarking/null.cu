@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) { // <Number of moves>, <numbers of waveforms
         trigger_size:             2000          # number of Waveforms repeated for the synchronized trigger: int \n \
         vpp:                      140           # peak to peak voltage in mV : int \n \
         # EMCCD Trigger Settings \n \
-        acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int \n \ 
+        acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int \n \
 		async_trig_amp:           3             # trigger Amp in volts : int \n";
         std::ofstream config_file{std::string("") + PROJECT_BASE_DIR +
                                   "/configs/awg/awg.yml"};
