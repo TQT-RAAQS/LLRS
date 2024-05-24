@@ -52,10 +52,9 @@ double Synthesis::transition_func_integral(Modulation integrand, double b,
 }
 
 /// Waveform Class
-
-Synthesis::Waveform::Waveform(WP params, double t0, double T)
-    : _params(params), _t0(t0), _duration(T) {
-
+Synthesis::Waveform::Waveform(std::shared_ptr<WaveformFunc> &wfMod, WP params,
+                              double t0, double T)
+    : wfFunc(wfFunc), params(params), t0(t0), duration(T) {
     double alpha, nu, phi;
     std::tie(alpha, nu, phi) = params;
     if (alpha > 1 || alpha < 0)
@@ -66,8 +65,8 @@ Synthesis::Waveform::Waveform(WP params, double t0, double T)
         throw std::invalid_argument("Invalid Phase Values.");
 };
 
-std::vector<double> Synthesis::Waveform::discretize(std::size_t num_samples,
-                                                    double sample_rate) {
+std::vector<double> Synthesis::Waveform::discretize(size_t num_samples) {
+
     std::vector<double> data;
     for (int i = 0; i < num_samples; i++) {
         data.push_back(wave_func(i, sample_rate));
@@ -75,20 +74,10 @@ std::vector<double> Synthesis::Waveform::discretize(std::size_t num_samples,
     return data;
 }
 
-double Synthesis::Waveform::wave_func(std::size_t index, double sample_rate) {
+// Extraction
+double Synthesis::Extraction::wave_func(size_t index) {
     double alpha, nu, phi;
-    std::tie(alpha, nu, phi) =
-        get_params(); /// alpha, nu, and phi are set using get_params()
-
-    /// The waveform is a sine wave with amplitude alpha, frequency nu, phase
-    /// shift phi, and an optional time offset _t0
-    return alpha * sin(2 * M_PI * nu * (_t0 + index / sample_rate) + phi);
-}
-
-double Synthesis::Extraction::wave_func(std::size_t index, double sample_rate) {
-    double alpha, nu, phi;
-    std::tie(alpha, nu, phi) =
-        get_params(); // alpha, nu, and phi are set using get_params()
+    std::tie(alpha, nu, phi) = params;
 
     double mod_val = transition_func(this->_amp_mod, index / sample_rate,
                                      DISPLACEMENT_RELATIVE_SLOPE, _duration);
@@ -97,31 +86,23 @@ double Synthesis::Extraction::wave_func(std::size_t index, double sample_rate) {
     return amp_chirp * sin(2 * M_PI * nu * (_t0 + index / sample_rate) + phi);
 }
 
-Synthesis::Displacement::Displacement(WP params, WP dest, Modulation amp_mod,
-                                      Modulation freq_mod, double freq_slope)
-    : Waveform(params), _dest(dest), _amp_mod(amp_mod), _freq_mod(freq_mod),
-      _v_max(freq_slope) {
+// Idle
+double Synthesis::Idle::wave_func(std::size_t index) {
+    double alpha, nu, phi;
+    std::tie(alpha, nu, phi) = params;
+
+    /// The waveform is a sine wave with amplitude alpha, frequency nu, phase
+    /// shift phi, and an optional time offset t0
+    return alpha * sin(2 * M_PI * nu * (t0 + index / sample_rate) + phi);
+}
+
+// Displacement
+
+double Synthesis::Displacement::wave_func(std::size_t index) {
     double alpha0, nu0, phi0;
-    std::tie(alpha0, nu0, phi0) = get_params();
     double alpha1, nu1, phi1;
-    std::tie(alpha1, nu1, phi1) = this->_dest;
-
-    if (freq_slope < abs(nu1 - nu0) / WAVEFORM_DUR) {
-        throw std::invalid_argument("Invalid Displacement Modulation Value");
-    }
-
-    init_phase_adj();
-};
-
-double Synthesis::Displacement::wave_func(std::size_t index,
-                                          double sample_rate) {
-    double alpha0, nu0, phi0;
-    std::tie(alpha0, nu0, phi0) =
-        get_params(); // alpha0, nu0, and phi0 are set using get_params()
-
-    double alpha1, nu1, phi1;
-    std::tie(alpha1, nu1, phi1) =
-        this->_dest; // alpha1, nu1, and phi1 are set using this->_dest
+    std::tie(alpha0, nu0, phi0) = params;
+    std::tie(alpha1, nu1, phi1) = destParams;
 
     double alpha_mod = transition_func(this->_amp_mod, index / sample_rate,
                                        DISPLACEMENT_RELATIVE_SLOPE, _duration);
@@ -143,12 +124,9 @@ double Synthesis::Displacement::wave_func(std::size_t index,
 
 void Synthesis::Displacement::init_phase_adj() {
     double alpha0, nu0, phi0;
-    std::tie(alpha0, nu0, phi0) =
-        get_params(); // alpha0, nu0, and phi0 are set using get_params()
-
     double alpha1, nu1, phi1;
-    std::tie(alpha1, nu1, phi1) =
-        this->_dest; // alpha1, nu1, and phi1 are set using this->_dest
+    std::tie(alpha0, nu0, phi0) = params;
+    std::tie(alpha1, nu1, phi1) = destParams;
 
     // Calculate phase adjustment
     double nu_bar = (nu1 + nu0) / 2;
