@@ -1,7 +1,6 @@
 #include "Waveform.h"
 
 /// Helper Functions
-
 double Synthesis::transition_func(Modulation mod_type, double time,
                                   double relative_slope, double duration) {
     double eval =
@@ -98,18 +97,16 @@ double Synthesis::Extraction::wave_func(std::size_t index, double sample_rate) {
     return amp_chirp * sin(2 * M_PI * nu * (_t0 + index / sample_rate) + phi);
 }
 
-Synthesis::Displacement::Displacement(WP params, WP dest,
-                                      double waveform_duration,
-                                      Modulation amp_mod, Modulation freq_mod,
-                                      double freq_slope)
-    : Waveform(params, 0, waveform_duration), _dest(dest), _amp_mod(amp_mod),
-      _freq_mod(freq_mod), _v_max(freq_slope) {
+Synthesis::Displacement::Displacement(WP params, WP dest, Modulation amp_mod,
+                                      Modulation freq_mod, double freq_slope)
+    : Waveform(params), _dest(dest), _amp_mod(amp_mod), _freq_mod(freq_mod),
+      _v_max(freq_slope) {
     double alpha0, nu0, phi0;
     std::tie(alpha0, nu0, phi0) = get_params();
     double alpha1, nu1, phi1;
     std::tie(alpha1, nu1, phi1) = this->_dest;
 
-    if (freq_slope < abs(nu1 - nu0) / waveform_duration) {
+    if (freq_slope < abs(nu1 - nu0) / WAVEFORM_DUR) {
         throw std::invalid_argument("Invalid Displacement Modulation Value");
     }
 
