@@ -2,6 +2,7 @@
 #define WAVEFORM_H_
 
 #include "llrs-lib/Settings.h"
+#include <yaml-cpp/yaml.h>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -11,16 +12,23 @@
 
 namespace Synthesis {
 
+void read_waveform_configs(std::string filepath);
+
 /// WaveformParameter type representing the (alpha, nu, phi) tuple
 using WP = std::tuple<double, double, double>;
 
-struct WaveformFunc { // Pure Abstract Waveform Mod type class
-    virtual ~Waveform();
+struct TransitionFunc { // Pure Abstract Transition Mod type class
+    virtual ~TransitionFunc();
     virtual double transition_func() = 0;
     virtual double transition_func_integral() = 0;
 };
 
-class TANH : public WaveformFunc {
+struct StaticFunc {
+	virtual ~StaticFunc();
+	virtual double static_func() = 0;
+};
+
+class TANH : public TransitionFunc {
     // some parameters
   public:
     TANH();
@@ -28,7 +36,7 @@ class TANH : public WaveformFunc {
     double transition_func_integral() override;
 };
 
-class Spline : public WaveformFunc {
+class Spline : public TransitionFunc {
     // some parameters
   public:
     Spline();
@@ -36,7 +44,7 @@ class Spline : public WaveformFunc {
     double transition_func_integral() override;
 };
 
-class Step : public WaveformFunc {
+class Step : public TransitionFunc {
     // some parameters
   public:
     Step();
@@ -44,7 +52,7 @@ class Step : public WaveformFunc {
     double transition_func_integral() override;
 };
 
-class ERF : public WaveformFunc {
+class ERF : public TransitionFunc {
     // some parameters
   public:
     ERF();
@@ -52,10 +60,10 @@ class ERF : public WaveformFunc {
     double transition_func_integral() override;
 };
 
-class Static : public WaveformFunc {
+class Sin : public StaticFunc {
     // some parameters
   public:
-    Static();
+	Sin();
     double transition_func() override;
     double transition_func_integral() override;
 };
@@ -63,51 +71,45 @@ class Static : public WaveformFunc {
 // WAVEFORM CLASS ---------------------------------------
 
 class Waveform {
+	WP params;
     double t0;
     double duration;
     double sample_rate;
-    std::shared_ptr<WaveformFunc> wfMod;
+    static std::unique_ptr<TransitionFunc> transMod;
+	static std::unique_ptr<StaticFunc> staticMod;
+    virtual double wave_func(size_t index) = 0;
 
   public:
-    Waveform(std::shared_ptr<WaveformFunc> &wfMod, double t0, double duration,
-             double sample_rate);
-    std::vector<double> discretize(size_t num_samples);
-    virtual double wave_func(size_t index) = 0;
+    Waveform(double t0, double duration);
+    std::vector<double> discretize(size_t num_samples, double sample_rate);
 }
 
 class Displacement : public Waveform {
-    std::shared_ptr<WaveformFunc> freqMod;
     WF destParams;
     void init_phase_adj();
 
   public:
-    Displacement(std::shared_ptr<WaveformFunc> &ampMod,
-                 std::shared_ptr<WaveformFunc> &freqMod, WP srcParams,
-                 WP destParams)
-        : Waveform(ampMod, srcParams), freqMod(freqMod),
-          destParams(destParams) {
+    Displacement(WP srcParams, WP destParams, double waveform_duration)
+        : Waveform(srcParams, 0, waveform_duration), destParams(destParams) {
         init_phase_adj()
     }
-    double wave_func(size_t index) override;
 };
 
 class Extraction : public Waveform {
     bool is_reversed;
     // params
-  public:
-    Extraction(std::shared_ptr<WaveformFunc> &wfMod, WP params,
-               double waveform_duration, bool is_reversed)
-        : Waveform(wfMod, params, 0, waveform_duration),
-          is_reversed(is_reversed) {}
     double wave_func(size_t index) override;
+  public:
+    Extraction(WP params, double waveform_duration, bool is_reversed)
+        : Waveform(params, 0, waveform_duration),
+          is_reversed(is_reversed) {}
 };
 
 class Idle : public Waveform {
-  public:
-    Idle(std::shared_ptr<WaveformFunc> &wfMod, WP params,
-         double waveform_duration)
-        : Waveform(wfMod, params, 0, waveform_duration) {}
     double wave_func(size_t index) override;
+  public:
+    Idle(WP params, double waveform_duration)
+        : Waveform(params, 0, waveform_duration) {}
 }
 
 } // namespace Synthesis
