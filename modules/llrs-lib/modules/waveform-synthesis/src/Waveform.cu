@@ -140,3 +140,40 @@ void Synthesis::Displacement::init_phase_adj() {
                      ? tau_ceil
                      : tau_floor; // stores the phase adjustment in the waveform
 }
+
+
+void read_waveform_configs(std::string filepath) {
+    /// Open file
+    try {
+		YAML::Node node = YAML::LoadFile(filename);
+    } catch (const YAML::BadFile &e) {
+        std::cerr << "Error loading YAML file (Waveform Config)." << std::endl;
+        std::cerr << "ERROR: " << e.what() << std::endl;
+		return;
+    }
+	
+	
+	// Transition Mod
+	std::string transition_type == node["transition_type"].as<std::string>();
+	if (transition_type == "TANH") {
+		Waveform::transMod = std::make_unique<TANH>(node["transition_type"]);	
+	} else if (transition_type == "Spline") {
+		Waveform::transMod = std::make_unique<Spline>(node["transition_type"]);	
+	} else if (transition_type == "Step") {
+		Waveform::transMod = std::make_unique<Step>(node["transition_type"]);	
+	} else if (transition_type == "ERF") {
+		Waveform::transMod = std::make_unique<ERF>(node["transition_type"]);	
+	} else {
+		throw std::invalid_argument("Transition modulation type not supported.");
+	}
+
+	// Static Mod
+	std::string static_type == node["static_type"].as<std::string>();
+	Waveform::staticMod = std::make_unique<Spline>(node["static_type"]);	
+	if (transition_type == "sin") {
+		Waveform::staticMod = std::make_unique<Sin>(node["static_type"]);	
+	} else {
+		throw std::invalid_argument("Static modulation type not supported.");
+	}
+			
+}
