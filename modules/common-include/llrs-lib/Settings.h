@@ -16,7 +16,7 @@
 #define FILTERING_NUM_THREADS size_t(32)
 #define IMAGE_INVERTED_X true
 
-// Number of cycles to attempt before existing a trial
+// Number of cycles to attempt before exiting a trial
 #define ATTEMPT_LIMIT size_t(5)
 
 enum Channel { CHAN_0 = 0b00, CHAN_1 = 0b01, CHAN_2 = 0b10, CHAN_3 = 0b11 };
