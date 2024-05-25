@@ -47,19 +47,14 @@ int AWG::read_config(std::string filename) {
     config.sample_rate = node["sample_rate"].as<double>();
     std::string wfm_mask_str = node["wfm_mask"].as<std::string>();
     config.wfm_mask = std::stoi(wfm_mask_str, 0, 16);
-    config.waveform_duration = node["waveform_duration"].as<double>();
-    config.waveforms_per_segment = node["waveforms_per_segment"].as<int>();
-    config.null_segment_length = node["null_segment_length"].as<int>();
-    config.idle_segment_length = node["idle_segment_length"].as<int>();
-    config.waveform_length =
-        static_cast<int>(config.sample_rate * config.waveform_duration);
-    config.samples_per_segment =
-        config.waveforms_per_segment * config.waveform_length;
     config.trigger_size = node["trigger_size"].as<int>();
     config.vpp = node["vpp"].as<int>();
     config.acq_timeout = node["acq_timeout"].as<int>();
     config.async_trig_amp = node["async_trig_amp"].as<int>();
     config.idle_segment_wfm = node["idle_segment_wfm"].as<bool>();
+    config.waveforms_per_segment = node["waveforms_per_segment"].as<int>();
+    config.null_seg_num_waveforms = node["null_seg_num_waveforms"].as<int>();
+    config.idle_seg_num_waveforms = node["idle_seg_num_waveforms"].as<int>();
 
     return 0;
 }
@@ -123,6 +118,17 @@ int AWG::configure() {
               << " was successfully allocated." << std::endl;
 
     return status;
+}
+
+void AWG::configure_segment_length(double waveform_duration) {
+    config.waveform_length =
+        static_cast<int>(config.sample_rate * waveform_duration);
+    config.null_segment_length =
+        config.waveform_length * config.null_seg_num_waveforms;
+    config.idle_segment_length =
+        config.waveform_length * config.idle_seg_num_waveforms;
+    config.samples_per_segment =
+        config.waveforms_per_segment * config.waveform_length;
 }
 
 /**
@@ -362,9 +368,8 @@ int AWG::load_data_async_start(int seg_num, short *p_data, uint64 size) {
     spcm_dwDefTransfer_i64(p_card, SPCM_BUF_DATA, SPCM_DIR_GPUTOCARD, 0, p_data,
                            0, size);
 #else
-    spcm_dwDefTransfer_i64(
-        p_card, SPCM_BUF_DATA, SPCM_DIR_PCTOCARD, 0, p_data, 0,
-        dwSegLenByte); 
+    spcm_dwDefTransfer_i64(p_card, SPCM_BUF_DATA, SPCM_DIR_PCTOCARD, 0, p_data,
+                           0, dwSegLenByte);
 #endif
 
     return spcm_dwSetParam_i32(p_card, SPC_M2CMD, M2CMD_DATA_STARTDMA);

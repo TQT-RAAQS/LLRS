@@ -5,8 +5,9 @@ LLRS<AWG_T>::LLRS()
     : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
                             std::ios::app)),
       p_collector{Util::Collector::get_instance()},
-      awg_sequence{
-          std::make_unique<Stream::Sequence<AWG_T>>(p_collector, wf_table)} {
+      awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(
+          p_collector, wf_table,
+          Synthesis::read_waveform_duration(WFM_CONFIG_PATH + "/config.yml"))} {
     std::cout << "LLRS: constructor" << std::endl;
 }
 
@@ -15,8 +16,9 @@ LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
     : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
                             std::ios::app)),
       p_collector{Util::Collector::get_instance()},
-      awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(awg, p_collector,
-                                                             wf_table)} {
+      awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(
+          awg, p_collector, wf_table,
+          Synthesis::read_waveform_duration(WFM_CONFIG_PATH + "/config.yml"))} {
     std::cout << "LLRS: constructor" << std::endl;
 }
 
@@ -125,18 +127,16 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
                               p_collector);
 
     double awg_sample_rate = awg_sequence->get_sample_rate();
-    double waveform_duration = awg_sequence->get_waveform_duration();
-    int waveform_length = awg_sequence->get_waveform_length();
     int wfm_mask = awg_sequence->get_waveform_mask();
     int vpp = awg_sequence->get_vpp();
     /* Waveform Synthesis Initialization */
     const double table_sample_rate =
         _2d ? awg_sample_rate / 2 : awg_sample_rate;
 
-    wf_table = Setup::create_wf_table(
-        Nt_x, Nt_y, table_sample_rate, waveform_duration, waveform_length,
-        wfm_mask, vpp, user_input.read_experiment_coefx_path(),
-        user_input.read_experiment_coefy_path(), true);
+    wf_table =
+        Setup::create_wf_table(Nt_x, Nt_y, table_sample_rate, wfm_mask, vpp,
+                               user_input.read_experiment_coefx_path(),
+                               user_input.read_experiment_coefy_path(), true);
 
     awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, Nt_x, Nt_y);
 

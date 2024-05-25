@@ -2,34 +2,35 @@
 #define WAVEFORM_H_
 
 #include "llrs-lib/Settings.h"
-#include <yaml-cpp/yaml.h>
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <stdio.h>
 #include <tuple>
 #include <vector>
+#include <yaml-cpp/yaml.h>
 
 namespace Synthesis {
 
 void read_waveform_configs(std::string filepath);
+double read_waveform_duration(std::string filepath);
 
 /// WaveformParameter type representing the (alpha, nu, phi) tuple
 using WP = std::tuple<double, double, double>;
 
-struct TransitionFunc { // Pure Abstract Transition Mod type class
+class TransitionFunc { // Pure Abstract Transition Mod type class
     double duration;
-
+	public:
     TransitionFunc(double duration) : duration(duration) {}
     virtual ~TransitionFunc();
     virtual double transition_func(double t, WP params1, WP params2) = 0;
 };
 
-struct StaticFunc {
-  double duration;
-
-	virtual ~StaticFunc();
-	virtual double static_func(double t, WP params) = 0;
+class StaticFunc {
+    double duration;
+	public:
+    virtual ~StaticFunc();
+    virtual double static_func(double t, WP params) = 0;
 };
 
 class TANH : public TransitionFunc {
@@ -41,49 +42,54 @@ class TANH : public TransitionFunc {
 };
 
 class Spline : public TransitionFunc {
-    
+
   public:
     Spline(double duration) : TransitionFunc(duration) {}
     double transition_func(double t, WP params1, WP params2) override;
 };
 
 class ERF : public TransitionFunc {
-  double vmax;
-  
+    double vmax;
+
   public:
     ERF(double duration, double vmax) : TransitionFunc(duration), vmax(vmax) {}
     double transition_func(double t, WP params1, WP params2) override;
 };
 
 class Sin : public StaticFunc {
-    
+
   public:
     Sin();
     double transition_func(double t, WP params) override;
 };
 
-// --------------------------------------- WAVEFORM CLASS ---------------------------------------
+// -------------- WAVEFORM CLASS -------------------
 
 class Waveform {
-	WP params;
+    WP params;
     double t0;
     double duration;
     double sample_rate;
     static std::unique_ptr<TransitionFunc> transMod;
-	  static std::unique_ptr<StaticFunc> staticMod;
+    static std::unique_ptr<StaticFunc> staticMod;
     virtual double wave_func(double time) = 0;
 
   public:
     Waveform(double t0, double T) : t0(t0), duration(T) {}
-    std::vector<double> discretize(size_t num_samples, double sample_rate);
-    
-    static void set_transition_function(std::unqiue_ptr<TransitionFunc> && trans_func) {transMod = trans_func;}
-    static void set_static_function(std::unqiue_ptr<TransitionFunc> && static_func) {staticMod = static_func;}
+    std::vector<double> discretize(double sample_rate);
+
+    static void
+    set_transition_function(std::unqiue_ptr<TransitionFunc> &&trans_func) {
+        transMod = trans_func;
+    }
+    static void
+    set_static_function(std::unqiue_ptr<TransitionFunc> &&static_func) {
+        staticMod = static_func;
+    }
 }
 
 class Displacement : public Waveform {
     WF srcParams, destParams;
-    void init_phase_adj();
     double wave_func(double time) override;
 
   public:
@@ -116,8 +122,7 @@ class Idle : public Waveform {
     double wave_func(double time) override;
 
   public:
-    Idle(double duration, WP params)
-        : Waveform(0, duration), params(params) {}
+    Idle(double duration, WP params) : Waveform(0, duration), params(params) {}
 }
 
 } // namespace Synthesis

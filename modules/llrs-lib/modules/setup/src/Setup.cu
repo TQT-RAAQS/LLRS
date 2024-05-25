@@ -76,12 +76,11 @@ int Setup::read_fparams(std::string file_name,
  */
 
 int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
-                          double wf_duration, int waveform_length,
                           int waveform_mask, int vpp, std::string coef_x_fname,
                           std::string coef_y_fname) {
 
-    Synthesis::WaveformRepo wf_repo(Nt_x, Nt_y, sample_rate, wf_duration,
-                                    waveform_length, waveform_mask, vpp);
+    Synthesis::WaveformRepo wf_repo(Nt_x, Nt_y, sample_rate, waveform_mask,
+                                    vpp);
 
     std::string x_path = COEF_X_PATH(coef_x_fname);
     std::vector<Synthesis::WP> params_x;
@@ -103,8 +102,6 @@ int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
     std::string file_name = "repo." + std::to_string(Nt_x) + "_" +
                             std::to_string(Nt_y) + "_" +
                             std::to_string((int)std::round(sample_rate)) + "_" +
-                            std::to_string((int)std::round(wf_duration * 1e6)) +
-                            "_" + std::to_string(waveform_length) + "_" +
                             std::to_string(waveform_mask) + ".bin";
     std::string repo_fname = WF_REPO_PATH(file_name);
     INFO << "Caching repo as" << repo_fname << std::endl;
@@ -130,7 +127,6 @@ int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
 
 Synthesis::WaveformTable
 Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
-                       double wf_duration, int waveform_length,
                        int waveform_mask, int vpp, std::string coef_x_fname,
                        std::string coef_y_fname, bool is_transposed) {
 
@@ -150,8 +146,8 @@ Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
             throw std::runtime_error("Failed to create/cache waveform repo");
         }
     }
-    Synthesis::WaveformRepo wf_repo(Nt_x, Nt_y, sample_rate, wf_duration,
-                                    waveform_length, waveform_mask, vpp);
+    Synthesis::WaveformRepo wf_repo(Nt_x, Nt_y, sample_rate, waveform_mask,
+                                    vpp);
 
     wf_repo.load_waveform_repo(repo_path);
 

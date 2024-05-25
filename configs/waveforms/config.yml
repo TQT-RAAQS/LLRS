@@ -1,12 +1,6 @@
-transition_type: ... 
-  param-1: ... 
-static_type: sin 
-  param-2: ...
+waveform_duration: 100e-6                    # waveform duration : float
 
+transition_type:   spline                    # Choose one of (TANH, spline, ERF)
+  #  vmax: ...                               # For (TANH, ERF), provide V_max
+static_type: sin                             # Choose one of (sin)
 
-
-
-
-# Avaiable Types:
-#
-# ...

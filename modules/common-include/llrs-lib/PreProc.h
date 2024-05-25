@@ -43,6 +43,9 @@ namespace fs = std::experimental::filesystem;
 #define CONFIG_PATH(id)                                                        \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
      kPathSeparator1 + "llrs" + kPathSeparator1 + (id))
+#define WFM_CONFIG_PATH(id)                                                    \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
+     kPathSeparator1 + "waveforms" + kPathSeparator1 + (id))
 #define SOLN_PATH(id)                                                          \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "runtime-benchmark-solutions" + kPathSeparator1 +       \

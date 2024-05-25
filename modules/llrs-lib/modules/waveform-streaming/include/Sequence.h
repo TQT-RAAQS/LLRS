@@ -16,26 +16,41 @@ namespace Stream {
 
 template <typename AWG_T> class Sequence {
   public:
-    Sequence(Util::Collector *p_collector, Synthesis::WaveformTable &wf_table)
+    Sequence(Util::Collector *p_collector, Synthesis::WaveformTable &wf_table,
+             double waveform_duration)
         : awg{std::make_shared<AWG>()}, p_collector{p_collector},
           wf_table{wf_table}, lookup_buffer{awg->allocate_transfer_buffer(
-                                  awg->get_samples_per_segment(), true)},
+                                  awg->get_samples_per_segment(), false)},
           upload_buffer{awg->allocate_transfer_buffer(
-              awg->get_samples_per_segment(), true)},
+              awg->get_samples_per_segment(), false)},
           double_sized_buffer{awg->allocate_transfer_buffer(
-              awg->get_samples_per_segment() * 2, true)} {
+              awg->get_samples_per_segment() * 2, false)} {
+
+        awg->configure_waveform_length(waveform_duration);
+        lookup_buffer = awg->allocate_transfer_buffer(
+            awg->get_samples_per_segment(), true) upload_buffer =
+            awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true);
+        double_sized_buffer = awg->allocate_transfer_buffer(
+            awg->get_samples_per_segment() * 2, true);
         configure();
     }
 
     Sequence(std::shared_ptr<AWG_T> &awg, Util::Collector *p_collector,
-             Synthesis::WaveformTable &wf_table)
+             Synthesis::WaveformTable &wf_table, double waveform_duration)
         : awg{awg}, p_collector{p_collector}, wf_table{wf_table},
           lookup_buffer{awg->allocate_transfer_buffer(
-              awg->get_samples_per_segment(), true)},
+              awg->get_samples_per_segment(), false)},
           upload_buffer{awg->allocate_transfer_buffer(
-              awg->get_samples_per_segment(), true)},
+              awg->get_samples_per_segment(), false)},
           double_sized_buffer{awg->allocate_transfer_buffer(
-              awg->get_samples_per_segment() * 2, true)} {
+              awg->get_samples_per_segment() * 2, false)} {
+
+        awg->configure_waveform_length(waveform_duration);
+        lookup_buffer = awg->allocate_transfer_buffer(
+            awg->get_samples_per_segment(), true) upload_buffer =
+            awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true);
+        double_sized_buffer = awg->allocate_transfer_buffer(
+            awg->get_samples_per_segment() * 2, true);
         configure();
     }
 
