@@ -181,7 +181,7 @@ bool Stream::Sequence<AWG_T>::load_single_segment(
     p_collector->get_external_time("V-Second-Upload", trial_num, rep_num,
                                    cycle_num, 0);
 #endif
-    
+
     // point idle to the double sized segment
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, short_circuit_step,
                        SPCSEQ_ENDLOOPALWAYS);
@@ -190,7 +190,7 @@ bool Stream::Sequence<AWG_T>::load_single_segment(
     p_collector->start_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
 #endif
 
-    while ( awg->get_current_step() == idle_step_idx) {
+    while (awg->get_current_step() == idle_step_idx) {
     }
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
                        SPCSEQ_ENDLOOPALWAYS);
@@ -324,7 +324,8 @@ bool Stream::Sequence<AWG_T>::load_multiple_segments(
             p_collector->end_timer("V-First-Update", trial_num, rep_num,
                                    cycle_num);
             p_collector->end_timer("V-Latency", trial_num, rep_num, cycle_num);
-            p_collector->start_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
+            p_collector->start_timer("V-Load_Stream", trial_num, rep_num,
+                                     cycle_num);
 #endif
         }
     }

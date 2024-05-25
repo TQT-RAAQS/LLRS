@@ -18,6 +18,7 @@ class AWG {
     int stop_card();
     void close_card();
 
+    void configure_segment_length(double waveform_duration);
     int seqmem_update(int64 lStep, int64 llSegment, int64 llLoop, int64 llNext,
                       uint64 llCondition);
     int load_data(int seg_num, short *p_data, uint64 size);
@@ -101,6 +102,8 @@ class AWG {
         int acq_timeout;
         int async_trig_amp;
         bool idle_segment_wfm;
+        int null_seg_num_waveforms;
+        int idle_seg_num_waveforms;
         ~awg_config_t() { delete[] driver_path; }
     } config;
     drv_handle p_card;
