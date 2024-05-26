@@ -19,6 +19,7 @@ double read_waveform_duration(std::string filepath);
 using WP = std::tuple<double, double, double>;
 
 class TransitionFunc { // Pure Abstract Transition Mod type class
+ protected:
     double duration;
 	public:
     TransitionFunc(double duration) : duration(duration) {}
@@ -27,7 +28,6 @@ class TransitionFunc { // Pure Abstract Transition Mod type class
 };
 
 class StaticFunc {
-    double duration;
 	public:
     virtual ~StaticFunc();
     virtual double static_func(double t, WP params) = 0;
@@ -57,15 +57,15 @@ class ERF : public TransitionFunc {
 };
 
 class Sin : public StaticFunc {
-
-  public:
+	public:
     Sin();
-    double transition_func(double t, WP params) override;
+    double static_func(double t, WP params) override;
 };
 
 // -------------- WAVEFORM CLASS -------------------
 
 class Waveform {
+  protected:
     WP params;
     double t0;
     double duration;
@@ -76,31 +76,31 @@ class Waveform {
 
   public:
     Waveform(double t0, double T) : t0(t0), duration(T) {}
-    std::vector<double> discretize(double sample_rate);
+    std::vector<double> discretize(size_t sample_rate);
 
     static void
-    set_transition_function(std::unqiue_ptr<TransitionFunc> &&trans_func) {
-        transMod = trans_func;
+    set_transition_function(std::unique_ptr<TransitionFunc> &&trans_func) {
+        transMod = std::move(trans_func);
     }
     static void
-    set_static_function(std::unqiue_ptr<TransitionFunc> &&static_func) {
-        staticMod = static_func;
+    set_static_function(std::unique_ptr<StaticFunc> &&static_func) {
+        staticMod = std::move(static_func);
     }
-}
+};
 
 class Displacement : public Waveform {
-    WF srcParams, destParams;
+  protected:
+    WP srcParams, destParams;
     double wave_func(double time) override;
 
   public:
     Displacement(double duration, WP srcParams, WP destParams)
-        : Waveform(0, duration), srcParams(srcParams), destParams(destParams) {
-        init_phase_adj()
-    }
+        : Waveform(0, duration), srcParams(srcParams), destParams(destParams) {}
 };
 
 class Extraction : public Waveform {
-    WF params;
+  protected:
+    WP params;
     double wave_func(double time) override;
 
   public:
@@ -109,7 +109,8 @@ class Extraction : public Waveform {
 };
 
 class Implantation : public Waveform {
-    WF params;
+  protected:
+    WP params;
     double wave_func(double time) override;
 
   public:
@@ -118,12 +119,13 @@ class Implantation : public Waveform {
 };
 
 class Idle : public Waveform {
-    WF params;
+  protected:
+    WP params;
     double wave_func(double time) override;
 
   public:
     Idle(double duration, WP params) : Waveform(0, duration), params(params) {}
-}
+};
 
 } // namespace Synthesis
 
