@@ -7,7 +7,7 @@ LLRS<AWG_T>::LLRS()
       p_collector{Util::Collector::get_instance()},
       awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(
           p_collector, wf_table,
-          Synthesis::read_waveform_duration(WFM_CONFIG_PATH + "/config.yml"))} {
+          Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")))} {
     std::cout << "LLRS: constructor" << std::endl;
 }
 
@@ -18,7 +18,7 @@ LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
       p_collector{Util::Collector::get_instance()},
       awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(
           awg, p_collector, wf_table,
-          Synthesis::read_waveform_duration(WFM_CONFIG_PATH + "/config.yml"))} {
+          Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")))} {
     std::cout << "LLRS: constructor" << std::endl;
 }
 

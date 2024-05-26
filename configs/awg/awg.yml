@@ -8,10 +8,9 @@ amp:                      [140]         # list of amp for each channel in mV : i
 awg_num_segments:         256           # number of segments : int
 sample_rate:              624e6         # sample rate : float 
 wfm_mask:                 0x00007fff    # waveform mask : Hex 
-waveform_duration:        100e-6        # waveform duration : float
 waveforms_per_segment:    32            # waveforms per segment : int 
-null_segment_length:      62400         # null segment length : int
-idle_segment_length:      62400         # idle segment length : int
+null_seg_num_waveforms:   1         # number of the waveforms of the null segment : int
+idle_seg_num_waveforms:   1         # number of the waveforms of the idle segment length : int
 idle_segment_wfm:         true          # whether or not to fill the IDLE segment with static wfms : bool
 
 
@@ -23,3 +22,4 @@ vpp:                      140           # peak to peak voltage in mV : int
 # EMCCD Trigger Settings
 acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int
 async_trig_amp:           3             # trigger Amp in volts : int
+

@@ -71,7 +71,7 @@ void Server::getMetadataAddress(std::string &requestStr1) {
  * payload and the server reacts accordingly. All requests are met with
  * some sort of reply.
  */
-int Server::listen(std::string &reqeustStr) {
+int Server::listen(std::string &requestStr) {
     std::cout << "Server:: Listening" << std::endl;
 
     zmq::message_t request;
@@ -103,6 +103,9 @@ int Server::listen(std::string &reqeustStr) {
 
 int Server::llcs_handler() {
 	
+
+	zmq::message_t request;
+    zmq::recv_result_t result;
     int transition = -1;
 	std::string requestStr;
 	listen(requestStr);
