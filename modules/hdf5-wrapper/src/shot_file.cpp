@@ -1,4 +1,4 @@
-#include <shot_file.h>
+#include "shot_file.h"
 
 const std::string ShotFile::GLOBALS_GROUP_NAME = "/globals";
 
