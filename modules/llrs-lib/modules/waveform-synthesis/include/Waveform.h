@@ -1,5 +1,5 @@
-#ifndef WAVEFORM_H_
-#define WAVEFORM_H_
+#ifndef MAIN_WAVEFORM_H_
+#define MAIN_WAVEFORM_H_
 
 #include "llrs-lib/Settings.h"
 #include <cassert>
@@ -23,13 +23,13 @@ class TransitionFunc { // Pure Abstract Transition Mod type class
     double duration;
 	public:
     TransitionFunc(double duration) : duration(duration) {}
-    virtual ~TransitionFunc();
+    ~TransitionFunc() {}
     virtual double transition_func(double t, WP params1, WP params2) = 0;
 };
 
 class StaticFunc {
 	public:
-    virtual ~StaticFunc();
+    ~StaticFunc() {}
     virtual double static_func(double t, WP params) = 0;
 };
 
@@ -38,6 +38,7 @@ class TANH : public TransitionFunc {
 
   public:
     TANH(double duration, double vmax) : TransitionFunc(duration), vmax(vmax) {}
+    ~TANH() {}
     double transition_func(double t, WP params1, WP params2) override;
 };
 
@@ -45,6 +46,7 @@ class Spline : public TransitionFunc {
 
   public:
     Spline(double duration) : TransitionFunc(duration) {}
+    ~Spline() {}
     double transition_func(double t, WP params1, WP params2) override;
 };
 
@@ -53,12 +55,14 @@ class ERF : public TransitionFunc {
 
   public:
     ERF(double duration, double vmax) : TransitionFunc(duration), vmax(vmax) {}
+    ~ERF() {}
     double transition_func(double t, WP params1, WP params2) override;
 };
 
 class Sin : public StaticFunc {
 	public:
-    Sin();
+    Sin() {}
+    ~Sin() {}
     double static_func(double t, WP params) override;
 };
 
@@ -70,8 +74,8 @@ class Waveform {
     double t0;
     double duration;
     double sample_rate;
-    static std::unique_ptr<TransitionFunc> transMod;
-    static std::unique_ptr<StaticFunc> staticMod;
+    static std::unique_ptr<Synthesis::TransitionFunc> transMod;
+    static std::unique_ptr<Synthesis::StaticFunc> staticMod;
     virtual double wave_func(double time) = 0;
 
   public:
