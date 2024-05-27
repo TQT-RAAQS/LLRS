@@ -4,14 +4,12 @@
 #include <globals_config.h>
 
 class MovementsConfig : protected GlobalsConfig {
-
     bool enabled;
     int movement_count;
     std::vector<long>* movement_triggers;
     std::vector<LabscriptDictType>* movement_waveforms;
 
 public:
-
     MovementsConfig(ShotFile shotfile) : GlobalsConfig(shotfile, {
         {"movement_enabled", &enabled, LabscriptType::VALUE},
         {"movement_count", &movement_count, LabscriptType::VALUE},
@@ -21,8 +19,8 @@ public:
 
     bool is_enabled() const { return enabled; }
     int get_movement_count() const { return movement_count; }
-    std::vector<LabscriptDictType> get_movement_waveforms() { return *movement_waveforms; }
-    std::vector<long> get_movement_triggers() { return *movement_triggers; }
+    std::vector<LabscriptDictType> get_movement_waveforms() const { return *movement_waveforms; }
+    std::vector<long> get_movement_triggers() const { return *movement_triggers; }
 };
 
 #endif

@@ -1,5 +1,7 @@
 #include "server.hpp"
+#include "synthesiser.h"
 #include "awg.hpp"
+#include "llrs-lib/PreProc.h"
 #include <string>
 
 int main() {
@@ -31,22 +33,32 @@ int main() {
 
 	{   // listen for the done signal
 		std::string message;	
-		if (message == "done") {
 		server.listen(message);
+		if (message == "done") {
 			server.send("ok");	
 		} else return 1;
 	}
 
 
-	// READ HDF5 INTO A VECTOR OF PAIRS OF HASHMAP + BOOL (for trigger)
+	// READ HDF5 INTO A VECTOR OF HASHMAPS
+
+	Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"), COEF_Y_PATH("21_traps.csv"), hashmaps};
+
+    synthesiser.synthesise_and_upload(awg);	
+
+	awg.start_stream();
+
+	{   // listen for the done signal
+		std::string message;	
+		while (true) {
+			server.listen(message);
+			if (message == "done") {
+				server.send("ok");	
+				return 0;
+			} 
+		}
+	}
 
 
-	// FUNC TO TRANSLATE THE HASHMAP TO CPP STRUCT
-
-	// SYNTHESIS AND UPLOAD TO AWG
-
-	// START STREAM
-
-	// LISTEN FOR SERVER SIGNAL
 
 }
