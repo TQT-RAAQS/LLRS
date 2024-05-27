@@ -1,5 +1,8 @@
 #include <Waveform.h>
 
+std::unique_ptr<Synthesis::TransitionFunc> Synthesis::Waveform::transMod;
+std::unique_ptr<Synthesis::StaticFunc> Synthesis::Waveform::staticMod;
+
 std::vector<double> Synthesis::Waveform::discretize(size_t sample_rate) {
 
     std::vector<double> data;
@@ -126,24 +129,24 @@ void Synthesis::read_waveform_configs(std::string filepath) {
 	double waveform_duration = node["waveform_duration"].as<double>();
 
     // Transition Mod
-    std::string transition_type = node["transition_type"].as<std::string>();
+    std::string transition_type = node["transition"]["type"].as<std::string>();
     if (transition_type == "TANH") {
         Waveform::set_transition_function(
-            std::make_unique<TANH>(waveform_duration, node["transition_type"]["vmax"].as<double>()));
+            std::make_unique<TANH>(waveform_duration, node["transition"]["vmax"].as<double>()));
     } else if (transition_type == "Spline") {
         Waveform::set_transition_function(
             std::make_unique<Spline>(waveform_duration));
 	} else if (transition_type == "ERF") {
         Waveform::set_transition_function(
-            std::make_unique<ERF>(waveform_duration, node["transition_type"]["vmax"].as<double>()));
+            std::make_unique<ERF>(waveform_duration, node["transition"]["vmax"].as<double>()));
 	} else {
         throw std::invalid_argument(
             "Transition modulation type not supported.");
     }
 
     // Static Mod
-    std::string static_type = node["static_type"].as<std::string>();
-    if (transition_type == "sin") {
+    std::string static_type = node["static"]["type"].as<std::string>();
+    if (static_type == "Sin") {
         Waveform::set_static_function(
             std::make_unique<Sin>());
     } else {
@@ -152,14 +155,14 @@ void Synthesis::read_waveform_configs(std::string filepath) {
 }
 
 double Synthesis::read_waveform_duration(std::string filepath) {
-    /// Open file
-        YAML::Node node;
+    // Open file
+    YAML::Node node;
     try {
         node = YAML::LoadFile(filepath);
     } catch (const YAML::BadFile &e) {
         std::cerr << "Error loading YAML file (Waveform Config)." << std::endl;
         std::cerr << "ERROR: " << e.what() << std::endl;
-        return;
+        return -1;
     }
 
 	return node["waveform_duration"].as<double>();
