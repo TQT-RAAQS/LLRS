@@ -9,7 +9,7 @@ waveform_loader_src = [
   ]
 
 # submodules
-setup_proj =              subproject('setup')
+setup_proj = subproject('setup')
 
 # external dependencies
 llrs_lib_setup_dep = setup_proj.get_variable('llrs_lib_setup_dep')

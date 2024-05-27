@@ -67,7 +67,6 @@ int Setup::read_fparams(std::string file_name,
  * @param Nt_x => number of traps (smaller of the two dimensions)
  * @param Nt_y => number of traps (larger of the two dimensions)
  * @param sample_rate => waveform sampling rate
- * @param wf_duration => waveform duration
  * @param coef_x_fname => file name for file containing diffraction of AOD in
  * the X direction
  * @param coef_y_fname => file name for file containing diffraction of AOD in

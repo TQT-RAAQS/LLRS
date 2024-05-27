@@ -78,8 +78,6 @@ int main(int argc, char * argv[]){
         Nt_x,
         Nt_y,
         sample_rate,
-        waveform_duration,
-        waveform_length,
         waveform_mask,
         vpp,
         waveform_params_address_x,

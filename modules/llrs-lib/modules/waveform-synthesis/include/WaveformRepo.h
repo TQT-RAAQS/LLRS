@@ -53,6 +53,8 @@ class WaveformRepo {
     double _sample_rate;
     int _wf_mask;
     int _vpp;
+    double _wf_duration;
+    int _wf_len;
     std::unordered_map<std::uint32_t, std::vector<double>> _waveform_hashmap;
 
   public:
@@ -61,7 +63,6 @@ class WaveformRepo {
      * @param _n_x => horizontal dimension of repo (corresponds to CHAN_0 keys)
      * @param _n_y => vertical dimension of repo (corresponds to CHAN_1 keys)
      * @param sample_rate
-     * @param wf_duration
      */
     WaveformRepo(std::size_t n_x, std::size_t n_y, double sample_rate,
                  int waveform_mask, int vpp);
