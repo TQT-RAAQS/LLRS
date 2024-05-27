@@ -15,7 +15,7 @@ void Synthesis::element_wise_add(std::vector<double> src,
                                  std::vector<double> &dst) {
     assert(src.size() == dst.size());
 
-    for (int i = 0; i < dst.size(); i++) {
+    for (unsigned int i = 0; i < dst.size(); i++) {
         dst[i] = dst[i] + src[i];
     }
 }
@@ -220,7 +220,7 @@ void Synthesis::WaveformRepo::generate_static_waveforms(Channel channel,
 
     /// generate every individual tone first and add it to temp vector and
     /// hashmap
-    for (int i = 0; i < n; ++i) {
+    for (unsigned int i = 0; i < n; ++i) {
         Idle wf(_wf_duration, params[i]);
         std::vector<double> dwf = wf.discretize(_sample_rate);
 
@@ -231,13 +231,13 @@ void Synthesis::WaveformRepo::generate_static_waveforms(Channel channel,
     /// use individual tones to generate block waveforms starting at start_idx
     /// and ending at end_idx
 
-    for (int start_idx = 0; start_idx < n; start_idx++) {
+    for (unsigned int start_idx = 0; start_idx < n; start_idx++) {
 
         /// we minimize summations by only keeping track of one sum and copying
         /// it to the map as we go
         std::vector<double> base = temp_waveforms[start_idx];
 
-        for (int block_size = 2; start_idx + block_size - 1 < n; block_size++) {
+        for (unsigned int block_size = 2; start_idx + block_size - 1 < n; block_size++) {
 
             end_idx = start_idx + block_size - 1;
 
@@ -259,8 +259,8 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
     int reverse_sidx;
 
     // used for block waveforms
-    int end_idx;
-    int reverse_eidx;
+    unsigned int end_idx;
+    unsigned int reverse_eidx;
 
     // vectors to temorarily store pieces of block displacement waveforms
     std::vector<std::vector<double>> fade_in_forward(n);
@@ -271,7 +271,7 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
     std::vector<std::vector<double>> move_backward(n);
 
     // generate individual fading displacement waveforms
-    for (int i = 0; i < n; i++) {
+    for (unsigned int i = 0; i < n; i++) {
 
         WP params_before(0, std::get<1>(params[i]) - df, 0);
         WP params_after(0, std::get<1>(params[i]) + df, 0);
@@ -293,7 +293,7 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
 
     // generate individual moving displacement waveforms, add them to repo as
     // special single tone displacements
-    for (int i = 0; i < n - 1; i++) {
+    for (unsigned int i = 0; i < n - 1; i++) {
         reverse_i = n - 1 - i;
         move_forward[i] = Displacement(_wf_duration, params[i], params[i + 1])
                               .discretize(_sample_rate);
@@ -318,7 +318,7 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
     std::vector<double> temp_backward;
 
     // constructing and storing block displacement waveforms
-    for (int start_idx = 0; start_idx < n - 1; start_idx++) {
+    for (unsigned int start_idx = 0; start_idx < n - 1; start_idx++) {
 
         reverse_sidx = n - 1 - start_idx;
 
@@ -327,7 +327,7 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
         std::vector<double> base_backward = fade_in_backward[reverse_sidx];
 
         // minimizing sums as in transfer and static
-        for (int block_size = 1; start_idx + block_size - 1 < n - 1;
+        for (unsigned int block_size = 1; start_idx + block_size - 1 < n - 1;
              block_size++) {
             end_idx = start_idx + block_size - 1;
             reverse_eidx = reverse_sidx - block_size + 1;
@@ -343,7 +343,7 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
             element_wise_add(base_forward, block_base_forward);
             element_wise_add(base_backward, block_base_backward);
 
-            for (int extraction_extent = start_idx + block_size + 1;
+            for (unsigned int extraction_extent = start_idx + block_size + 1;
                  extraction_extent <= n; extraction_extent++) {
                 // add auxilliary statics on either side, without touching the
                 // base sum for the blocksize context
@@ -423,14 +423,14 @@ void Synthesis::WaveformRepo::generate_transfer_waveforms(
     }
 
     /// constructing and storing block waveforms
-    for (int start_idx = 0; start_idx < n; start_idx++) {
+    for (unsigned int start_idx = 0; start_idx < n; start_idx++) {
 
         /// we minimize summations by only keeping track of one sum and copying
         /// it to the map as we go
         std::vector<double> base_extract = temp_waveforms_extract[start_idx];
         std::vector<double> base_implant = temp_waveforms_implant[start_idx];
 
-        for (int block_size = 2; start_idx + block_size - 1 < n; block_size++) {
+        for (unsigned int block_size = 2; start_idx + block_size - 1 < n; block_size++) {
 
             end_idx = start_idx + block_size - 1;
 

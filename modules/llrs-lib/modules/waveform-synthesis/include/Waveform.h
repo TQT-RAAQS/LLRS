@@ -70,7 +70,6 @@ class Sin : public StaticFunc {
 
 class Waveform {
   protected:
-    WP params;
     double t0;
     double duration;
     double sample_rate;

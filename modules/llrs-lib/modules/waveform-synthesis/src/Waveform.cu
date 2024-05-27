@@ -1,4 +1,5 @@
 #include <Waveform.h>
+#include <fstream>
 
 std::unique_ptr<Synthesis::TransitionFunc> Synthesis::Waveform::transMod;
 std::unique_ptr<Synthesis::StaticFunc> Synthesis::Waveform::staticMod;
@@ -7,8 +8,9 @@ std::vector<double> Synthesis::Waveform::discretize(size_t sample_rate) {
 
     std::vector<double> data;
     double time;
-    for (int i = 0; i < duration * sample_rate; i++) {
-        time = i / sample_rate;
+    int wf_length = duration * sample_rate;
+    for (int i = 0; i < wf_length; i++) {
+        time = (double)i / (double)sample_rate;
         data.push_back(wave_func(time));
     }
     return data;
@@ -33,7 +35,7 @@ double Synthesis::Idle::wave_func(double time) {
 }
 
 double Synthesis::Displacement::wave_func(double time) {
-    return transMod->transition_func(time, params, destParams);
+    return transMod->transition_func(time, srcParams, destParams);
 }
 
 double Synthesis::ERF::transition_func(double t, WP params1, WP params2) {
@@ -47,7 +49,7 @@ double Synthesis::ERF::transition_func(double t, WP params1, WP params2) {
     double alpha = alpha_mean + dalpha / 2 *
                                     erf(sqrt(M_PI) * vmax * (t - duration / 2));
 
-                                        double nu_mean = (nu1 + nu2) / 2;
+    double nu_mean = (nu1 + nu2) / 2;
     double dnu = nu2 - nu1;
     double phi_tilde =
         nu_mean * t +

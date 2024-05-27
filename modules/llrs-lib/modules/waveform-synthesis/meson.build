@@ -2,8 +2,14 @@ project('llrs-lib-waveform-synthesis',
         'cuda', 
         default_options: ['cpp_std=c++14', 'default_library=static'])
 
+cmake = import('cmake')
+
 # include directories
 llrs_lib_waveform_synthesis_inc = include_directories('include')
+
+# external dependencies
+yaml_cpp_proj = cmake.subproject('yaml-cpp')
+yaml_cpp_dep = yaml_cpp_proj.dependency('yaml-cpp')
 
 # sources
 llrs_lib_waveform_src = [
@@ -26,7 +32,7 @@ llrs_lib_waveform_table_src = [
 llrs_lib_waveform = library('llrs-lib-waveform', 
     llrs_lib_waveform_src,
     include_directories: [llrs_lib_waveform_synthesis_inc],
-    dependencies: [])
+    dependencies: [yaml_cpp_dep])
 
 llrs_lib_waveform_power = library('llrs-lib-waveform-power', 
     llrs_lib_waveform_power_src,
