@@ -1,7 +1,7 @@
 #ifndef HDF5_GENERIC_CONFIG_H_
 #define HDF5_GENERIC_CONFIG_H_
 
-#include "shot_file.h"
+#include "shot-file.h"
 #include <utility>
 #include <vector>
 #include <string>

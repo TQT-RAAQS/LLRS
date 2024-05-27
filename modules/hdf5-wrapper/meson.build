@@ -5,8 +5,8 @@ project('hdf5-wrapper',
 
 # sources
 h5_wrapper_src = [
-    'src/shot_file.cpp',
-    'src/globals_config.cpp'
+    'src/shot-file.cpp',
+    'src/globals-config.cpp'
   ]
 
 # includes
