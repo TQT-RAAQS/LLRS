@@ -74,14 +74,14 @@ template <typename AWG_T> class Sequence {
     void reset(bool reset_segments);
 
     void get_static_wfm(int16 *pnData, size_t num_wfms, int Nt_x);
-    double get_waveform_duration() const { awg->get_waveform_duration(); }
-    double get_sample_rate() const { awg->get_sample_rate(); }
-    int get_waveform_length() const { awg->get_waveform_length(); }
-    int get_waveform_mask() const { awg->get_wavefrom_mask(); }
-    int get_vpp() const { awg->get_vpp(); }
-    int get_wfm_per_segment() const { awg->get_waveforms_per_segment(); }
-    int get_acq_timeout() const { awg->get_acq_timeout(); }
-    int get_current_step() const { awg->get_current_step(); }
+    double get_waveform_duration() const { return awg->get_waveform_duration(); }
+    double get_sample_rate() const { return awg->get_sample_rate(); }
+    int get_waveform_length() const { return awg->get_waveform_length(); }
+    int get_waveform_mask() const { return awg->get_wavefrom_mask(); }
+    int get_vpp() const { return awg->get_vpp(); }
+    int get_wfm_per_segment() const { return awg->get_waveforms_per_segment(); }
+    int get_acq_timeout() const { return awg->get_acq_timeout(); }
+    int get_current_step() const { return awg->get_current_step(); }
     void start_stream() { awg->start_stream(); }
 
   private:

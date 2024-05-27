@@ -30,6 +30,7 @@ int Stream::Sequence<AWG_T>::setup(bool setup_idle_segment, int idle_step_idx,
     this->Nt_y = Nt_y;
 
     reset(true);
+    return 0;
 }
 
 template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
@@ -83,9 +84,10 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
 
         load_idle_wfm(*nullTB, num_null_samples);
 
-        awg->init_and_load_range(*nullTB, num_null_samples, null_segment_idx,
+        status |= awg->init_and_load_range(*nullTB, num_null_samples, null_segment_idx,
                                  null_segment_idx + 1);
     }
+    return status;
 }
 
 template <typename AWG_T> int Stream::Sequence<AWG_T>::init_steps() {
@@ -120,6 +122,8 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_steps() {
     // point short circuit null to itself
     awg->seqmem_update(short_circuit_null_step, null_segment_idx, 1,
                        short_circuit_null_step, SPCSEQ_ENDLOOPALWAYS);
+    
+    return 0;
 }
 
 template <typename AWG_T>
