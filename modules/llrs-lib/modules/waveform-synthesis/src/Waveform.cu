@@ -111,7 +111,10 @@ double Synthesis::Spline::transition_func(double t, WP params1, WP params2) {
     double b2 = (nu2 - nu1) / (pow(duration, 2)) * pow(t, 3);
     double phi_tilde = a2 + b2 + nu1 * t;
 
-    double dphi = fmod(phi2 - phi1 - phi_tilde, 2 * M_PI);
+    double a2_end = -(nu2 - nu1) / 2 * duration;
+    double b2_end = (nu2 - nu1) * t;
+    double phi_tilde_end = a2 + b2 + nu1 * duration;
+    double dphi = fmod(phi2 - phi1 - phi_tilde_end, 2 * M_PI);
     dphi = dphi - (abs(dphi) > M_PI) * (2 * (dphi > 0) - 1) * 2 * M_PI;
 
     return alpha * sin(phi1 + 2 * M_PI * phi_tilde + dphi * t / duration);
