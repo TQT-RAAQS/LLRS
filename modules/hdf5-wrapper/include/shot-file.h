@@ -1,7 +1,7 @@
 #ifndef HDF5_WRAPPER_H_
 #define HDF5_WRAPPER_H_
 
-#include "globals_not_found_exceptions.h"
+#include "globals-not-found-exceptions.h"
 #include <iostream>
 #include <hdf5/serial/H5Cpp.h>
 #include <hdf5/serial/H5Attribute.h>

@@ -1,4 +1,4 @@
-#include "globals_config.h"
+#include "globals-config.h"
 
 void GlobalsConfig::read_from_shot_file(ShotFile shotfile) {
     std::string global_name;
