@@ -1,6 +1,6 @@
-waveform_duration: 10e-6                    # waveform duration : float
-
-transition_type:   spline                    # Choose one of (TANH, spline, ERF)
-  #  vmax: ...                               # For (TANH, ERF), provide V_max
-static_type: sin                             # Choose one of (sin)
-
+waveform_duration: 100e-6                    # waveform duration : float
+transition:  
+  type: ERF                      # Choose one of (TANH, Spline, ERF)
+  vmax: 30000                               # For (TANH, ERF), provide V_max
+static: 
+  type: Sin                             # Choose one of (Sin)
