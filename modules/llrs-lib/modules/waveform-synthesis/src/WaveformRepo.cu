@@ -27,12 +27,15 @@ Synthesis::WaveformRepo::WaveformRepo(std::size_t n_x, std::size_t n_y,
                                       int vpp)
     : _n_x(n_x), _n_y(n_y), _sample_rate(sample_rate),
       _wf_mask(waveform_mask), _vpp(vpp) {
+    
+    _wf_duration = Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config.yml"));
+    _wf_len = _wf_duration * sample_rate;
     // reserves enough space in repo to fit all waveforms according to repo
     // dimensions
     _waveform_hashmap.reserve((5 * _n_x * _n_x + _n_x) / 2 +
                               (5 * _n_y * _n_y + _n_y) / 2 +
                               2 * (_n_x + _n_y - 2));
-	Synthesis::read_waveform_configs(WFM_CONFIG_PATH + "config.yml");	
+	Synthesis::read_waveform_configs(WFM_CONFIG_PATH("config.yml"));
 }
 
 void Synthesis::WaveformRepo::generate_repository(std::vector<WP> params_x,
@@ -215,11 +218,11 @@ void Synthesis::WaveformRepo::generate_static_waveforms(Channel channel,
     /// vector to temporarily store single tone waveforms
     std::vector<std::vector<double>> temp_waveforms(n);
 
-    /// generate every indivisual tone first and add it to temp vector and
+    /// generate every individual tone first and add it to temp vector and
     /// hashmap
     for (int i = 0; i < n; ++i) {
-        Waveform wf(params[i], 0, _wf_duration);
-        std::vector<double> dwf = wf.discretize(_wf_len, _sample_rate);
+        Idle wf(_wf_duration, params[i]);
+        std::vector<double> dwf = wf.discretize(_sample_rate);
 
         _waveform_hashmap.emplace(get_key(channel, STATIC, i, 1, 0), dwf);
         temp_waveforms[i] = std::move(dwf); // move prevents copies
@@ -274,29 +277,29 @@ void Synthesis::WaveformRepo::generate_displacement_waveforms(
         WP params_after(0, std::get<1>(params[i]) + df, 0);
 
         fade_in_forward[i] =
-            Displacement(params_before, params[i], _wf_duration)
-                .discretize(_wf_len, _sample_rate);
+            Displacement(_wf_duration, params_before, params[i])
+                .discretize(_sample_rate);
         fade_in_backward[i] =
-            Displacement(params_after, params[i], _wf_duration)
-                .discretize(_wf_len, _sample_rate);
+            Displacement(_wf_duration, params_after, params[i])
+                .discretize(_sample_rate);
 
         fade_out_forward[i] =
-            Displacement(params[i], params_after, _wf_duration)
-                .discretize(_wf_len, _sample_rate);
+            Displacement(_wf_duration, params[i], params_after)
+                .discretize(_sample_rate);
         fade_out_backward[i] =
-            Displacement(params[i], params_before, _wf_duration)
-                .discretize(_wf_len, _sample_rate);
+            Displacement(_wf_duration, params[i], params_before)
+                .discretize(_sample_rate);
     }
 
     // generate individual moving displacement waveforms, add them to repo as
     // special single tone displacements
     for (int i = 0; i < n - 1; i++) {
         reverse_i = n - 1 - i;
-        move_forward[i] = Displacement(params[i], params[i + 1], _wf_duration)
-                              .discretize(_wf_len, _sample_rate);
+        move_forward[i] = Displacement(_wf_duration, params[i], params[i + 1])
+                              .discretize(_sample_rate);
         move_backward[reverse_i] =
-            Displacement(params[reverse_i], params[reverse_i - 1], _wf_duration)
-                .discretize(_wf_len, _sample_rate);
+            Displacement(_wf_duration, params[reverse_i], params[reverse_i - 1])
+                .discretize(_sample_rate);
 
         _waveform_hashmap.emplace(get_key(channel, RIGHTWARD, i, 1, 0),
                                   move_forward[i]);
@@ -406,11 +409,11 @@ void Synthesis::WaveformRepo::generate_transfer_waveforms(
 
     /// generating and storing individual tone waveforms
     for (size_t i = 0; i < n; ++i) {
-        Extraction ewf(params[i], false, _wf_duration);
-        std::vector<double> edwf = ewf.discretize(_wf_len, _sample_rate);
+        Extraction ewf(_wf_duration, params[i]);
+        std::vector<double> edwf = ewf.discretize(_sample_rate);
 
-        Extraction iwf(params[i], true, _wf_duration);
-        std::vector<double> idwf = iwf.discretize(_wf_len, _sample_rate);
+        Implantation iwf(_wf_duration, params[i]);
+        std::vector<double> idwf = iwf.discretize(_sample_rate);
 
         _waveform_hashmap.emplace(get_key(channel, EXTRACT, i, 1, 0), edwf);
         temp_waveforms_extract[i] = std::move(edwf);

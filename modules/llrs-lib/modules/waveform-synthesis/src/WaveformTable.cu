@@ -240,8 +240,6 @@ Synthesis::WaveformTable::init_primary(WfType wf_type, size_t range,
                         : adjusted_index;
         for (int block_size = 1; adjusted_index + block_size <= range;
              block_size++) {
-            // std::cout << index << " " << block_size << " " << wf_type <<
-            // std::endl;
             size_t address =
                 get_blocked_addr(wf_type, index, block_size, range);
             primary_table[address] = translate_waveform(
