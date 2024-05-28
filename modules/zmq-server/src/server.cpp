@@ -1,8 +1,3 @@
-/**
- * @brief   Server class that implements a ZMQ server
- * @date    Oct 2023
- */
-
 #include "server.hpp"
 using json = nlohmann::json;
 

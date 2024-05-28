@@ -1,14 +1,14 @@
-project('llcs-server', 
+project('zmq-server', 
         'cpp',
         default_options: ['default_library=static'])
 
 cmake = import('cmake')
 
 # include directories
-llcs_server_inc =  include_directories('include')
+zmq_server_inc =  include_directories('include')
 
 # sources
-llcs_server_src = [
+zmq_server_src = [
     'src/server.cpp'
   ]
 
@@ -21,13 +21,13 @@ nlohmann_json_dep = dependency('nlohmann_json')
 cppzmq_dep = cppzmq_proj.dependency('cppzmq')
 
 # targets
-llcs_server = library('llcs-server', 
-    llcs_server_src,
-    include_directories: [llcs_server_inc],
+zmq_server = library('zmq-server', 
+    zmq_server_src,
+    include_directories: [zmq_server_inc],
     dependencies: [nlohmann_json_dep, hdf5_dep, cppzmq_dep])
 
 # export dependencies
-llcs_server_dep = declare_dependency(
-    include_directories: [llcs_server_inc],
-    link_with: llcs_server,
+zmq_server_dep = declare_dependency(
+    include_directories: [zmq_server_inc],
+    link_with: zmq_server,
     dependencies: [nlohmann_json_dep, hdf5_dep, cppzmq_dep])

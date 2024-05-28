@@ -11,17 +11,17 @@ move_gen_src = [
 # submodules
 awg_proj = subproject('awg')
 synthesiser_proj = subproject('synthesiser')
-server_proj = subproject('server')
+zmq_server_proj = subproject('zmq-server')
 
 # dependencies
 awg_dep = awg_proj.get_variable('awg_dep')
 synthesiser_dep = synthesiser_proj.get_variable('move_gen_synthesiser_dep')
-server_dep = server_proj.get_variable('llcs_server_dep')
+zmq_server_dep = zmq_server_proj.get_variable('zmq_server_dep')
 
 
 # targets
 move_gen = executable('move-generator', 
     move_gen_src,
     link_args: '-lstdc++fs',
-    dependencies: [awg_dep, synthesiser_dep, server_dep])
+    dependencies: [awg_dep, synthesiser_dep, zmq_server_dep])
 
