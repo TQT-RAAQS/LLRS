@@ -59,8 +59,9 @@ int main(int argc, char *argv[]) { // <Number of moves>, <numbers of waveforms
                                   "/configs/awg/awg.yml"};
         config_file << problem_config;
     }
-    
-    double waveform_duration = Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config"));
+
+    double waveform_duration =
+        Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config"));
 
     Synthesis::WaveformTable wf_table;
     Stream::Sequence<AWG> awg_sequence(nullptr, wf_table, waveform_duration);
@@ -70,9 +71,9 @@ int main(int argc, char *argv[]) { // <Number of moves>, <numbers of waveforms
     int wfm_mask = awg_sequence.get_waveform_mask();
     int vpp = awg_sequence.get_vpp();
 
-    wf_table = Setup::create_wf_table(
-        Nt_x, Nt_y, awg_sample_rate,
-        wfm_mask, vpp, "21_traps.csv", "21_traps.csv", true);
+    wf_table =
+        Setup::create_wf_table(Nt_x, Nt_y, awg_sample_rate, wfm_mask, vpp,
+                               "21_traps.csv", "21_traps.csv", true);
     awg_sequence.setup(true, 0, false, Nt_x, Nt_y);
     awg_sequence.start_stream();
 

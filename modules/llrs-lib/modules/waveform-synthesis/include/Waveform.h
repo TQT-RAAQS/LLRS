@@ -19,16 +19,17 @@ double read_waveform_duration(std::string filepath);
 using WP = std::tuple<double, double, double>;
 
 class TransitionFunc { // Pure Abstract Transition Mod type class
- protected:
+  protected:
     double duration;
-	public:
+
+  public:
     TransitionFunc(double duration) : duration(duration) {}
     ~TransitionFunc() {}
     virtual double transition_func(double t, WP params1, WP params2) = 0;
 };
 
 class StaticFunc {
-	public:
+  public:
     ~StaticFunc() {}
     virtual double static_func(double t, WP params) = 0;
 };
@@ -60,7 +61,7 @@ class ERF : public TransitionFunc {
 };
 
 class Sin : public StaticFunc {
-	public:
+  public:
     Sin() {}
     ~Sin() {}
     double static_func(double t, WP params) override;
@@ -85,8 +86,7 @@ class Waveform {
     set_transition_function(std::unique_ptr<TransitionFunc> &&trans_func) {
         transMod = std::move(trans_func);
     }
-    static void
-    set_static_function(std::unique_ptr<StaticFunc> &&static_func) {
+    static void set_static_function(std::unique_ptr<StaticFunc> &&static_func) {
         staticMod = std::move(static_func);
     }
 };

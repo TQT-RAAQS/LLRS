@@ -3,8 +3,8 @@
 
 #include "Waveform.h"
 #include "WaveformPowerCalculator.h"
-#include "llrs-lib/Settings.h"
 #include "llrs-lib/PreProc.h"
+#include "llrs-lib/Settings.h"
 #include <bitset>
 #include <cassert>
 #include <cmath>
