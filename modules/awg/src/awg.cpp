@@ -480,7 +480,7 @@ int AWG::fill_transfer_buffer(TransferBuffer &tb, int num_samples,
                               int16 value) {
     int dwSegmentLenSample = dwFactor * num_samples;
     for (int i = 0; i < dwSegmentLenSample; i++) {
-        for (int lChannel = 0; lChannel < lSetChannels; ++lChannel) { 
+        for (int lChannel = 0; lChannel < lSetChannels; ++lChannel) {
             ((short *)*tb)[i * lSetChannels + lChannel] = value;
         }
     }
@@ -507,8 +507,7 @@ AWG::TransferBuffer::TransferBuffer(AWG &awg, size_t size, bool contBuf)
     }
 }
 
-
-AWG::TransferBuffer::TransferBuffer(AWG::TransferBuffer&& other) {
+AWG::TransferBuffer::TransferBuffer(AWG::TransferBuffer &&other) {
     buffer = other.buffer;
     size = other.size;
     contBuf = other.contBuf;
@@ -516,7 +515,8 @@ AWG::TransferBuffer::TransferBuffer(AWG::TransferBuffer&& other) {
     other.size = 0;
     other.contBuf = true;
 }
-AWG::TransferBuffer& AWG::TransferBuffer::operator=(AWG::TransferBuffer&& other) {
+AWG::TransferBuffer &
+AWG::TransferBuffer::operator=(AWG::TransferBuffer &&other) {
     if (this != &other) {
         buffer = other.buffer;
         size = other.size;
