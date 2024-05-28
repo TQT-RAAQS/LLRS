@@ -16,7 +16,7 @@ void Synthesis::element_wise_add(std::vector<double> src,
     assert(src.size() == dst.size());
 
     for (unsigned int i = 0; i < dst.size(); i++) {
-        dst[i] = dst[i] + src[i];
+        dst[i] += src[i];
     }
 }
 
