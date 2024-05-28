@@ -2,6 +2,7 @@
 #include "synthesiser.h"
 #include "awg.hpp"
 #include "llrs-lib/PreProc.h"
+#include "shot-file.h"
 #include <string>
 
 int main() {
@@ -23,7 +24,7 @@ int main() {
 		std::string message;	
 		server.listen(message);
 		if (message.substr(message.size() - 3) == ".h5") {
-			hdf_address = adjest_address(message);
+			hdf_address = adjust_address(message);
 			break;	
 		} else if (message == "done") {
 			server.send("ok");	
@@ -39,13 +40,10 @@ int main() {
 		} else return 1;
 	}
 
-
-	// READ HDF5 INTO A VECTOR OF HASHMAPS
-
-	Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"), COEF_Y_PATH("21_traps.csv"), hashmaps};
-
+    ShotFile shotfile(hdf_address);
+    MovementsConfig movementsConfig(shotfile);
+	Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"), COEF_Y_PATH("21_traps.csv"), movementsConfig};
     synthesiser.synthesise_and_upload(awg);	
-
 	awg.start_stream();
 
 	{   // listen for the done signal
@@ -58,7 +56,6 @@ int main() {
 			} 
 		}
 	}
-
 
 
 }

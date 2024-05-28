@@ -22,5 +22,6 @@ server_dep = server_proj.get_variable('llcs_server_dep')
 # targets
 move_gen = executable('move-generator', 
     move_gen_src,
+    link_args: '-lstdc++fs',
     dependencies: [awg_dep, synthesiser_dep, server_dep])
 
