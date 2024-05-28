@@ -64,10 +64,10 @@ class AWG {
 
       public:
         short *operator*() { return (short *)buffer; }
-        TransferBuffer(const TransferBuffer& other) = delete;
-        TransferBuffer& operator=(const TransferBuffer& other) = delete;
-        TransferBuffer(TransferBuffer&& other);
-        TransferBuffer& operator=(TransferBuffer&& other);
+        TransferBuffer(const TransferBuffer &other) = delete;
+        TransferBuffer &operator=(const TransferBuffer &other) = delete;
+        TransferBuffer(TransferBuffer &&other);
+        TransferBuffer &operator=(TransferBuffer &&other);
         ~TransferBuffer();
         friend class AWG;
     };
