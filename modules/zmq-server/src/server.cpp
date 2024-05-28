@@ -12,31 +12,28 @@ void replaceStr(std::string &requestStr, std::string toReplace,
  * port.
  */
 Server::Server() {
-    std::cout << "Server:: constructor" << std::endl;
-
     // initialize the zmq context with a single IO thread
     context = zmq::context_t(1);
     socket = zmq::socket_t(context, zmq::socket_type::rep);
-
     socket.bind("tcp://*:5555");
 
-    // set a 50 second timeout on socket.recv() FS: not sure if this is
-    // necessary
-    socket.set(zmq::sockopt::rcvtimeo, 50000);
+    socket.set(zmq::sockopt::rcvtimeo, listen_timeout);
+    socket.setsockopt(ZMQ_RCVTIMEO, listen_timeout);
 }
 
+void Server::set_listen_timeout(int timeout) {
+    listen_timeout = timeout;
+    socket.set(zmq::sockopt::rcvtimeo, listen_timeout);
+    socket.setsockopt(ZMQ_RCVTIMEO, listen_timeout);
+}
+    
 /**
  * @brief The destructor of the server class.
  *
  * Free any dynamically allocated memory segments
  */
 Server::~Server() {
-    std::cout << "Server:: destructor" << std::endl;
-
-    // Close the socket
     socket.close();
-
-    // Terminate the ZeroMQ context
     context.close();
 }
 
@@ -47,14 +44,6 @@ bool Server::send(const std::string &string) {
     return rc;
 }
 
-void Server::getMetadataAddress(std::string &requestStr1) {
-    replaceStr(requestStr1, "\\", "/");
-    replaceStr(requestStr1, "Z:", "/home/tqtraaqs1/Z");
-    replaceStr(requestStr1, "labscript_shot_outputs", "llrs_data");
-    replaceStr(requestStr1, ".h5", "/metadata.json");
-    metadata_file_path = requestStr1;
-}
-
 /**
  * @brief Member function that listens on the socket for a message.
  *
@@ -63,150 +52,93 @@ void Server::getMetadataAddress(std::string &requestStr1) {
  * some sort of reply.
  */
 int Server::listen(std::string &requestStr) {
-    std::cout << "Server:: Listening" << std::endl;
-
     zmq::message_t request;
     zmq::recv_result_t result;
 
     try {
-        // listen for five seconds 50
-        socket.setsockopt(ZMQ_RCVTIMEO, 50000000);
-
         result = socket.recv(request);
         if (!result) {
             std::cerr << "Receive failed." << std::endl;
             return 1;
         }
-
         requestStr =
             std::string(static_cast<char *>(request.data()), request.size());
     } catch (const zmq::error_t &e) {
         if (e.num() == EAGAIN) {
-            // Timeout occurred
-            std::cout << "Receive timed out" << std::endl;
+            std::cerr << "Receive timed out" << std::endl;
         } else {
-            std::cout << "Error: " << e.what() << std::endl;
-            return 1;
+            std::cerr << "Error: " << e.what() << std::endl;
         }
+        return 1;
     }
     return 0;
 }
 
+
+void Server::setMetadataAddress(std::string &requestStr1) {
+    replaceStr(requestStr1, "\\", "/");
+    replaceStr(requestStr1, "Z:", "/home/tqtraaqs1/Z");
+    replaceStr(requestStr1, "labscript_shot_outputs", "llrs_data");
+    replaceStr(requestStr1, ".h5", "/metadata.json");
+    metadata_file_path = requestStr1;
+}
+
 int Server::llcs_handler() {
 
-    zmq::message_t request;
-    zmq::recv_result_t result;
     int transition = -1;
     std::string requestStr;
     listen(requestStr);
     if (requestStr == "hello") {
-        std::string outputStr = "hello";
-        zmq::message_t output(outputStr.size());
-        memcpy(output.data(), outputStr.data(), outputStr.size());
-        socket.send(output);
+        send("hello");
         transition = 4;
     } else if (requestStr == "abort") {
-        std::string outputStr = "done";
-        zmq::message_t output(outputStr.size());
-        memcpy(output.data(), outputStr.data(), outputStr.size());
-        socket.send(output);
+        send("done");
         transition = 3;
     } else if (requestStr == "psf") {
         std::string str = (PSF_CONFIG_PATH) + "default";
         const char *psf_translator = str.c_str();
         const char *command = "python3 ";
-
         char fullCommand[256];
         snprintf(fullCommand, sizeof(fullCommand), "%s%s", command,
                  psf_translator);
-
         int result = system(fullCommand);
 
-        std::string outputStr = "done";
-        zmq::message_t output(outputStr.size());
-        memcpy(output.data(), outputStr.data(), outputStr.size());
-        socket.send(output);
-        if (result == 0) {
-            // The Python script was executed successfully
-            return 4;
-        } else {
-            // There was an error running the Python script
-            return -1;
-        }
+        send("done");
+        return result == 0? 4 : -1;
     } else if (requestStr == "done") { // The experimental shot is done
-        std::string statusMsg = "ok";
-        std::cout << statusMsg << std::endl;
-        zmq::message_t status(statusMsg.size());
-        memcpy(status.data(), statusMsg.data(), statusMsg.size());
-        socket.send(status);
-        socket.recv(request);
-        std::string outputStr = "done";
-        zmq::message_t output(outputStr.size());
-        memcpy(output.data(), outputStr.data(), outputStr.size());
-        socket.send(output);
+        send("ok");
+        listen(requestStr);
+        send("done");
         transition = 3;
     } else if (requestStr.substr(requestStr.length() - 3, 3) == ".h5") {
-        std::string statusMsg = "ok";
-
         std::string tempo = requestStr;
-        getMetadataAddress(tempo);
-        std::cout << tempo << std::endl;
+        setMetadataAddress(tempo);
         config_file_path = adjust_address(requestStr);
-        std::cout << statusMsg << std::endl;
-        zmq::message_t status(statusMsg.size());
-        memcpy(status.data(), statusMsg.data(), statusMsg.size());
-        socket.send(status);
-
-        socket.recv(request);
-        statusMsg = "done";
-        std::cout << statusMsg << std::endl;
-        zmq::message_t status1(statusMsg.size());
-        memcpy(status1.data(), statusMsg.data(), statusMsg.size());
-        socket.send(status1);
-        std::cout << "Got it" << std::endl;
+        send("ok");
+        listen(requestStr); 
+        send("done");
         transition = 2;
     } else if (requestStr == "SEND_DATA") {
-        std::string statusMsg = metadata_file_path;
-        zmq::message_t status(statusMsg.size());
-        memcpy(status.data(), statusMsg.data(), statusMsg.size());
-        socket.send(status);
+        send(metadata_file_path);
         transition = 1;
     } else if (requestStr == "RESET") {
-        std::string statusMsg = metadata_file_path;
-        zmq::message_t status(statusMsg.size());
-        memcpy(status.data(), statusMsg.data(), statusMsg.size());
-        socket.send(status);
+        send(metadata_file_path);
         transition = 5;
     } else if (requestStr.at(0) == '{') {
-
         json json_data = json::parse(requestStr);
-
         std::string llrs_reset_filepath = LLRS_RESET_PATH;
-
         std::ofstream json_file(llrs_reset_filepath);
         if (json_file.is_open()) {
             json_file << std::setw(4) << json_data;
             json_file.close();
-            std::string statusMsg =
-                "LLRS reconfig saved to " + llrs_reset_filepath;
-            zmq::message_t status(statusMsg.size());
-            memcpy(status.data(), statusMsg.data(), statusMsg.size());
-            socket.send(status);
+            send("LLRS reconfig saved to " + llrs_reset_filepath);
             transition = 6;
         } else {
-            std::string statusMsg =
-                "Error opening file: " + llrs_reset_filepath;
-            zmq::message_t status(statusMsg.size());
-            memcpy(status.data(), statusMsg.data(), statusMsg.size());
-            socket.send(status);
+            send("Error opening file: " + llrs_reset_filepath);
             transition = -1;
         }
-
     } else if (requestStr == "control") {
-        std::string statusMsg = "FSM taking control of AWG";
-        zmq::message_t status(statusMsg.size());
-        memcpy(status.data(), statusMsg.data(), statusMsg.size());
-        socket.send(status);
+        send("FSM taking control of AWG");
         transition = 7;
     } else {
         std::cerr << "Invalid message type received: " << requestStr
