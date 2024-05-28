@@ -1,6 +1,7 @@
 #include "synthesiser.h"
 
 void element_wise_add(std::vector<short> dest, std::vector<short> src);
+std::vector<short> translate(std::vector<double> src);
 
 Synthesiser::Synthesiser(std::string coef_x_path, std::string coef_y_path, MovementsConfig movementsConfig) {
     for (int i = 0; i < movementsConfig.get_movement_count(); i++) {
@@ -57,22 +58,22 @@ std::vector<short> Synthesiser::synthesise(Move move) {
 		if (move.type == FORWARD) {
 			double alpha, nu, phi;
 			std::tie(alpha, nu, phi) = coef_x.at(move.index);
-			element_wise_add(wfm, Synthesis::Displacement(move.duration, std::make_tuple((double)0, nu - d_nu_1, phi), std::make_tuple(alpha, nu, phi)).discretize(sample_rate));
+			element_wise_add(wfm, translate(Synthesis::Displacement(move.duration, std::make_tuple((double)0, nu - d_nu_1, phi), std::make_tuple(alpha, nu, phi)).discretize(sample_rate)));
 			std::tie(alpha, nu, phi) = coef_x.at(move.index + move.block_size);
-			element_wise_add(wfm, Synthesis::Displacement(move.duration, std::make_tuple(alpha, nu, phi), std::make_tuple((double)0, nu + d_nu_2, phi)).discretize(sample_rate));
+			element_wise_add(wfm, translate(Synthesis::Displacement(move.duration, std::make_tuple(alpha, nu, phi), std::make_tuple((double)0, nu + d_nu_2, phi)).discretize(sample_rate)));
 		} else {
 			double alpha, nu, phi;
 			std::tie(alpha, nu, phi) = coef_x.at(move.index);
-			element_wise_add(wfm, Synthesis::Displacement(move.duration, std::make_tuple(alpha, nu, phi), std::make_tuple((double)0, nu - d_nu_1, phi)).discretize(sample_rate));
+			element_wise_add(wfm, translate(Synthesis::Displacement(move.duration, std::make_tuple(alpha, nu, phi), std::make_tuple((double)0, nu - d_nu_1, phi)).discretize(sample_rate)));
 			std::tie(alpha, nu, phi) = coef_x.at(move.index + move.block_size);
-			element_wise_add(wfm, Synthesis::Displacement(move.duration, std::make_tuple((double)0, nu + d_nu_2, phi), std::make_tuple(alpha, nu, phi)).discretize(sample_rate));
+			element_wise_add(wfm, translate(Synthesis::Displacement(move.duration, std::make_tuple((double)0, nu + d_nu_2, phi), std::make_tuple(alpha, nu, phi)).discretize(sample_rate)));
 		}
 	} 
 	
 	for (int b = 0; b < move.block_size; ++b) {
 		switch (move.type) {
 			case STATIC:
-				element_wise_add(wfm, Synthesis::Idle(move.duration, coef_x.at(move.index)).discretize(sample_rate));
+				element_wise_add(wfm, translate(Synthesis::Idle(move.duration, coef_x.at(move.index)).discretize(sample_rate)));
 				break;
 			case EXTRACT:
 				throw std::invalid_argument("Extract not implemented.");
@@ -81,10 +82,10 @@ std::vector<short> Synthesiser::synthesise(Move move) {
 				throw std::invalid_argument("Implant not implemented.");
 				break;
 			case FORWARD:
-				element_wise_add(wfm, Synthesis::Displacement(move.duration, coef_x.at(move.index + b), coef_x.at(move.index + b + 1)).discretize(sample_rate));
+				element_wise_add(wfm, translate(Synthesis::Displacement(move.duration, coef_x.at(move.index + b), coef_x.at(move.index + b + 1)).discretize(sample_rate)));
 				break;
 			case BACKWARD:
-				element_wise_add(wfm, Synthesis::Displacement(move.duration, coef_x.at(move.index + b), coef_x.at(move.index + b - 1)).discretize(sample_rate));
+				element_wise_add(wfm, translate(Synthesis::Displacement(move.duration, coef_x.at(move.index + b), coef_x.at(move.index + b - 1)).discretize(sample_rate)));
 				break;
 			case RIGHTWARD:
 				throw std::invalid_argument("Rightward not implemented.");
@@ -125,4 +126,13 @@ void element_wise_add(std::vector<short> dest, std::vector<short> src) {
 	for(int i = 0; i < dest.size(); ++i) {
 		dest[i] += src[i];	
 	}
+}
+
+std::vector<short> translate(std::vector<double> src) {
+	std::vector<short> dest;
+	dest.reserve(src.size());
+	for (int i = 0; i < src.size(); i++) {
+		dest.push_back((short)(src.at(i) * (2^15-1)));
+	}
+	return dest;
 }
