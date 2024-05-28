@@ -1,61 +1,35 @@
 #include "awg.hpp"
 #include "llrs-lib/PreProc.h"
-#include "server.hpp"
+#include "handler.hpp"
 #include "shot-file.h"
 #include "synthesiser.h"
 #include <string>
 
-int main() {
 
-    Server server{};
+int main() {
     AWG awg{};
     std::string hdf_address{};
+    Handler server_handler{};
+    server_handler.start_listening();
 
-    { // listen for the handshake signal
-        std::string message;
-        server.listen(message);
-        if (message == "hello") {
-            server.send("hello");
-        } else
-            return 1;
+    while (!server_handler.get_abort()) {
+
+        hdf_address = server_handler.get_hdf5_file_path(); 
+
+        ShotFile shotfile(hdf_address);
+        MovementsConfig movementsConfig(shotfile);
+        Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
+                                COEF_Y_PATH("21_traps.csv"), movementsConfig};
+        synthesiser.synthesise_and_upload(awg);
+
+        awg.start_stream();
+        server_handler.send_done();
+
+        server_handler.wait_for_done();
+        awg.stop_card();
+        server_handler.send_done();
+        
     }
 
-    while (true) { // listen for hd5 address
-        std::string message;
-        server.listen(message);
-        if (message.substr(message.size() - 3) == ".h5") {
-            hdf_address = adjust_address(message);
-            break;
-        } else if (message == "done") {
-            server.send("ok");
-            return 2;
-        }
-    }
-
-    { // listen for the done signal
-        std::string message;
-        server.listen(message);
-        if (message == "done") {
-            server.send("ok");
-        } else
-            return 1;
-    }
-
-    ShotFile shotfile(hdf_address);
-    MovementsConfig movementsConfig(shotfile);
-    Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
-                            COEF_Y_PATH("21_traps.csv"), movementsConfig};
-    synthesiser.synthesise_and_upload(awg);
-    awg.start_stream();
-
-    { // listen for the done signal
-        std::string message;
-        while (true) {
-            server.listen(message);
-            if (message == "done") {
-                server.send("ok");
-                return 0;
-            }
-        }
-    }
+    server_handler.send_done();
 }
