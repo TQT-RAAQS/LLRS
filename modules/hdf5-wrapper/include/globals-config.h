@@ -2,11 +2,11 @@
 #define HDF5_GENERIC_CONFIG_H_
 
 #include "shot-file.h"
+#include <iostream>
+#include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
-#include <string>
-#include <iostream>
-#include <tuple>
 
 enum LabscriptType {
     VALUE,
@@ -18,19 +18,19 @@ enum LabscriptType {
     LIST_OF_DICT
 };
 
-using ConfigDescription = std::tuple<std::string, void*, LabscriptType>;
+using ConfigDescription = std::tuple<std::string, void *, LabscriptType>;
 
 class GlobalsConfig {
 
     std::vector<ConfigDescription> globals_list;
     void read_from_shot_file(ShotFile shotfile);
 
-protected:
-
-    GlobalsConfig(ShotFile shotfile, std::vector<ConfigDescription> globals_list) : globals_list(globals_list) {
+  protected:
+    GlobalsConfig(ShotFile shotfile,
+                  std::vector<ConfigDescription> globals_list)
+        : globals_list(globals_list) {
         read_from_shot_file(shotfile);
     }
-
 };
 
 #endif

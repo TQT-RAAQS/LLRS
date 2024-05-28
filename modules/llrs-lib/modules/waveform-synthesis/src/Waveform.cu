@@ -17,15 +17,15 @@ std::vector<double> Synthesis::Waveform::discretize(size_t sample_rate) {
 }
 
 double Synthesis::Extraction::wave_func(double time) {
-	std::tuple<double, double, double> srcTuples (0, std::get<1>(params),
-                                                      std::get<2>(params));
+    std::tuple<double, double, double> srcTuples(0, std::get<1>(params),
+                                                 std::get<2>(params));
 
     return transMod->transition_func(time, srcTuples, params);
 }
 
 double Synthesis::Implantation::wave_func(double time) {
-    std::tuple<double, double, double> destParams (0, std::get<1>(params),
-                                                       std::get<2>(params));
+    std::tuple<double, double, double> destParams(0, std::get<1>(params),
+                                                  std::get<2>(params));
 
     return transMod->transition_func(time, params, destParams);
 }
@@ -46,8 +46,8 @@ double Synthesis::ERF::transition_func(double t, WP params1, WP params2) {
 
     double alpha_mean = (alpha1 + alpha2) / 2;
     double dalpha = alpha2 - alpha1;
-    double alpha = alpha_mean + dalpha / 2 *
-                                    erf(sqrt(M_PI) * vmax * (t - duration / 2));
+    double alpha =
+        alpha_mean + dalpha / 2 * erf(sqrt(M_PI) * vmax * (t - duration / 2));
 
     double nu_mean = (nu1 + nu2) / 2;
     double dnu = nu2 - nu1;
@@ -64,7 +64,7 @@ double Synthesis::ERF::transition_func(double t, WP params1, WP params2) {
     double dphi = fmod(phi2 - phi1, 2 * M_PI);
     dphi = dphi - (abs(dphi) > M_PI) * (2 * (dphi > 0) - 1) * 2 * M_PI;
 
-	return alpha * sin(phi1 + 2 * M_PI * phi_tilde + dphi * t / duration);
+    return alpha * sin(phi1 + 2 * M_PI * phi_tilde + dphi * t / duration);
 }
 
 double Synthesis::Sin::static_func(double t, WP params) {
@@ -81,17 +81,17 @@ double Synthesis::TANH::transition_func(double t, WP params1, WP params2) {
 
     double alpha_mean = (alpha1 + alpha2) / 2;
     double dalpha = alpha2 - alpha1;
-    double alpha = alpha_mean + dalpha / 2 *
-                                    tanh(2 * vmax * (t - duration / 2));
+    double alpha =
+        alpha_mean + dalpha / 2 * tanh(2 * vmax * (t - duration / 2));
 
-                                        double nu_mean = (nu1 + nu2) / 2;
+    double nu_mean = (nu1 + nu2) / 2;
     double dnu = nu2 - nu1;
     double phi_tilde =
-        nu_mean * t +
-        dnu / (4 * vmax) *
-            (log(cosh(2 * vmax * (t - duration / 2))) - log(cosh(vmax * duration)));
+        nu_mean * t + dnu / (4 * vmax) *
+                          (log(cosh(2 * vmax * (t - duration / 2))) -
+                           log(cosh(vmax * duration)));
 
-	double dphi = fmod(phi2 - phi1, 2 * M_PI);
+    double dphi = fmod(phi2 - phi1, 2 * M_PI);
     dphi = dphi - (abs(dphi) > M_PI) * (2 * (dphi > 0) - 1) * 2 * M_PI;
 
     return alpha * sin(phi1 + 2 * M_PI * phi_tilde + dphi * t / duration);
@@ -122,29 +122,29 @@ double Synthesis::Spline::transition_func(double t, WP params1, WP params2) {
 
 void Synthesis::read_waveform_configs(std::string filepath) {
     /// Open file
-	YAML::Node node;
+    YAML::Node node;
     try {
-		node = YAML::LoadFile(filepath);
+        node = YAML::LoadFile(filepath);
     } catch (const YAML::BadFile &e) {
         std::cerr << "Error loading YAML file (Waveform Config)." << std::endl;
         std::cerr << "ERROR: " << e.what() << std::endl;
         return;
     }
 
-	double waveform_duration = node["waveform_duration"].as<double>();
+    double waveform_duration = node["waveform_duration"].as<double>();
 
     // Transition Mod
     std::string transition_type = node["transition"]["type"].as<std::string>();
     if (transition_type == "TANH") {
-        Waveform::set_transition_function(
-            std::make_unique<TANH>(waveform_duration, node["transition"]["vmax"].as<double>()));
+        Waveform::set_transition_function(std::make_unique<TANH>(
+            waveform_duration, node["transition"]["vmax"].as<double>()));
     } else if (transition_type == "Spline") {
         Waveform::set_transition_function(
             std::make_unique<Spline>(waveform_duration));
-	} else if (transition_type == "ERF") {
-        Waveform::set_transition_function(
-            std::make_unique<ERF>(waveform_duration, node["transition"]["vmax"].as<double>()));
-	} else {
+    } else if (transition_type == "ERF") {
+        Waveform::set_transition_function(std::make_unique<ERF>(
+            waveform_duration, node["transition"]["vmax"].as<double>()));
+    } else {
         throw std::invalid_argument(
             "Transition modulation type not supported.");
     }
@@ -152,8 +152,7 @@ void Synthesis::read_waveform_configs(std::string filepath) {
     // Static Mod
     std::string static_type = node["static"]["type"].as<std::string>();
     if (static_type == "Sin") {
-        Waveform::set_static_function(
-            std::make_unique<Sin>());
+        Waveform::set_static_function(std::make_unique<Sin>());
     } else {
         throw std::invalid_argument("Static modulation type not supported.");
     }
@@ -170,5 +169,5 @@ double Synthesis::read_waveform_duration(std::string filepath) {
         return -1;
     }
 
-	return node["waveform_duration"].as<double>();
+    return node["waveform_duration"].as<double>();
 }

@@ -80,8 +80,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
 
     State *begin =
         new State([this]() { this->st_BEGIN(); }, []() { return 1; }, f);
-    State *idle_state = new State([this]() { this->st_IDLE(); },
-                                  [this]() { return server->llcs_handler(); }, f);
+    State *idle_state =
+        new State([this]() { this->st_IDLE(); },
+                  [this]() { return server->llcs_handler(); }, f);
     State *llrs_state = new State([this]() { this->st_LLRS_EXEC(); },
                                   [this]() { return 1; }, f);
     State *config_hw_state =
@@ -108,8 +109,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
                   [this]() { return server->llcs_handler(); }, f);
     State *reset_state =
         new State([this]() { this->st_RESET(); }, []() { return 1; }, f);
-    State *close_awg = new State([this]() { this->st_CLOSE_AWG(); },
-                                 [this]() { return server->llcs_handler(); }, f);
+    State *close_awg =
+        new State([this]() { this->st_CLOSE_AWG(); },
+                  [this]() { return server->llcs_handler(); }, f);
     State *restart_awg =
         new State([this]() { this->st_RESTART_AWG(); }, []() { return 1; }, f);
     State *exit_state =

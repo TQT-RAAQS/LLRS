@@ -25,17 +25,18 @@ void Synthesis::element_wise_add(std::vector<double> src,
 Synthesis::WaveformRepo::WaveformRepo(std::size_t n_x, std::size_t n_y,
                                       double sample_rate, int waveform_mask,
                                       int vpp)
-    : _n_x(n_x), _n_y(n_y), _sample_rate(sample_rate),
-      _wf_mask(waveform_mask), _vpp(vpp) {
-    
-    _wf_duration = Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config.yml"));
+    : _n_x(n_x), _n_y(n_y), _sample_rate(sample_rate), _wf_mask(waveform_mask),
+      _vpp(vpp) {
+
+    _wf_duration =
+        Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config.yml"));
     _wf_len = _wf_duration * sample_rate;
     // reserves enough space in repo to fit all waveforms according to repo
     // dimensions
     _waveform_hashmap.reserve((5 * _n_x * _n_x + _n_x) / 2 +
                               (5 * _n_y * _n_y + _n_y) / 2 +
                               2 * (_n_x + _n_y - 2));
-	Synthesis::read_waveform_configs(WFM_CONFIG_PATH("config.yml"));
+    Synthesis::read_waveform_configs(WFM_CONFIG_PATH("config.yml"));
 }
 
 void Synthesis::WaveformRepo::generate_repository(std::vector<WP> params_x,
@@ -237,7 +238,8 @@ void Synthesis::WaveformRepo::generate_static_waveforms(Channel channel,
         /// it to the map as we go
         std::vector<double> base = temp_waveforms[start_idx];
 
-        for (unsigned int block_size = 2; start_idx + block_size - 1 < n; block_size++) {
+        for (unsigned int block_size = 2; start_idx + block_size - 1 < n;
+             block_size++) {
 
             end_idx = start_idx + block_size - 1;
 
@@ -430,7 +432,8 @@ void Synthesis::WaveformRepo::generate_transfer_waveforms(
         std::vector<double> base_extract = temp_waveforms_extract[start_idx];
         std::vector<double> base_implant = temp_waveforms_implant[start_idx];
 
-        for (unsigned int block_size = 2; start_idx + block_size - 1 < n; block_size++) {
+        for (unsigned int block_size = 2; start_idx + block_size - 1 < n;
+             block_size++) {
 
             end_idx = start_idx + block_size - 1;
 

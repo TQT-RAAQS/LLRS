@@ -27,9 +27,9 @@ template <typename AWG_T> class Sequence {
               awg->get_samples_per_segment() * 2, false)} {
 
         awg->configure_segment_length(waveform_duration);
-        lookup_buffer = awg->allocate_transfer_buffer(
-            awg->get_samples_per_segment(), true);
-		upload_buffer =
+        lookup_buffer =
+            awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true);
+        upload_buffer =
             awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true);
         double_sized_buffer = awg->allocate_transfer_buffer(
             awg->get_samples_per_segment() * 2, true);
@@ -47,9 +47,9 @@ template <typename AWG_T> class Sequence {
               awg->get_samples_per_segment() * 2, false)} {
 
         awg->configure_segment_length(waveform_duration);
-        lookup_buffer = awg->allocate_transfer_buffer(
-            awg->get_samples_per_segment(), true);
-		upload_buffer =
+        lookup_buffer =
+            awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true);
+        upload_buffer =
             awg->allocate_transfer_buffer(awg->get_samples_per_segment(), true);
         double_sized_buffer = awg->allocate_transfer_buffer(
             awg->get_samples_per_segment() * 2, true);
@@ -74,7 +74,9 @@ template <typename AWG_T> class Sequence {
     void reset(bool reset_segments);
 
     void get_static_wfm(int16 *pnData, size_t num_wfms, int Nt_x);
-    double get_waveform_duration() const { return awg->get_waveform_duration(); }
+    double get_waveform_duration() const {
+        return awg->get_waveform_duration();
+    }
     double get_sample_rate() const { return awg->get_sample_rate(); }
     int get_waveform_length() const { return awg->get_waveform_length(); }
     int get_waveform_mask() const { return awg->get_wavefrom_mask(); }

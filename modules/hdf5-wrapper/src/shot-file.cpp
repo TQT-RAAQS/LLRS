@@ -2,7 +2,8 @@
 
 const std::string ShotFile::GLOBALS_GROUP_NAME = "/globals";
 
-ShotFile::ShotFile(std::string address) : file(address.c_str(), H5F_ACC_RDONLY) {
+ShotFile::ShotFile(std::string address)
+    : file(address.c_str(), H5F_ACC_RDONLY) {
     globals_group = file.openGroup(ShotFile::GLOBALS_GROUP_NAME);
 }
 
@@ -12,9 +13,8 @@ void ShotFile::assert_global_exists(std::string global_name) {
         std::string error_2 = "' does not exist in the shot file '";
         std::string error_3 = "'.";
 
-        throw GlobalsNotFoundException(
-            error_1 + global_name + error_2 + file.getFileName() + error_3
-        );
+        throw GlobalsNotFoundException(error_1 + global_name + error_2 +
+                                       file.getFileName() + error_3);
     }
 }
 
@@ -26,9 +26,9 @@ hsize_t ShotFile::get_global_list_value_length(std::string global_name) {
     return list_size;
 }
 
-void ShotFile::get_global_dict(std::string global_name, LabscriptDictType* output)
-{
-    char* dict_str;
+void ShotFile::get_global_dict(std::string global_name,
+                               LabscriptDictType *output) {
+    char *dict_str;
     get_global_value(global_name, &dict_str);
     *output = ShotFile::convert_chars_to_labscript_dict(dict_str);
 }
@@ -36,17 +36,19 @@ void ShotFile::get_global_dict(std::string global_name, LabscriptDictType* outpu
 std::vector<std::string> ShotFile::get_global_names() {
     std::vector<std::string> attribute_names;
 
-    auto iter_get_attribute_name = [](H5::H5Location& loc, H5std_string attr_name, void* operator_data) {
-        std::vector<std::string>* attributes_vector = static_cast<std::vector<std::string>*>(operator_data);
-        attributes_vector->push_back(attr_name);
-    };
-    
+    auto iter_get_attribute_name =
+        [](H5::H5Location &loc, H5std_string attr_name, void *operator_data) {
+            std::vector<std::string> *attributes_vector =
+                static_cast<std::vector<std::string> *>(operator_data);
+            attributes_vector->push_back(attr_name);
+        };
+
     globals_group.iterateAttrs(iter_get_attribute_name, NULL, &attribute_names);
 
     return attribute_names;
 }
 
-LabscriptDictType ShotFile::convert_chars_to_labscript_dict(char* chars_dict) {
+LabscriptDictType ShotFile::convert_chars_to_labscript_dict(char *chars_dict) {
     std::string str_dict(chars_dict);
 
     assert(str_dict.length() > 2);
@@ -55,11 +57,13 @@ LabscriptDictType ShotFile::convert_chars_to_labscript_dict(char* chars_dict) {
 
     LabscriptDictType output;
     str_dict = str_dict.substr(1, str_dict.length() - 2);
-    
+
     std::vector<std::string> keyValuePairList;
     while (true) {
-        unsigned long commaPosition = str_dict.find(','); // It is important for this to be an unsigned long for the comparison with std::string::npos to work
-        if (commaPosition == std::string::npos) {   
+        unsigned long commaPosition = str_dict.find(
+            ','); // It is important for this to be an unsigned long for the
+                  // comparison with std::string::npos to work
+        if (commaPosition == std::string::npos) {
             keyValuePairList.push_back(str_dict);
             break;
         }
