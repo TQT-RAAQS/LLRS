@@ -7,7 +7,8 @@ Handler::Handler() {
 Handler::~Handler() {}
 
 void Handler::start_listening() {
-    listen_thread = std::async(std::launch::async, &Handler::async_listen, this);
+    listen_thread =
+        std::async(std::launch::async, &Handler::async_listen, this);
 }
 
 void Handler::async_listen() {
@@ -32,14 +33,16 @@ void Handler::async_listen() {
                 bool flag = false;
                 {
                     std::lock_guard<std::mutex> lock(processingMutex);
-                    if (!processing) flag = true;
+                    if (!processing)
+                        flag = true;
                 }
-                if (flag) break;
-           }
+                if (flag)
+                    break;
+            }
             continue;
-        } else if (requestStr.substr(requestStr.length() - 3, 3) == ".h5") {    
+        } else if (requestStr.substr(requestStr.length() - 3, 3) == ".h5") {
             server.send("ok");
-            server.listen(requestStr); 
+            server.listen(requestStr);
             {
                 std::lock_guard<std::mutex> lock(requestMutex);
                 hdf5_file_path = adjust_address(requestStr);
@@ -54,9 +57,11 @@ void Handler::async_listen() {
                 bool flag = false;
                 {
                     std::lock_guard<std::mutex> lock(processingMutex);
-                    if (!processing) flag = true;
+                    if (!processing)
+                        flag = true;
                 }
-                if (flag) break;
+                if (flag)
+                    break;
             }
             continue;
         }
@@ -69,9 +74,11 @@ std::string Handler::get_hdf5_file_path() {
         bool flag = false;
         {
             std::lock_guard<std::mutex> lock(requestMutex);
-            if (request == RECEIVED_HDF5_FILE_PATH) flag = true;
+            if (request == RECEIVED_HDF5_FILE_PATH)
+                flag = true;
         }
-        if (flag) break;
+        if (flag)
+            break;
     }
     std::string returnVal;
     {
@@ -88,9 +95,11 @@ void Handler::wait_for_done() {
         bool flag = false;
         {
             std::lock_guard<std::mutex> lock(requestMutex);
-            if (request == RECEIVED_DONE) flag = true;
+            if (request == RECEIVED_DONE)
+                flag = true;
         }
-        if (flag) break;
+        if (flag)
+            break;
     }
     {
         std::lock_guard<std::mutex> lock(requestMutex);
@@ -106,4 +115,3 @@ void Handler::send_done() {
         processing = false;
     }
 }
-

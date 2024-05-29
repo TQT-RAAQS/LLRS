@@ -2,11 +2,9 @@
 #define MOVE_GEN_HANDLER_HPP_
 
 #include "server.hpp"
+#include <chrono>
 #include <future>
 #include <mutex>
-#include <chrono>
-
-
 
 class Handler {
     Server server;
@@ -14,19 +12,19 @@ class Handler {
     void async_listen();
 
     std::mutex processingMutex;
-    std::mutex requestMutex; 
+    std::mutex requestMutex;
     enum State {
-      WAITING,
-      RECEIVED_HDF5_FILE_PATH,
-      RECEIVED_DONE,
+        WAITING,
+        RECEIVED_HDF5_FILE_PATH,
+        RECEIVED_DONE,
     } request = WAITING;
     std::string hdf5_file_path;
     bool processing = false;
-    
+
   public:
     Handler();
     Handler(Handler &) = delete;
-    Handler& operator=(Handler &) = delete;
+    Handler &operator=(Handler &) = delete;
     ~Handler();
     void start_listening();
     std::string get_hdf5_file_path();
