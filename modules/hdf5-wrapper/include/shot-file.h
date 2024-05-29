@@ -11,8 +11,9 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+#include <sstream>
 
-using LabscriptDictValueTypes = boost::variant<std::string, double, long, bool>;
+using LabscriptDictValueTypes = boost::variant<std::string, long, bool, double>;
 using LabscriptDictType =
     std::unordered_map<std::string, LabscriptDictValueTypes>;
 
