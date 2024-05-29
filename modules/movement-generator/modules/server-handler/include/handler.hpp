@@ -3,28 +3,34 @@
 
 #include "server.hpp"
 #include <future>
-#include <unistd.h>
+#include <mutex>
+#include <chrono>
+
 
 
 class Handler {
     Server server;
-    std::string hdf5_file_path;
-    bool listen = false;
-    bool obtained_hdf5_file_path = false;
-    bool received_done = false;
-    bool received_abort = false;
+    std::future<void> listen_thread;
     void async_listen();
 
+    std::mutex processingMutex;
+    std::mutex requestMutex; 
+    enum State {
+      WAITING,
+      RECEIVED_HDF5_FILE_PATH,
+      RECEIVED_DONE,
+    } request = WAITING;
+    std::string hdf5_file_path;
+    bool processing = false;
+    
   public:
     Handler();
     Handler(Handler &) = delete;
     Handler& operator=(Handler &) = delete;
     ~Handler();
     void start_listening();
-    void stop_listening() {listen = false;};
     std::string get_hdf5_file_path();
-    bool get_abort() {return received_abort;};
-    void send_done() {server.send("done");}
+    void send_done();
     void wait_for_done();
 };
 
