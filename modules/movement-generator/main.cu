@@ -1,6 +1,6 @@
 #include "awg.hpp"
-#include "llrs-lib/PreProc.h"
 #include "handler.hpp"
+#include "llrs-lib/PreProc.h"
 #include "shot-file.h"
 #include "synthesiser.h"
 #include <string>
@@ -28,8 +28,9 @@ int main() {
 
         AWG awg{};
         std::cout << "wait for hdf" << std::endl;
-        hdf_address = server_handler.get_hdf5_file_path(); 
-        
+        hdf_address = server_handler.get_hdf5_file_path();
+        /*
+    AWG awg{};
         ShotFile shotfile(hdf_address);
         MovementsConfig movementsConfig(shotfile);
         Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
@@ -47,7 +48,6 @@ int main() {
 
         std::cout << "sending done" << std::endl;
         server_handler.send_done();
-        
     }
 
 }
