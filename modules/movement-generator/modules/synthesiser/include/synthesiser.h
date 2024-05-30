@@ -3,7 +3,7 @@
 #include "awg.hpp"
 #include "globals-config.h"
 #include "llrs-lib/Settings.h"
-#include <map>
+#include <unordered_map>
 
 enum WFFuncType {
     SIN_STATIC = 0,
@@ -15,7 +15,6 @@ enum WFFuncType {
 class MovementsConfig : protected GlobalsConfig {
     bool enabled;
     int movement_count;
-    std::vector<long> *movement_triggers;
     std::vector<LabscriptDictType> *movement_waveforms;
 
   public:
@@ -24,8 +23,6 @@ class MovementsConfig : protected GlobalsConfig {
               shotfile,
               {{"movement_enabled", &enabled, LabscriptType::VALUE},
                {"movement_count", &movement_count, LabscriptType::VALUE},
-               {"movement_triggers", &movement_triggers,
-                LabscriptType::LIST_OF_LONG},
                {"movement_waveforms", &movement_waveforms,
                 LabscriptType::LIST_OF_DICT}}) {}
 
@@ -33,9 +30,6 @@ class MovementsConfig : protected GlobalsConfig {
     int get_movement_count() const { return movement_count; }
     std::vector<LabscriptDictType> get_movement_waveforms() const {
         return *movement_waveforms;
-    }
-    std::vector<long> get_movement_triggers() const {
-        return *movement_triggers;
     }
 };
 
@@ -46,17 +40,23 @@ class Synthesiser {
         int index, offset, block_size, extraction_extent;
         double duration;
         WFFuncType func_type;
-        double vmax;
+        double vmax = 0;
         bool wait_for_trigger;
+        bool operator==(const Move &other) const;
+    };
+    struct MoveHasher {
+        size_t operator()(const Move &move) const;
     };
     Synthesiser(std::string coef_x_path, std::string coef_y_path,
                 MovementsConfig movementsConfig);
     void synthesise_and_upload(AWG &awg, int start_segment);
+    void reset(AWG &awg, int start_segment);
 
   private:
     std::vector<Synthesis::WP> coef_x, coef_y;
     std::vector<Move> moves;
     double sample_rate;
-    Move process_move(MovementsConfig movementsConfig, int move_index);
+    Move process_move(MovementsConfig &movementsConfig, int move_index);
     std::vector<short> synthesise(Move move);
+    static std::unordered_map<Move, std::vector<short>, Synthesiser::MoveHasher> cache;
 };

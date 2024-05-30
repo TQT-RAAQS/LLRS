@@ -54,13 +54,19 @@ class ShotFile {
         T *result = new T[list_size];
         attribute.read(attribute.getDataType(), result);
 
+        attribute.close();
+
         std::vector<T> result_vec;
         for (unsigned i = 0; i < list_size; i++) {
             result_vec.push_back(result[i]);
         }
+        
+        delete[] result;
 
         *output = result_vec;
     }
+
+    void close_file();
 
     static LabscriptDictType convert_chars_to_labscript_dict(char *chars_dict);
 };

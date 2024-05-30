@@ -18,6 +18,7 @@ class AWG {
     int stop_card();
     void close_card();
 
+    void force_hardware_trigger();
     void configure_segment_length(double waveform_duration);
     int seqmem_update(int64 lStep, int64 llSegment, int64 llLoop, int64 llNext,
                       uint64 llCondition);

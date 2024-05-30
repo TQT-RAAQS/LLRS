@@ -7,6 +7,10 @@ ShotFile::ShotFile(std::string address)
     globals_group = file.openGroup(ShotFile::GLOBALS_GROUP_NAME);
 }
 
+void ShotFile::close_file() {
+    file.close();
+}
+
 void ShotFile::assert_global_exists(std::string global_name) {
     if (!globals_group.attrExists(global_name.c_str())) {
         std::string error_1 = "The globals '";

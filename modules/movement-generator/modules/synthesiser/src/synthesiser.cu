@@ -1,11 +1,14 @@
 #include "synthesiser.h"
 #include <fstream>
 
+std::unordered_map<Synthesiser::Move, std::vector<short>, Synthesiser::MoveHasher> Synthesiser::cache {};
+
 void element_wise_add(std::vector<short> &dest, std::vector<short> src);
 std::vector<short> translate(std::vector<double> src);
 
 Synthesiser::Synthesiser(std::string coef_x_path, std::string coef_y_path,
                          MovementsConfig movementsConfig) {
+    moves.reserve(movementsConfig.get_movement_count());
     for (int i = 0; i < movementsConfig.get_movement_count(); i++) {
         moves.push_back(process_move(movementsConfig, i));
     }
@@ -13,11 +16,12 @@ Synthesiser::Synthesiser(std::string coef_x_path, std::string coef_y_path,
     Setup::read_fparams(coef_y_path, coef_y, 1);
 }
 
-Synthesiser::Move Synthesiser::process_move(MovementsConfig movementsConfig,
+Synthesiser::Move Synthesiser::process_move(MovementsConfig &movementsConfig,
                                             int i) {
     Synthesiser::Move move;
     auto moveConfig = movementsConfig.get_movement_waveforms().at(i);
-    move.wait_for_trigger = movementsConfig.get_movement_triggers().at(i);
+    move.wait_for_trigger = (i == movementsConfig.get_movement_count() - 1) ? 
+        true : boost::get<long>(moveConfig.at("wait_on_trigger"));
     move.type = (WfType)boost::get<long>(moveConfig.at("move_type"));
     move.duration = boost::get<double>(moveConfig.at("duration"));
     move.index = boost::get<long>(moveConfig.at("index_x"));
@@ -32,6 +36,12 @@ Synthesiser::Move Synthesiser::process_move(MovementsConfig movementsConfig,
 }
 
 std::vector<short> Synthesiser::synthesise(Move move) {
+    // check the memoization table
+    auto it = cache.find(move);
+    if (it != cache.end()) {
+        return it->second;    
+    }
+
     // Specifying the mathematical function generating the waveforms
     switch (move.func_type) {
     case SIN_STATIC:
@@ -128,7 +138,7 @@ std::vector<short> Synthesiser::synthesise(Move move) {
                                    std::make_tuple(alpha, nu, phi))
                                    .discretize(sample_rate)));
 
-            for (int i = 0; 
+            for (unsigned int i = 0; 
                  i < coef_x.size() - move.index - move.block_size; 
                  i++) {
                 std::tie(alpha, nu, phi) = coef_x.at(coef_x.size() - 1 - i);
@@ -154,6 +164,8 @@ std::vector<short> Synthesiser::synthesise(Move move) {
     // Adding the waveforms associated with the block
     for (int b = 0; b < move.block_size; ++b) {
         switch (move.type) {
+        case NULL_WF:
+            break;
         case STATIC:
             element_wise_add(
                 wfm,
@@ -188,7 +200,7 @@ std::vector<short> Synthesiser::synthesise(Move move) {
             break;
         }
     }
-
+    cache.insert({move, wfm});
     return wfm;
 }
 
@@ -196,7 +208,7 @@ void Synthesiser::synthesise_and_upload(AWG &awg, int start_segment) {
 
     // init segments
     sample_rate = awg.get_sample_rate();
-    for (int i = 0; i < moves.size(); i++) {
+    for (unsigned int i = 0; i < moves.size(); i++) {
         AWG::TransferBuffer buffer = awg.allocate_transfer_buffer(
             static_cast<int>(moves[i].duration * sample_rate), false);
         std::vector<short> waveform = synthesise(moves[i]);
@@ -209,20 +221,23 @@ void Synthesiser::synthesise_and_upload(AWG &awg, int start_segment) {
     }
 
     // init steps
-    for (int i = start_segment; i < moves.size(); i++) {
-        int j = i - 1 == -1 ? moves.size() - 1 : i - 1;
-        if (moves[i].wait_for_trigger) {
-            awg.seqmem_update(j, j, 1, i, SPCSEQ_ENDLOOPONTRIG);
-        } else {
-            awg.seqmem_update(j, j, 1, i, SPCSEQ_ENDLOOPALWAYS);
-        }
+    int i;
+    awg.seqmem_update(start_segment - 1, start_segment - 1, 1, start_segment, SPCSEQ_ENDLOOPONTRIG);
+    for (unsigned int iterator = 0; iterator < moves.size() - 1; iterator++) {
+        i = iterator + start_segment;
+        awg.seqmem_update(i, i, 1, i + 1, 
+            moves.at(iterator).wait_for_trigger ? SPCSEQ_ENDLOOPONTRIG : SPCSEQ_ENDLOOPALWAYS);
     }
-    awg.seqmem_update(start_segment + moves.size() - 1, start_segment - 1, 1, start_segment + moves.size() - 1, SPCSEQ_ENDLOOPALWAYS);
+    awg.seqmem_update(start_segment + moves.size() - 1, 
+                      start_segment + moves.size() - 1,
+                      1, 
+                      start_segment - 1, 
+                      SPCSEQ_ENDLOOPONTRIG);
 }
 
 void element_wise_add(std::vector<short> &dest, std::vector<short> src) {
     assert(src.size() == dest.size());
-    for (int i = 0; i < dest.size(); ++i) {
+    for (unsigned int i = 0; i < dest.size(); ++i) {
         dest[i] += src[i];
     }
 }
@@ -230,9 +245,41 @@ void element_wise_add(std::vector<short> &dest, std::vector<short> src) {
 std::vector<short> translate(std::vector<double> src) {
     std::vector<short> dest;
     dest.reserve(src.size());
-    for (int i = 0; i < src.size(); i++) {
+    for (unsigned int i = 0; i < src.size(); i++) {
         assert (src.at(i) <= 1 && src.at(i) >= -1);
         dest.push_back((short)(src.at(i) * (0x00007fff)));
     }
     return dest;
+}
+
+void Synthesiser::reset(AWG &awg, int start_segment) {
+    int current_step = awg.get_current_step();
+    if (current_step != start_segment - 1) {
+        std::cout << "We're here: " << current_step << std::endl;
+        int move_index = current_step - start_segment;
+        while (!moves.at(move_index).wait_for_trigger) { move_index++; }
+
+        awg.seqmem_update(move_index+start_segment, move_index+start_segment, 1, start_segment - 1, SPCSEQ_ENDLOOPALWAYS);
+    }
+    awg.force_hardware_trigger();
+    while (awg.get_current_step() != start_segment - 1) {}
+}
+
+bool Synthesiser::Move::operator==(const Move &other) const {
+    return wait_for_trigger == other.wait_for_trigger &&
+           type == other.type && duration == other.duration &&
+           index == other.index && offset == other.offset &&
+           block_size == other.block_size && func_type == other.func_type &&
+           extraction_extent == other.extraction_extent && vmax == other.vmax;
+}
+
+size_t Synthesiser::MoveHasher::operator()(const Move &move) const {
+    return std::hash<int>()(move.type) ^ std::hash<int>()(move.index) ^
+            std::hash<int>()(move.offset) ^
+            std::hash<int>()(move.block_size) ^
+            std::hash<int>()(move.extraction_extent) ^
+            std::hash<double>()(move.duration) ^
+            std::hash<int>()(move.func_type) ^
+            std::hash<double>()(move.vmax) ^
+            std::hash<bool>()(move.wait_for_trigger);
 }
