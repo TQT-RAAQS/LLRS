@@ -40,6 +40,8 @@ int main() {
         hdf_address = server_handler.get_hdf5_file_path(); 
         ShotFile shotfile(hdf_address);
         MovementsConfig movementsConfig(shotfile);
+        shotfile.close_file();
+
         Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
                                 COEF_Y_PATH("21_traps.csv"), movementsConfig};
         synthesiser.synthesise_and_upload(awg, 1);
@@ -48,6 +50,9 @@ int main() {
 
         std::cout << "wait for done" << std::endl;
         server_handler.wait_for_done();
+
+        synthesiser.reset(awg, 1);
+
         std::cout << "sending done" << std::endl;
         server_handler.send_done();
     }
