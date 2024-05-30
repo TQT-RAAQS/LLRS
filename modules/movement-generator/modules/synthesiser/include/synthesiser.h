@@ -51,7 +51,7 @@ class Synthesiser {
     };
     Synthesiser(std::string coef_x_path, std::string coef_y_path,
                 MovementsConfig movementsConfig);
-    void synthesise_and_upload(AWG &awg);
+    void synthesise_and_upload(AWG &awg, int start_segment);
 
   private:
     std::vector<Synthesis::WP> coef_x, coef_y;

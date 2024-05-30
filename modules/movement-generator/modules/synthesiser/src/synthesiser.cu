@@ -192,7 +192,7 @@ std::vector<short> Synthesiser::synthesise(Move move) {
     return wfm;
 }
 
-void Synthesiser::synthesise_and_upload(AWG &awg) {
+void Synthesiser::synthesise_and_upload(AWG &awg, int start_segment) {
 
     // init segments
     sample_rate = awg.get_sample_rate();
@@ -204,12 +204,12 @@ void Synthesiser::synthesise_and_upload(AWG &awg) {
             *buffer, waveform.data(),
             static_cast<int>(moves[i].duration * sample_rate * sizeof(short)));
         awg.init_and_load_range(
-            *buffer, static_cast<int>(moves[i].duration * sample_rate), i,
-            i + 1);
+            *buffer, static_cast<int>(moves[i].duration * sample_rate), i + start_segment,
+            i + 1 + start_segment);
     }
 
     // init steps
-    for (int i = 0; i < moves.size(); i++) {
+    for (int i = start_segment; i < moves.size(); i++) {
         int j = i - 1 == -1 ? moves.size() - 1 : i - 1;
         if (moves[i].wait_for_trigger) {
             awg.seqmem_update(j, j, 1, i, SPCSEQ_ENDLOOPONTRIG);
@@ -217,6 +217,7 @@ void Synthesiser::synthesise_and_upload(AWG &awg) {
             awg.seqmem_update(j, j, 1, i, SPCSEQ_ENDLOOPALWAYS);
         }
     }
+    awg.seqmem_update(start_segment + moves.size() - 1, start_segment - 1, 1, start_segment + moves.size() - 1, SPCSEQ_ENDLOOPALWAYS);
 }
 
 void element_wise_add(std::vector<short> &dest, std::vector<short> src) {
