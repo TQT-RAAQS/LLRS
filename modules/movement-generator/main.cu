@@ -19,18 +19,15 @@ int main() {
     sigaction(SIGINT, &sigIntHandler, NULL);
 
 
+	AWG awg{};
     std::string hdf_address{};
     Handler server_handler{};
     server_handler.start_listening();
     std::cout << "Server started" << std::endl;
 
     while (true) {
-
-        AWG awg{};
-        std::cout << "wait for hdf" << std::endl;
-        hdf_address = server_handler.get_hdf5_file_path();
-        /*
-    AWG awg{};
+		std::cout << "Waiting for HDF5 address" << std::endl;
+        hdf_address = server_handler.get_hdf5_file_path(); 
         ShotFile shotfile(hdf_address);
         MovementsConfig movementsConfig(shotfile);
         Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),

@@ -43,7 +43,7 @@ class Synthesiser {
   public:
     struct Move {
         WfType type;
-        int index, offset, block_size;
+        int index, offset, block_size, extraction_extent;
         double duration;
         WFFuncType func_type;
         double vmax;
