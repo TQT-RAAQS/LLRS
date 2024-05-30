@@ -41,6 +41,9 @@ int Setup::read_fparams(std::string file_name,
             tmp_params.push_back(stod(param));
         }
 
+        if (tmp_params.size() == 0) {
+            continue;
+        }
         if (tmp_params.size() != PARAM_NUM) {
             fin.close();
             throw std::invalid_argument("ERROR: waveform_table->params: not "

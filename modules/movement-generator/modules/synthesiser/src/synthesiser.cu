@@ -1,6 +1,7 @@
 #include "synthesiser.h"
+#include <fstream>
 
-void element_wise_add(std::vector<short> dest, std::vector<short> src);
+void element_wise_add(std::vector<short> &dest, std::vector<short> src);
 std::vector<short> translate(std::vector<double> src);
 
 Synthesiser::Synthesiser(std::string coef_x_path, std::string coef_y_path,
@@ -8,7 +9,7 @@ Synthesiser::Synthesiser(std::string coef_x_path, std::string coef_y_path,
     for (int i = 0; i < movementsConfig.get_movement_count(); i++) {
         moves.push_back(process_move(movementsConfig, i));
     }
-    Setup::read_fparams(coef_x_path, coef_x, 100);
+    Setup::read_fparams(coef_x_path, coef_x, 21);
     Setup::read_fparams(coef_y_path, coef_y, 1);
 }
 
@@ -17,12 +18,13 @@ Synthesiser::Move Synthesiser::process_move(MovementsConfig movementsConfig,
     Synthesiser::Move move;
     auto moveConfig = movementsConfig.get_movement_waveforms().at(i);
     move.wait_for_trigger = movementsConfig.get_movement_triggers().at(i);
-    move.type = (WfType)boost::get<double>(moveConfig.at("type"));
+    move.type = (WfType)boost::get<long>(moveConfig.at("move_type"));
     move.duration = boost::get<double>(moveConfig.at("duration"));
-    move.index = boost::get<double>(moveConfig.at("index"));
-    move.offset = boost::get<double>(moveConfig.at("offset"));
-    move.block_size = boost::get<double>(moveConfig.at("block_size"));
-    move.func_type = (WFFuncType)boost::get<double>(moveConfig.at("func_type"));
+    move.index = boost::get<long>(moveConfig.at("index_x"));
+    move.offset = boost::get<long>(moveConfig.at("index_y"));
+    move.block_size = boost::get<long>(moveConfig.at("block_size"));
+    move.func_type = (WFFuncType)boost::get<long>(moveConfig.at("wf_type"));
+    move.extraction_extent = boost::get<long>(moveConfig.at("extraction_extent"));
     if (move.func_type == TANH_TRANSITION || move.func_type == ERF_TRANSITION) {
         move.vmax = boost::get<double>(moveConfig.at("vmax"));
     }
@@ -30,6 +32,7 @@ Synthesiser::Move Synthesiser::process_move(MovementsConfig movementsConfig,
 }
 
 std::vector<short> Synthesiser::synthesise(Move move) {
+    // Specifying the mathematical function generating the waveforms
     switch (move.func_type) {
     case SIN_STATIC:
         Synthesis::Waveform::set_static_function(
@@ -38,32 +41,43 @@ std::vector<short> Synthesiser::synthesise(Move move) {
     case ERF_TRANSITION:
         Synthesis::Waveform::set_transition_function(
             std::make_unique<Synthesis::ERF>(move.duration, move.vmax));
+        Synthesis::Waveform::set_static_function(
+            std::make_unique<Synthesis::Sin>());
         break;
     case TANH_TRANSITION:
         Synthesis::Waveform::set_transition_function(
             std::make_unique<Synthesis::TANH>(move.duration, move.vmax));
+        Synthesis::Waveform::set_static_function(
+            std::make_unique<Synthesis::Sin>());
         break;
     case SPLINE_TRANSITION:
         Synthesis::Waveform::set_transition_function(
             std::make_unique<Synthesis::Spline>(move.duration));
+        Synthesis::Waveform::set_static_function(
+            std::make_unique<Synthesis::Sin>());
         break;
     }
+
     std::vector<short> wfm(static_cast<int>(move.duration * sample_rate), 0);
+
+    // Adding the fade in and fade out waveforms and extraction extent static waveforms
+    // for forward/backwards waveforms
     double d_nu_1, d_nu_2;
     if (move.type == FORWARD || move.type == BACKWARD) {
-        d_nu_1 = move.index ? std::get<0>(coef_x.at(move.index)) -
+        d_nu_1 = move.index > 1 ? std::get<0>(coef_x.at(move.index)) -
                                   std::get<0>(coef_x.at(move.index - 1))
                             : std::get<0>(coef_x.at(move.index + 1)) -
                                   std::get<0>(coef_x.at(move.index));
         d_nu_1 = d_nu_1 / 2;
         d_nu_2 =
-            move.index + move.block_size != coef_x.size()
+            move.index + move.block_size != coef_x.size() - 1
                 ? std::get<0>(coef_x.at(move.index + move.block_size + 1)) -
                       std::get<0>(coef_x.at(move.index + move.block_size))
                 : std::get<0>(coef_x.at(move.index + move.block_size)) -
                       std::get<0>(coef_x.at(move.index + move.block_size - 1));
         d_nu_2 = d_nu_2 / 2;
         if (move.type == FORWARD) {
+            assert(move.index + move.block_size < coef_x.size());
             double alpha, nu, phi;
             std::tie(alpha, nu, phi) = coef_x.at(move.index);
             element_wise_add(
@@ -79,31 +93,71 @@ std::vector<short> Synthesiser::synthesise(Move move) {
                               move.duration, std::make_tuple(alpha, nu, phi),
                               std::make_tuple((double)0, nu + d_nu_2, phi))
                               .discretize(sample_rate)));
+
+            for (int i = 0; i < move.index; i++) {
+                std::tie(alpha, nu, phi) = coef_x.at(i);
+                element_wise_add(
+                wfm,
+                translate(Synthesis::Idle(
+                              move.duration, std::make_tuple(alpha, nu, phi))
+                              .discretize(sample_rate)));
+            }
+            for (int i = move.index + move.block_size + 1; i < move.extraction_extent; i++) {
+                std::tie(alpha, nu, phi) = coef_x.at(i);
+                element_wise_add(
+                wfm,
+                translate(Synthesis::Idle(
+                              move.duration, std::make_tuple(alpha, nu, phi))
+                              .discretize(sample_rate)));
+            }
         } else {
+            assert(move.index > 0);
             double alpha, nu, phi;
-            std::tie(alpha, nu, phi) = coef_x.at(move.index);
+            std::tie(alpha, nu, phi) = coef_x.at(move.index - 1);
             element_wise_add(
                 wfm,
                 translate(Synthesis::Displacement(
                               move.duration, std::make_tuple(alpha, nu, phi),
                               std::make_tuple((double)0, nu - d_nu_1, phi))
                               .discretize(sample_rate)));
-            std::tie(alpha, nu, phi) = coef_x.at(move.index + move.block_size);
+            std::tie(alpha, nu, phi) = coef_x.at(move.index + move.block_size - 1);
             element_wise_add(
                 wfm, translate(Synthesis::Displacement(
                                    move.duration,
                                    std::make_tuple((double)0, nu + d_nu_2, phi),
                                    std::make_tuple(alpha, nu, phi))
                                    .discretize(sample_rate)));
+
+            for (int i = 0; 
+                 i < coef_x.size() - move.index - move.block_size; 
+                 i++) {
+                std::tie(alpha, nu, phi) = coef_x.at(coef_x.size() - 1 - i);
+                element_wise_add(
+                wfm,
+                translate(Synthesis::Idle(
+                              move.duration, std::make_tuple(alpha, nu, phi))
+                              .discretize(sample_rate)));
+            }
+            for (int i = coef_x.size() + 1 - move.index; 
+                i < move.extraction_extent; 
+                i++) {
+                std::tie(alpha, nu, phi) = coef_x.at(coef_x.size() - 1 - i);
+                element_wise_add(
+                wfm,
+                translate(Synthesis::Idle(
+                              move.duration, std::make_tuple(alpha, nu, phi))
+                              .discretize(sample_rate)));
+            }
         }
     }
 
+    // Adding the waveforms associated with the block
     for (int b = 0; b < move.block_size; ++b) {
         switch (move.type) {
         case STATIC:
             element_wise_add(
                 wfm,
-                translate(Synthesis::Idle(move.duration, coef_x.at(move.index))
+                translate(Synthesis::Idle(move.duration, coef_x.at(move.index + b))
                               .discretize(sample_rate)));
             break;
         case EXTRACT:
@@ -134,6 +188,7 @@ std::vector<short> Synthesiser::synthesise(Move move) {
             break;
         }
     }
+
     return wfm;
 }
 
@@ -164,7 +219,7 @@ void Synthesiser::synthesise_and_upload(AWG &awg) {
     }
 }
 
-void element_wise_add(std::vector<short> dest, std::vector<short> src) {
+void element_wise_add(std::vector<short> &dest, std::vector<short> src) {
     assert(src.size() == dest.size());
     for (int i = 0; i < dest.size(); ++i) {
         dest[i] += src[i];
@@ -175,7 +230,8 @@ std::vector<short> translate(std::vector<double> src) {
     std::vector<short> dest;
     dest.reserve(src.size());
     for (int i = 0; i < src.size(); i++) {
-        dest.push_back((short)(src.at(i) * (2 ^ 15 - 1)));
+        assert (src.at(i) <= 1 && src.at(i) >= -1);
+        dest.push_back((short)(src.at(i) * (0x00007fff)));
     }
     return dest;
 }
