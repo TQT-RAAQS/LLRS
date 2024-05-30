@@ -22,6 +22,16 @@ int main() {
 	AWG awg{};
     std::string hdf_address{};
     Handler server_handler{};
+    {
+        AWG::TransferBuffer buffer = awg.allocate_transfer_buffer(
+        static_cast<int>(10e-6 * awg.get_sample_rate()), false);
+        awg.fill_transfer_buffer(buffer, static_cast<int>(10e-6 * awg.get_sample_rate()), 0);
+    awg.init_and_load_range(
+        *buffer, static_cast<int>(10e-6 * awg.get_sample_rate()), 0,
+        1);
+        awg.seqmem_update(0, 0, 1, 0, SPCSEQ_ENDLOOPALWAYS);
+    }
+    awg.start_stream();
     server_handler.start_listening();
     std::cout << "Server started" << std::endl;
 
@@ -32,17 +42,12 @@ int main() {
         MovementsConfig movementsConfig(shotfile);
         Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
                                 COEF_Y_PATH("21_traps.csv"), movementsConfig};
-        synthesiser.synthesise_and_upload(awg);
-        awg.start_stream();
-
+        synthesiser.synthesise_and_upload(awg, 1);
         std::cout << "Start Stream" << std::endl;
         server_handler.send_done();
 
         std::cout << "wait for done" << std::endl;
         server_handler.wait_for_done();
-        
-        awg.stop_card();
-
         std::cout << "sending done" << std::endl;
         server_handler.send_done();
     }
