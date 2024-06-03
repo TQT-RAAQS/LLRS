@@ -47,10 +47,10 @@ class Synthesiser {
     struct MoveHasher {
         size_t operator()(const Move &move) const;
     };
-    Synthesiser(std::string coef_x_path, std::string coef_y_path,
-                MovementsConfig movementsConfig);
+    Synthesiser(std::string coef_x_path, std::string coef_y_path);
     void synthesise_and_upload(AWG &awg, int start_segment);
     void reset(AWG &awg, int start_segment);
+    void set_config(MovementsConfig movementsConfig);
 
   private:
     std::vector<Synthesis::WP> coef_x, coef_y;

@@ -23,11 +23,12 @@ int main() {
     std::string hdf_address{};
     Handler server_handler{};
     {
+        double null_duration = 10e-6;
         AWG::TransferBuffer buffer = awg.allocate_transfer_buffer(
-        static_cast<int>(10e-6 * awg.get_sample_rate()), false);
-        awg.fill_transfer_buffer(buffer, static_cast<int>(10e-6 * awg.get_sample_rate()), 0);
+        static_cast<int>(null_duration * awg.get_sample_rate()), false);
+        awg.fill_transfer_buffer(buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0);
     awg.init_and_load_range(
-        *buffer, static_cast<int>(10e-6 * awg.get_sample_rate()), 0,
+        *buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0,
         1);
         awg.seqmem_update(0, 0, 1, 0, SPCSEQ_ENDLOOPALWAYS);
     }
@@ -35,6 +36,8 @@ int main() {
     server_handler.start_listening();
     std::cout << "Server started" << std::endl;
 
+    Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
+                                COEF_Y_PATH("21_traps.csv")};
     while (true) {
 		std::cout << "Waiting for HDF5 address" << std::endl;
         hdf_address = server_handler.get_hdf5_file_path(); 
@@ -42,8 +45,7 @@ int main() {
         MovementsConfig movementsConfig(shotfile);
         shotfile.close_file();
 
-        Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
-                                COEF_Y_PATH("21_traps.csv"), movementsConfig};
+        synthesiser.set_config(movementsConfig);
         synthesiser.synthesise_and_upload(awg, 1);
         std::cout << "Start Stream" << std::endl;
         server_handler.send_done();
