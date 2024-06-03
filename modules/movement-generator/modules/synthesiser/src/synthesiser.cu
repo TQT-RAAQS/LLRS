@@ -1,19 +1,21 @@
 #include "synthesiser.h"
-#include <fstream>
 
 std::unordered_map<Synthesiser::Move, std::vector<short>, Synthesiser::MoveHasher> Synthesiser::cache {};
 
 void element_wise_add(std::vector<short> &dest, std::vector<short> src);
 std::vector<short> translate(std::vector<double> src);
 
-Synthesiser::Synthesiser(std::string coef_x_path, std::string coef_y_path,
-                         MovementsConfig movementsConfig) {
+Synthesiser::Synthesiser(std::string coef_x_path, std::string coef_y_path) {
+    Setup::read_fparams(coef_x_path, coef_x, 21);
+    Setup::read_fparams(coef_y_path, coef_y, 1);
+}
+
+void Synthesiser::set_config(MovementsConfig movementsConfig) {
+    moves.clear();
     moves.reserve(movementsConfig.get_movement_count());
     for (int i = 0; i < movementsConfig.get_movement_count(); i++) {
         moves.push_back(process_move(movementsConfig, i));
     }
-    Setup::read_fparams(coef_x_path, coef_x, 21);
-    Setup::read_fparams(coef_y_path, coef_y, 1);
 }
 
 Synthesiser::Move Synthesiser::process_move(MovementsConfig &movementsConfig,
@@ -74,17 +76,17 @@ std::vector<short> Synthesiser::synthesise(Move move) {
     // for forward/backwards waveforms
     double d_nu_1, d_nu_2;
     if (move.type == FORWARD || move.type == BACKWARD) {
-        d_nu_1 = move.index > 1 ? std::get<0>(coef_x.at(move.index)) -
-                                  std::get<0>(coef_x.at(move.index - 1))
-                            : std::get<0>(coef_x.at(move.index + 1)) -
-                                  std::get<0>(coef_x.at(move.index));
+        d_nu_1 = move.index > 1 ? std::get<1>(coef_x.at(move.index)) -
+                                  std::get<1>(coef_x.at(move.index - 1))
+                            : std::get<1>(coef_x.at(move.index + 1)) -
+                                  std::get<1>(coef_x.at(move.index));
         d_nu_1 = d_nu_1 / 2;
         d_nu_2 =
-            move.index + move.block_size != coef_x.size() - 1
-                ? std::get<0>(coef_x.at(move.index + move.block_size + 1)) -
-                      std::get<0>(coef_x.at(move.index + move.block_size))
-                : std::get<0>(coef_x.at(move.index + move.block_size)) -
-                      std::get<0>(coef_x.at(move.index + move.block_size - 1));
+            move.index + move.block_size < coef_x.size() - 1
+                ? std::get<1>(coef_x.at(move.index + move.block_size + 1)) -
+                      std::get<1>(coef_x.at(move.index + move.block_size))
+                : std::get<1>(coef_x.at(coef_x.size()- 1)) -
+                      std::get<1>(coef_x.at(coef_x.size() - 2));
         d_nu_2 = d_nu_2 / 2;
         if (move.type == FORWARD) {
             assert(move.index + move.block_size < coef_x.size());
@@ -181,7 +183,8 @@ std::vector<short> Synthesiser::synthesise(Move move) {
         case FORWARD:
             element_wise_add(
                 wfm, translate(Synthesis::Displacement(
-                                   move.duration, coef_x.at(move.index + b),
+                                   move.duration, 
+                                   coef_x.at(move.index + b),
                                    coef_x.at(move.index + b + 1))
                                    .discretize(sample_rate)));
             break;
@@ -200,6 +203,7 @@ std::vector<short> Synthesiser::synthesise(Move move) {
             break;
         }
     }
+
     cache.insert({move, wfm});
     return wfm;
 }
@@ -221,13 +225,17 @@ void Synthesiser::synthesise_and_upload(AWG &awg, int start_segment) {
     }
 
     // init steps
-    int i;
+    awg.seqmem_update(start_segment - 1, start_segment - 1, 1, start_segment - 1, SPCSEQ_ENDLOOPONTRIG);
+    awg.force_hardware_trigger();
     awg.seqmem_update(start_segment - 1, start_segment - 1, 1, start_segment, SPCSEQ_ENDLOOPONTRIG);
+
+    int i;
     for (unsigned int iterator = 0; iterator < moves.size() - 1; iterator++) {
         i = iterator + start_segment;
         awg.seqmem_update(i, i, 1, i + 1, 
             moves.at(iterator).wait_for_trigger ? SPCSEQ_ENDLOOPONTRIG : SPCSEQ_ENDLOOPALWAYS);
     }
+
     awg.seqmem_update(start_segment + moves.size() - 1, 
                       start_segment + moves.size() - 1,
                       1, 
@@ -253,15 +261,20 @@ std::vector<short> translate(std::vector<double> src) {
 }
 
 void Synthesiser::reset(AWG &awg, int start_segment) {
-    int current_step = awg.get_current_step();
-    if (current_step != start_segment - 1) {
-        std::cout << "We're here: " << current_step << std::endl;
-        int move_index = current_step - start_segment;
-        while (!moves.at(move_index).wait_for_trigger) { move_index++; }
+    awg.seqmem_update(start_segment - 1, start_segment - 1, 1, start_segment - 1, SPCSEQ_ENDLOOPALWAYS);
 
-        awg.seqmem_update(move_index+start_segment, move_index+start_segment, 1, start_segment - 1, SPCSEQ_ENDLOOPALWAYS);
+    int current_step = awg.get_current_step();
+    if (current_step == start_segment - 1) {
+        return;
     }
+
+    std::cout << "Warning! The triggers do not restore the AWG steps to the beginning, resulting in additional time wasted in fixing this problem." << std::endl;
+    int move_index = current_step - start_segment;
+    while (!moves.at(move_index).wait_for_trigger) { move_index++; }
+
+    awg.seqmem_update(move_index+start_segment, move_index+start_segment, 1, start_segment - 1, SPCSEQ_ENDLOOPALWAYS);
     awg.force_hardware_trigger();
+
     while (awg.get_current_step() != start_segment - 1) {}
 }
 
