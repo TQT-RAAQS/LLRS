@@ -58,5 +58,6 @@ class Synthesiser {
     double sample_rate;
     Move process_move(MovementsConfig &movementsConfig, int move_index);
     std::vector<short> synthesise(Move move);
-    static std::unordered_map<Move, std::vector<short>, Synthesiser::MoveHasher> cache;
+    static std::unordered_map<Move, std::vector<short>, Synthesiser::MoveHasher>
+        cache;
 };

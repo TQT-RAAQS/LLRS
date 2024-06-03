@@ -19,7 +19,7 @@ void Handler::async_listen() {
             server.send("hello");
             continue;
         } else if (requestStr == "done") {
-		    server.send("ok");
+            server.send("ok");
             server.listen(requestStr);
             {
                 std::lock_guard<std::mutex> lock(requestMutex);
@@ -47,9 +47,9 @@ void Handler::async_listen() {
                 hdf5_file_path = adjust_address(requestStr);
                 request = RECEIVED_HDF5_FILE_PATH;
             }
-		    server.send("ok");
+            server.send("ok");
             server.listen(requestStr);
-            
+
             {
                 std::lock_guard<std::mutex> lock(processingMutex);
                 processing = true;

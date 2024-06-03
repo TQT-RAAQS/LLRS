@@ -5,13 +5,13 @@
 #include <boost/variant.hpp>
 #include <cassert>
 #include <cstring>
-#include <hdf5/serial/H5Cpp.h>
 #include <hdf5/serial/H5Attribute.h>
+#include <hdf5/serial/H5Cpp.h>
 #include <iostream>
+#include <sstream>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
-#include <sstream>
 
 using LabscriptDictValueTypes = boost::variant<std::string, long, bool, double>;
 using LabscriptDictType =
@@ -60,7 +60,7 @@ class ShotFile {
         for (unsigned i = 0; i < list_size; i++) {
             result_vec.push_back(result[i]);
         }
-        
+
         delete[] result;
 
         *output = result_vec;

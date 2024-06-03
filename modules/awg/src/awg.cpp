@@ -121,10 +121,11 @@ int AWG::configure() {
 }
 
 // This function forces a "hardware trigger" event.
-// Example: If the AWG is at step 1, which points to step 2 on trigger, then this function would make this jump even
-// if an actual hardware trigger is not sent.
+// Example: If the AWG is at step 1, which points to step 2 on trigger, then
+// this function would make this jump even if an actual hardware trigger is not
+// sent.
 void AWG::force_hardware_trigger() {
-    spcm_dwSetParam_i32 (p_card, SPC_M2CMD, M2CMD_CARD_FORCETRIGGER);
+    spcm_dwSetParam_i32(p_card, SPC_M2CMD, M2CMD_CARD_FORCETRIGGER);
 }
 
 void AWG::configure_segment_length(double waveform_duration) {

@@ -3,8 +3,8 @@
 #include "llrs-lib/PreProc.h"
 #include "shot-file.h"
 #include "synthesiser.h"
-#include <string>
 #include <signal.h>
+#include <string>
 
 void my_handler(int s) {
     printf("Caught signal %d\n", s);
@@ -18,18 +18,18 @@ int main() {
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
 
-
-	AWG awg{};
+    AWG awg{};
     std::string hdf_address{};
     Handler server_handler{};
     {
         double null_duration = 10e-6;
         AWG::TransferBuffer buffer = awg.allocate_transfer_buffer(
-        static_cast<int>(null_duration * awg.get_sample_rate()), false);
-        awg.fill_transfer_buffer(buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0);
-    awg.init_and_load_range(
-        *buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0,
-        1);
+            static_cast<int>(null_duration * awg.get_sample_rate()), false);
+        awg.fill_transfer_buffer(
+            buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0);
+        awg.init_and_load_range(
+            *buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0,
+            1);
         awg.seqmem_update(0, 0, 1, 0, SPCSEQ_ENDLOOPALWAYS);
     }
     awg.start_stream();
@@ -37,10 +37,10 @@ int main() {
     std::cout << "Server started" << std::endl;
 
     Synthesiser synthesiser{COEF_X_PATH("21_traps.csv"),
-                                COEF_Y_PATH("21_traps.csv")};
+                            COEF_Y_PATH("21_traps.csv")};
     while (true) {
-		std::cout << "Waiting for HDF5 address" << std::endl;
-        hdf_address = server_handler.get_hdf5_file_path(); 
+        std::cout << "Waiting for HDF5 address" << std::endl;
+        hdf_address = server_handler.get_hdf5_file_path();
         ShotFile shotfile(hdf_address);
         MovementsConfig movementsConfig(shotfile);
         shotfile.close_file();
@@ -58,5 +58,4 @@ int main() {
         std::cout << "sending done" << std::endl;
         server_handler.send_done();
     }
-
 }

@@ -7,9 +7,7 @@ ShotFile::ShotFile(std::string address)
     globals_group = file.openGroup(ShotFile::GLOBALS_GROUP_NAME);
 }
 
-void ShotFile::close_file() {
-    file.close();
-}
+void ShotFile::close_file() { file.close(); }
 
 void ShotFile::assert_global_exists(std::string global_name) {
     if (!globals_group.attrExists(global_name.c_str())) {
@@ -89,10 +87,11 @@ LabscriptDictType ShotFile::convert_chars_to_labscript_dict(char *chars_dict) {
 
         if (str_value.find('\'') != std::string::npos) {
             value = str_value.substr(1, str_value.length() - 2);
-        } else if (str_value.find('.') != std::string::npos || 
-                   str_value.find('e') != std::string::npos || 
+        } else if (str_value.find('.') != std::string::npos ||
+                   str_value.find('e') != std::string::npos ||
                    str_value.find('E') != std::string::npos) {
-            // Conversion of a string to double, taking into account that the string could be in scientific format.
+            // Conversion of a string to double, taking into account that the
+            // string could be in scientific format.
             std::istringstream iss(str_value);
             double temp_double;
             iss >> temp_double;
