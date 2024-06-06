@@ -1,0 +1,23 @@
+frames_per_move: 5 # note that the frames_per_moves-1st frame is the moment before the move is complete
+gif_duration: 7 # frames per second
+x_scale: 5 # x distance between the trap columns
+y_scale: 5 # distance between the trap rows
+x0: 0 # x position of the bottom left trap
+y0: 0 # y position of the bottom left trap
+trap: # information on the trap circles in the animation
+  radius: 1
+  edgecolor: black # can be in any format, none, string, etc...
+  facecolor: none # can be in any format, none, string, etc...
+  lw: 0.5
+atom_static: # information on the atom circles in the static traps
+  radius: 1
+  edgecolor: '#000000' # must be in hex with 6 digits
+  facecolor: '#0000FF' # must be in hex with 6 digits
+  lw: 0
+atom_dynamic: # information on the atom circles in the static traps
+  radius: 1
+  edgecolor: '#000000' # must be in hex with 6 digits
+  facecolor: '#FF0000' # must be in hex with 6 digits
+  lw: 0 # mine width
+padding: 10 # number of pixels between the plot borders and the center of the corner traps
+transition_function: x1 + (x2 - x1) * t # x1 is start, x2 is end, t is normalized time in [0,1]
