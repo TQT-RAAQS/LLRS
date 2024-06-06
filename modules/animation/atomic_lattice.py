@@ -1,5 +1,9 @@
 import numpy as np
 from typing import List, Tuple
+from ctypes import *
+from array import array
+
+
 
 from .trap import Trap, AtomState
 from .move import Move, MoveType
@@ -111,7 +115,7 @@ class AtomicLattice:
             x, y = move.index_x, move.index_y + i
 
             assert self.get_trap(x, y).is_occupied(),\
-                f"The trap has no atoms, and thus impossible to act upon with this move: {move}"
+                f"The trap ({x}, {y}) has no atoms, and thus impossible to act upon with this move: {move}"
             
             if move.move_type in [MoveType.EXTRACT]:
                 assert self.get_trap(x, y).get_atom_state() == AtomState.STATIC_TRAP,\
@@ -137,3 +141,36 @@ class AtomicLattice:
                 
         assert move.extraction_extent <= self.traps.shape[0] and move.extraction_extent >= 0,\
             f"Invalid extraction extent: {move.extraction_extent}"
+        
+    def gen_moves_list(self, algorithm, solver_wrapper_so_file):
+        initial = [1 if self.traps[j][i].is_occupied() else 0 for j in range(self.N_y) for i in range(self.N_x)]
+        init_arr = array('i', initial)
+        init_ptr = cast(init_arr.buffer_info()[0], POINTER(c_int))
+        print(initial)
+        target_width = min(self.N_x, self.N_y)
+        target = [0 for i in range(self.N_y) for j in range(self.N_x)] 
+        start_index = ((self.N_x * self.N_y) - (target_width * target_width)) // 2
+        end_index = start_index + (target_width * target_width)
+        for i in range(start_index, end_index):
+            target[i] = 1
+        print(target)
+        targ_arr = array('i', target)
+        targ_ptr = cast(targ_arr.buffer_info()[0], POINTER(c_int))
+        dll = CDLL(solver_wrapper_so_file)  # Replace with the path to your SO file
+
+        op_size = 4 # type, index, offset, block_size
+        result = (c_int * (op_size * self.N_x * self.N_y * self.N_x * self.N_y))()
+        sol_len = c_int(0)
+        func = dll.solver_wrapper
+        func.argtypes = [c_char_p, c_int, c_int, POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_int)]
+        func(algorithm.encode(), self.N_x, self.N_y, init_ptr, targ_ptr, result, byref(sol_len))
+        solver_output = [result[i] for i in range(sol_len.value*op_size)]
+        aod_ops = []
+        op_size = 4 
+        raw_ops = [solver_output[i:i+op_size] for i in range(0, len(solver_output), op_size)]
+        for raw_op in raw_ops:
+            move_type, index, offset, block_size = raw_op 
+            aod_ops.append(Move(MoveType(move_type), index_y= index, index_x=offset, block_size=block_size, extraction_extent=0)) 
+
+        return aod_ops
+

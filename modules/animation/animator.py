@@ -43,7 +43,7 @@ class Animator:
     
     def _get_move_frames_and_apply_move(self, move: Move):
         frames = []
-        title = self._get_move_title(move)
+        title = "" 
 
         fixed_atoms, moving_atoms_src, moving_atoms_dst = self._apply_move_to_lattice(move)
 
