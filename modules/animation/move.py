@@ -3,12 +3,12 @@ from dataclasses import dataclass
 
 class MoveType(Enum):
 
-    RIGHT = 0
-    UP = 1
-    LEFT = 2
-    DOWN = 3
-    EXTRACT = 4
-    IMPLANT = 5
+    RIGHT = 8 
+    UP = 10 
+    LEFT = 9 
+    DOWN = 11 
+    EXTRACT = 7 
+    IMPLANT = 6 
 
 @dataclass
 class Move:
