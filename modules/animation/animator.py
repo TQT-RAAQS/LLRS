@@ -75,14 +75,17 @@ class Animator:
     def _apply_move_to_lattice(self, move: Move):
         fixed_atoms = []
         for i in range(self.lattice.N_y):
-            for j in range(self.lattice.N_y):
+            for j in range(self.lattice.N_x):
                 if self.lattice.get_trap(j, i).is_occupied():
                     fixed_atoms.append((j, i))
         fixed_atoms = set(fixed_atoms)
 
         moved_atoms_src = self.lattice.apply_move(move)
         for src in moved_atoms_src:
-            fixed_atoms.remove(src)
+            try:   
+                fixed_atoms.remove(src)
+            except:
+                pass
         fixed_atoms = list(fixed_atoms)
         
         moved_atoms_dst = list(moved_atoms_src)
