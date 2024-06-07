@@ -4,9 +4,9 @@ from dataclasses import dataclass
 class MoveType(Enum):
 
     RIGHT = 8 
-    UP = 10 
+    UP = 11 
     LEFT = 9 
-    DOWN = 11 
+    DOWN = 10 
     EXTRACT = 7 
     IMPLANT = 6 
 
