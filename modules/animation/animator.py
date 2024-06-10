@@ -48,7 +48,7 @@ class Animator:
         fixed_atoms, moving_atoms_src, moving_atoms_dst = self._apply_move_to_lattice(move)
 
         for i in range(self.frames_per_move + 1):
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(dpi=500)
 
             ax.axis("off")
 
