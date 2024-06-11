@@ -142,9 +142,9 @@ short *Synthesis::WaveformTable::get_waveform_ptr(WfMoveType move,
                                                   int extraction_extent,
                                                   int index, int offset,
                                                   int block_size) {
-    if (move == RIGHT_2D || move == LEFT_2D)
+    if (move == RIGHT_2D || move == LEFT_2D || move == IDLE_1D)
         extraction_extent = 0;
-    TABLE_PAGE &tp = base_table.at(Table_key(move, extraction_extent));
+    TABLE_PAGE &tp = base_table.at(move + 2 * extraction_extent);
     WfType wf_type_primary = std::get<0>(tp);
     WfType wf_type_secondary = std::get<1>(tp);
     int max = std::get<2>(tp);
@@ -165,17 +165,17 @@ short *Synthesis::WaveformTable::get_waveform_ptr(WfMoveType move,
 
 void Synthesis::WaveformTable::init_table() {
     base_table.clear();
+    base_table.resize(13+2*primary_size);
     if (secondary_size == 1) { // 1D
-
         WF_PAGE *p_static = get_primary_pointer(STATIC, 0);
         WF_PAGE *p_implant = get_primary_pointer(IMPLANT, 0);
         WF_PAGE *p_extract = get_primary_pointer(EXTRACT, 0);
 
-        base_table[Table_key(IDLE_1D, primary_size)] =
+        base_table[IDLE_1D] =
             std::make_tuple(STATIC, NULL_WF, primary_size, *p_static);
-        base_table[Table_key(IMPLANT_1D, 0)] =
+        base_table[IMPLANT_1D] =
             std::make_tuple(IMPLANT, NULL_WF, primary_size, *p_implant);
-        base_table[Table_key(EXTRACT_1D, 0)] =
+        base_table[EXTRACT_1D] =
             std::make_tuple(EXTRACT, NULL_WF, primary_size, *p_extract);
 
         for (int extraction_extent = 2; extraction_extent <= primary_size;
@@ -185,32 +185,30 @@ void Synthesis::WaveformTable::init_table() {
             WF_PAGE *p_backward =
                 get_primary_pointer(BACKWARD, extraction_extent);
             int max = extraction_extent - 1;
-            base_table[Table_key(FORWARD_1D, extraction_extent)] =
+            base_table[FORWARD_1D + 2 * extraction_extent] =
                 std::make_tuple(FORWARD, NULL_WF, max, *p_forward);
-            base_table[Table_key(BACKWARD_1D, extraction_extent)] =
+            base_table[BACKWARD_1D + 2 * extraction_extent] =
                 std::make_tuple(BACKWARD, NULL_WF, max, *p_backward);
         }
     } else { // 2D
+        WF_PAGE * p_static = get_primary_pointer(STATIC, 0);
+        WF_PAGE * p_implant = get_primary_pointer(IMPLANT, 0);
+        WF_PAGE * p_extract = get_primary_pointer(EXTRACT, 0);
+        WF_PAGE * s_static = get_secondary_pointer(STATIC);
+        WF_PAGE * s_implant = get_secondary_pointer(IMPLANT);
+        WF_PAGE * s_extract = get_secondary_pointer(EXTRACT);
+        WF_PAGE * s_right = get_secondary_pointer(RIGHTWARD);
+        WF_PAGE * s_left = get_secondary_pointer(LEFTWARD);
 
-        WF_PAGE *p_static = get_primary_pointer(STATIC, 0);
-        WF_PAGE *p_implant = get_primary_pointer(IMPLANT, 0);
-        WF_PAGE *p_extract = get_primary_pointer(EXTRACT, 0);
-
-        WF_PAGE *s_static = get_secondary_pointer(STATIC);
-        WF_PAGE *s_implant = get_secondary_pointer(IMPLANT);
-        WF_PAGE *s_extract = get_secondary_pointer(EXTRACT);
-        WF_PAGE *s_right = get_secondary_pointer(RIGHTWARD);
-        WF_PAGE *s_left = get_secondary_pointer(LEFTWARD);
-
-        base_table[Table_key(IDLE_2D, 0)] = std::make_tuple(
+        base_table[IDLE_2D + 0] = std::make_tuple(
             STATIC, STATIC, primary_size, merge_pages(p_static, s_static));
-        base_table[Table_key(IMPLANT_2D, 0)] = std::make_tuple(
+        base_table[IMPLANT_2D + 0] = std::make_tuple(
             IMPLANT, IMPLANT, primary_size, merge_pages(p_implant, s_implant));
-        base_table[Table_key(EXTRACT_2D, 0)] = std::make_tuple(
+        base_table[EXTRACT_2D + 0] = std::make_tuple(
             EXTRACT, EXTRACT, primary_size, merge_pages(p_extract, s_extract));
-        base_table[Table_key(RIGHT_2D, 0)] = std::make_tuple(
+        base_table[RIGHT_2D + 0] = std::make_tuple(
             STATIC, RIGHTWARD, secondary_size, merge_pages(p_static, s_right));
-        base_table[Table_key(LEFT_2D, 0)] = std::make_tuple(
+        base_table[LEFT_2D + 0] = std::make_tuple(
             STATIC, LEFTWARD, secondary_size, merge_pages(p_static, s_left));
 
         for (size_t extraction_extent = 2; extraction_extent <= primary_size;
@@ -220,9 +218,9 @@ void Synthesis::WaveformTable::init_table() {
             WF_PAGE *p_backward =
                 get_primary_pointer(BACKWARD, extraction_extent);
             size_t max = extraction_extent - 1;
-            base_table[Table_key(UP_2D, extraction_extent)] = std::make_tuple(
+            base_table[UP_2D + 2 * extraction_extent] = std::make_tuple(
                 FORWARD, STATIC, max, merge_pages(p_forward, s_static));
-            base_table[Table_key(DOWN_2D, extraction_extent)] = std::make_tuple(
+            base_table[DOWN_2D + 2 * extraction_extent] = std::make_tuple(
                 BACKWARD, STATIC, max, merge_pages(p_backward, s_static));
         }
     }

@@ -44,10 +44,6 @@ using WF_PAGE = std::vector<std::vector<short>>;
  */
 using TABLE_PAGE = std::tuple<WfType, WfType, size_t, WF_PAGE>;
 
-/**
- * @brief The tuple of move type and extraction extent used as the hashmap keys.
- */
-using Table_key = std::pair<WfMoveType, int>;
 
 /**
  * @brief sets a bit of each discretized waveform sample of a to 0 according to
@@ -78,7 +74,7 @@ class WaveformTable {
     WF_PAGE secondary_implant;
     WF_PAGE secondary_leftward;
     WF_PAGE secondary_rightward;
-    std::map<Table_key, TABLE_PAGE> base_table;
+    std::vector<TABLE_PAGE> base_table;
     int waveform_mask;
 
   public:
