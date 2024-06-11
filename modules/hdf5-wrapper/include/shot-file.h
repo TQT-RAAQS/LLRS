@@ -5,8 +5,8 @@
 #include <boost/variant.hpp>
 #include <cassert>
 #include <cstring>
-#include <hdf5/serial/H5Attribute.h>
 #include <hdf5/serial/H5Cpp.h>
+#include <hdf5/serial/H5Attribute.h>
 #include <iostream>
 #include <sstream>
 #include <tuple>
