@@ -34,34 +34,38 @@ int main(int argc, char *argv[]) { // <Number of moves>, <numbers of waveforms
     {
         std::string problem_config =
             std::string("") + "# AWG Global Settings \n \
-        driver_path:              /dev/spcm0    # the device file system handle : string \n \
-        external_clock_freq:      10000000      # Hz : int \n \
-        channels:                 [0]           # list of channels : int[] \n \
-        amp:                      [140]         # list of amp for each channel in mV : int[] \n \
-        # Segment Settings \n \
-        awg_num_segments:         256           # number of segments : int \n \
-        sample_rate:              624e6         # sample rate : float  \n \
-        wfm_mask:                 0x00007fff    # waveform mask : Hex   \n \
-        waveform_duration:        10e-6        # waveform duration : float  \n \
-        waveforms_per_segment:    " +
-            std::to_string(number_of_waveforms_per_segment) +
-            "      # waveforms per segment : int  \n \
-        null_segment_length:      6240         # null segment length : int \n \
-        idle_segment_length:      6240         # idle segment length : int \n \
-        idle_segment_wfm:         true          # whether or not to fill the IDLE segment with static wfms : bool \n \
-        # Trigger Settings \n \
-        trigger_size:             2000          # number of Waveforms repeated for the synchronized trigger: int \n \
-        vpp:                      140           # peak to peak voltage in mV : int \n \
-        # EMCCD Trigger Settings \n \
-        acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int \n \
-		async_trig_amp:           3             # trigger Amp in volts : int \n";
+driver_path:              /dev/spcm0    # the device file system handle : string \n \
+external_clock_freq:      10000000      # Hz : int \n \
+channels:                 [0]           # list of channels : int[] \n \
+amp:                      [140]         # list of amp for each channel in mV : int[] \n \
+\n \
+# Segment Settings \n \
+awg_num_segments:         256           # number of segments : int \n \
+sample_rate:              624e6         # sample rate : float \n \
+wfm_mask:                 0x00007fff    # waveform mask : Hex \n \
+waveforms_per_segment: "   + std::to_string(number_of_waveforms_per_segment) +  " # waveforms per segment : int \n \
+null_seg_num_waveforms:   1         # number of the waveforms of the null segment : int \n \
+idle_seg_num_waveforms:   1         # number of the waveforms of the idle segment length : int \n \
+idle_segment_wfm:         false          # whether or not to fill the IDLE segment with static wfms : bool \n \
+\n \
+\n \
+# Trigger Settings \n \
+trigger_size:             2000          # number of Waveforms repeated for the synchronized trigger: int \n \
+vpp:                      140           # peak to peak voltage in mV : int  \n \
+\n \
+\n \
+# EMCCD Trigger Settings \n \
+acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int \n \
+async_trig_amp:           3             # trigger Amp in volts : int  \n \
+\n \
+ "; 
         std::ofstream config_file{std::string("") + PROJECT_BASE_DIR +
                                   "/configs/awg/awg.yml"};
         config_file << problem_config;
     }
 
     double waveform_duration =
-        Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config"));
+        Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config.yml"));
 
     Synthesis::WaveformTable wf_table;
     Stream::Sequence<AWG> awg_sequence(nullptr, wf_table, waveform_duration);
