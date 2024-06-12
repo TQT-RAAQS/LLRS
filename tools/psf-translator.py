@@ -15,24 +15,39 @@ import pickle
 def process_args(argv):
     num_args = len(argv)
     program = argv[0]
-    file_path = Addresses.llrs_psfs_bin_file
-    pickle_path = Addresses.traps_psf
+    file_path = -1
+    pickle_path = -1
 
-    i = 1
-    while i < len(argv):
-        if argv[i] == '--help':
-            print(help)
-            exit()
-        elif argv[i] == '--address':
+    help = f'''
+    usage: python3 {program} <file path>
+            
+    notes: 
+        <file path> = 'default' puts the psf files under LLRS/resources/psf
+        <file path> should be entered as a relative path to the calling location. do not put a '/' at the end")
+        the file path provided is not validated so make sure to enter it correctly!")
+    '''
+
+    if num_args > 1:    # two or more
+        i = 1
+        while i < len(argv):
+            if argv[i] == '--help':
+                print(help)
+                exit()
+            elif argv[i] == 'default':
+                file_path = home + '/Experiment/experiment/modules/LLRS/resources/psf/'
+            elif argv[i] == '--address':
+                i += 1
+                file_path = argv[i]
+            elif argv[i] == '--pickle':
+                i += 1
+                pickle_path = argv[i]
+            else:           # interperet as file path
+                current_directory = os.getcwd()
+                file_path = current_directory + '/' + argv[1] 
             i += 1
-            file_path = argv[i]
-        elif argv[i] == '--pickle':
-            i += 1
-            pickle_path = argv[i]
-        else:           # interperet as file path
-            current_directory = os.getcwd()
-            file_path = current_directory + '/' + argv[1] 
-        i += 1
+    else:   # demand that args be included
+        print(help)
+        exit()
 
     return [file_path, pickle_path]
 
@@ -44,6 +59,8 @@ def generate_psf(file_path, pickle_path, params, binary=True):
 
     # psf_dict            = pickle.load(open(Addresses.traps_psf.replace("raaqs","raaqs3"), "rb"))
     
+    if pickle_path == -1:
+        pickle_path = Addresses.traps_psf
     psf_dict            = pickle.load(open(pickle_path, "rb"))
     print(pickle_path)
 #    psf_dict            = pickle.load(open("/home/tqtraaqs2/Z/Configs/2023-12-12/traps_psf.pickle", "rb"))
