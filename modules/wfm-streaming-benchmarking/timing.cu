@@ -76,7 +76,7 @@ int main(int argc, char * argv[]) {
 	for (auto it: results) {
 		diffs.push_back(it - average);
 	}
-	double stddev  = std::sqrt(std::inner_product(diffs.begin(), diffs.end(), diffs.begin(), 0.0) / (num_rep - 1))
+	double stddev  = std::sqrt(std::inner_product(diffs.begin(), diffs.end(), diffs.begin(), 0.0) / (num_rep - 1));
     std::cout << average << std::endl << stddev << std::endl;
     
 }
