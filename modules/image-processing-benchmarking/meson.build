@@ -17,7 +17,7 @@ image_processing_dep = image_processing_proj.get_variable('llrs_lib_image_proces
 
 # targets
 filtering_test = executable('filtering-test',
-    image_processing_null_src,
+    image_processing_timing_src,
     link_args: '-lstdc++fs',
     dependencies: [image_processing_dep])
 

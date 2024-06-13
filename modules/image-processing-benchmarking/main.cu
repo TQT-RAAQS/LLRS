@@ -1,6 +1,7 @@
 #include <ctime>
 #include <chrono>
 #include <cmath>
+#include <numeric>
 #include "ImageProcessor.h"
 
 int reps = 100;
@@ -31,7 +32,7 @@ int main(int argc, char * argv[]) {
 
     // creating vector to store all times
     std::vector<double> results;
-	time_list.reserve(reps);
+	results.reserve(reps);
 
     // initialize Image Processing object 
     Processing::ImageProcessor img_proc_obj(
@@ -55,7 +56,7 @@ int main(int argc, char * argv[]) {
         std::vector<double> filtered_output = img_proc_obj.apply_filter(&current_image);
         end = std::chrono::steady_clock::now();
 
-        results.push_back(std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()));
+        results.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count());
     }
 
 	double average = std::accumulate(results.begin(), results.end(), 0.0) / reps;
@@ -65,6 +66,6 @@ int main(int argc, char * argv[]) {
 		diffs.push_back(it - average);
 	}
 	double stddev  = std::sqrt(std::inner_product(diffs.begin(), diffs.end(), diffs.begin(), 0.0) / (reps - 1));
-    std::cout << average << std::endl << std_err << std::endl;
+    std::cout << average << std::endl << stddev << std::endl;
 
 }
