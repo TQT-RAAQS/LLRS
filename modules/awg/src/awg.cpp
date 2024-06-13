@@ -55,6 +55,7 @@ int AWG::read_config(std::string filename) {
     config.waveforms_per_segment = node["waveforms_per_segment"].as<int>();
     config.null_seg_num_waveforms = node["null_seg_num_waveforms"].as<int>();
     config.idle_seg_num_waveforms = node["idle_seg_num_waveforms"].as<int>();
+    config.samples_per_segment = 0;
 
     return 0;
 }
@@ -516,22 +517,16 @@ AWG::TransferBuffer::TransferBuffer(AWG &awg, size_t size, bool contBuf)
 }
 
 AWG::TransferBuffer::TransferBuffer(AWG::TransferBuffer &&other) {
-    buffer = other.buffer;
-    size = other.size;
-    contBuf = other.contBuf;
-    other.buffer = nullptr;
-    other.size = 0;
-    other.contBuf = true;
+    std::swap(buffer, other.buffer);
+    std::swap(size, other.size);
+    std::swap(contBuf, other.contBuf);
 }
 AWG::TransferBuffer &
 AWG::TransferBuffer::operator=(AWG::TransferBuffer &&other) {
     if (this != &other) {
-        buffer = other.buffer;
-        size = other.size;
-        contBuf = other.contBuf;
-        other.buffer = this->buffer;
-        other.size = this->size;
-        other.contBuf = this->contBuf;
+        std::swap(buffer, other.buffer);
+        std::swap(size, other.size);
+        std::swap(contBuf, other.contBuf);
     }
     return *this;
 }
