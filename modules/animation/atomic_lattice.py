@@ -84,31 +84,36 @@ class AtomicLattice:
 
     def _right(self, move: Move):
         for i in range(move.block_size):
-            self.get_trap(move.index_x, move.index_y + i).empty_trap()
-        for i in range(move.block_size):
-            self.get_trap(move.index_x + 1, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
+            if self.get_trap(move.index_x, move.index_y + i).is_occupied:
+                self.get_trap(move.index_x, move.index_y + i).empty_trap()
+                self.get_trap(move.index_x + 1, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
 
-        return [(move.index_x, move.index_y + i) for i in range(move.block_size)]
+        return [(move.index_x, move.index_y + i) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i).is_occupied()]
 
     def _left(self, move: Move):
         for i in range(move.block_size):
-            self.get_trap(move.index_x + 1, move.index_y + i).empty_trap()
-        for i in range(move.block_size):
-            self.get_trap(move.index_x, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
+            if self.get_trap(move.index_x + 1, move.index_y + i).is_occupied:
+                self.get_trap(move.index_x + 1, move.index_y + i).empty_trap()
+                self.get_trap(move.index_x, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
 
-        return [(move.index_x + 1, move.index_y + i) for i in range(move.block_size)]
+        return [(move.index_x + 1, move.index_y + i) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i).is_occupied()]
 
     def _up(self, move: Move):
-        self.get_trap(move.index_x, move.index_y).occupy_with_atom(AtomState.DYNAMIC_TRAP)
-        self.get_trap(move.index_x, move.index_y + move.block_size).empty_trap()
+        for i in range(move.block_size):
+            if self.get_trap(move.index_x, move.index_y + i + 1).is_occupied():
+                self.get_trap(move.index_x, move.index_y + i + 1).empty_trap()
+                self.get_trap(move.index_x, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
 
-        return [(move.index_x, move.index_y + i + 1) for i in range(move.block_size)]
+
+        return [(move.index_x, move.index_y + i + 1) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i).is_occupied()]
 
     def _down(self, move: Move):
-        self.get_trap(move.index_x, move.index_y).empty_trap()
-        self.get_trap(move.index_x, move.index_y + move.block_size).occupy_with_atom(AtomState.DYNAMIC_TRAP)
+        for i in range(move.block_size -1, -1, -1):
+            if self.get_trap(move.index_x, move.index_y + i).is_occupied():
+                self.get_trap(move.index_x, move.index_y + i).empty_trap()
+                self.get_trap(move.index_x, move.index_y + i + 1).occupy_with_atom(AtomState.DYNAMIC_TRAP)
 
-        return [(move.index_x, move.index_y + i) for i in range(move.block_size)]
+        return [(move.index_x, move.index_y + i) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i + 1).is_occupied()]
 
     def _verify_move(self, move: Move):
         return

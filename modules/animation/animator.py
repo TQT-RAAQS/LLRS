@@ -29,9 +29,21 @@ class Animator:
             fps (float): Frames per second
             frames_per_move (int): Number of frames per movement
         """
-        frames = self._get_frames(moves)
+        self._save_frames(moves, address)
+        
+    def _save_frames(self, moves: List[Move], address: str):
+        file_name = 0 
+        for move_iter in tqdm(range(len(moves))):
+            move = moves[move_iter]
+            if move_iter >= 0:
+                frames = self._get_move_frames_and_apply_move(move)
+                for i in range(len(frames)):
+                    imageio.imwrite(f"{address}/{file_name}.png", frames[i])
+                    file_name += 1
+            else:
+                self.lattice.apply_move(move)
 
-        imageio.mimsave(address, frames, duration=self.gif_duration)
+
 
     def _get_frames(self, moves: List[Move]):
         frames = []

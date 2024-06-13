@@ -1,5 +1,5 @@
-frames_per_move: 5 # note that the frames_per_moves-1st frame is the moment before the move is complete
-gif_duration: 25 # frames per second
+frames_per_move: 2 # note that the frames_per_moves-1st frame is the moment before the move is complete
+gif_duration: 0.04 # frames per second
 x_scale: 10 # x distance between the trap columns
 y_scale: 10 # distance between the trap rows
 x0: 0 # x position of the bottom left trap
