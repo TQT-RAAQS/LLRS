@@ -4,3 +4,5 @@ wfm/
 coef/
 pickled_results/
 image-acquisition-characterization/
+image-processing-characterization/
+wfm-streaming-characterization/
