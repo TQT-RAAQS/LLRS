@@ -22,7 +22,6 @@ def process_args(argv):
     usage: python3 {program} <file path>
             
     notes: 
-        <file path> = 'default' puts the psf files under LLRS/resources/psf
         <file path> should be entered as a relative path to the calling location. do not put a '/' at the end")
         the file path provided is not validated so make sure to enter it correctly!")
     '''
@@ -33,8 +32,6 @@ def process_args(argv):
             if argv[i] == '--help':
                 print(help)
                 exit()
-            elif argv[i] == 'default':
-                file_path = home + '/Experiment/experiment/modules/LLRS/resources/psf/'
             elif argv[i] == '--address':
                 i += 1
                 file_path = argv[i]
