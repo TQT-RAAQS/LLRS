@@ -67,8 +67,7 @@ int main(int argc, char * argv[]) {
 
         std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
-        std::chrono::microseconds ms{1};
-        results.push_back(time_span.count() / ms.count());
+        results.push_back(time_span.count());
     }
 	double average = std::accumulate(results.begin(), results.end(), 0.0) / num_rep;
 	std::vector<double> diffs;
