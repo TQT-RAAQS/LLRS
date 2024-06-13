@@ -7,19 +7,19 @@
 int reps = 100;
 int N_t = 32;
 int kernel_size = 1;
-std::string psf_path = "";
+std::string psf_path {};
 
 // function to take in command line args for height and psf_path, width stays constant
 int cmd_line(int argc, char * argv[]) 
 {
-    if (argc != 4) {
+    if (argc != 5) {
         std::cout<< "Usage is: ./image_processing_unit <psf_path> <Nt> <kernel_size> <reps>" << std::endl;
         return 1;
     }
-    psf_path = argv[2];
-    N_t = std::stoi(argv[3]);
-    kernel_size = std::stoi(argv[4]);
-    reps = std::stoi(argv[5]);
+    psf_path = std::string(argv[1]);
+    N_t = std::stoi(argv[2]);
+    kernel_size = std::stoi(argv[3]);
+    reps = std::stoi(argv[4]);
     return 0;
 }
 
@@ -56,7 +56,8 @@ int main(int argc, char * argv[]) {
         std::vector<double> filtered_output = img_proc_obj.apply_filter(&current_image);
         end = std::chrono::steady_clock::now();
 
-        results.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count());
+        std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - begin);
+        results.push_back(time_span.count());
     }
 
 	double average = std::accumulate(results.begin(), results.end(), 0.0) / reps;

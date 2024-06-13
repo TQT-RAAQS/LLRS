@@ -36,11 +36,11 @@ def get_psf_pickle_dictionary(Nt, kernal):
     psf_data = {"centers": centers, "psfs": psfs, "cropping": cropping, "box_size_w": kernal, "box_size_h": kernal}
     return psf_data
 
-if (sys.argc < 4):
+if (len(sys.argv) < 4):
     print("Usage: python generate-fake-psf.py <Nt> <kernal> <output_file>")
     sys.exit(1)
 
-psf_data = get_psf_pickle_dictionary(sys.argv[1], sys.argv[2])
+psf_data = get_psf_pickle_dictionary(int(sys.argv[1]), int(sys.argv[2]))
 with open (sys.argv[3], "wb") as file:
     pickle.dump(psf_data, file)
 
