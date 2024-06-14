@@ -71,6 +71,7 @@ template <typename AWG_T> class Sequence {
     bool load_multiple_segments(std::vector<Reconfig::Move> &moves_list,
                                 int trial_num, int rep_num, int cycle_num);
     void emccd_trigger() { awg->generate_async_output_pulse(EMCCD); }
+    void clock_trigger() { awg->generate_async_output_pulse(RESUME_CLOCK); }
     void reset(bool reset_segments);
 
     void get_static_wfm(int16 *pnData, size_t num_wfms, int Nt_x);
