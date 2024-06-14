@@ -165,7 +165,7 @@ short *Synthesis::WaveformTable::get_waveform_ptr(WfMoveType move,
 
 void Synthesis::WaveformTable::init_table() {
     base_table.clear();
-    base_table.resize(13+2*primary_size);
+    base_table.resize(13 + 2 * primary_size);
     if (secondary_size == 1) { // 1D
         WF_PAGE *p_static = get_primary_pointer(STATIC, 0);
         WF_PAGE *p_implant = get_primary_pointer(IMPLANT, 0);
@@ -191,14 +191,14 @@ void Synthesis::WaveformTable::init_table() {
                 std::make_tuple(BACKWARD, NULL_WF, max, *p_backward);
         }
     } else { // 2D
-        WF_PAGE * p_static = get_primary_pointer(STATIC, 0);
-        WF_PAGE * p_implant = get_primary_pointer(IMPLANT, 0);
-        WF_PAGE * p_extract = get_primary_pointer(EXTRACT, 0);
-        WF_PAGE * s_static = get_secondary_pointer(STATIC);
-        WF_PAGE * s_implant = get_secondary_pointer(IMPLANT);
-        WF_PAGE * s_extract = get_secondary_pointer(EXTRACT);
-        WF_PAGE * s_right = get_secondary_pointer(RIGHTWARD);
-        WF_PAGE * s_left = get_secondary_pointer(LEFTWARD);
+        WF_PAGE *p_static = get_primary_pointer(STATIC, 0);
+        WF_PAGE *p_implant = get_primary_pointer(IMPLANT, 0);
+        WF_PAGE *p_extract = get_primary_pointer(EXTRACT, 0);
+        WF_PAGE *s_static = get_secondary_pointer(STATIC);
+        WF_PAGE *s_implant = get_secondary_pointer(IMPLANT);
+        WF_PAGE *s_extract = get_secondary_pointer(EXTRACT);
+        WF_PAGE *s_right = get_secondary_pointer(RIGHTWARD);
+        WF_PAGE *s_left = get_secondary_pointer(LEFTWARD);
 
         base_table[IDLE_2D + 0] = std::make_tuple(
             STATIC, STATIC, primary_size, merge_pages(p_static, s_static));
