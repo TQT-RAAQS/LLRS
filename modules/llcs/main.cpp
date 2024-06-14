@@ -1,34 +1,24 @@
-/**
- * @brief   Entry point for the Low Latency FSM.
- * @date    Oct 2023
- */
-
 #include "awg.hpp"
 #include "fsm.hpp"
 #include "llcs/common.hpp"
 #include "server.hpp"
 #include "trigger-detector.hpp"
+#include <signal.h>
+#include <memory>
 
-std::atomic<bool> g_interrupted(false);
-
-void SignalHandler(int signum) {
-    std::cout << "Interrupt signal (" << signum << ") received.\n";
-    g_interrupted.store(true);
+void my_handler(int s) {
+    printf("Caught signal %d\n", s);
+    exit(1);
 }
 
 int main(int argc, char *argv[]) {
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = my_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
 
-    Server *server = new Server();
-    TriggerDetector<AWG> *td = new TriggerDetector<AWG>();
-    FiniteStateMachine<AWG> *fsm = new FiniteStateMachine<AWG>(server, td);
+    FiniteStateMachine<AWG> fsm {};
 
-    fsm->runFSM();
-
-    delete td;
-    delete server;
-    delete fsm;
-
-    std::cout << "Program terminated gracefully" << std::endl;
-
-    return SYS_OK;
+    fsm.runFSM();
 }

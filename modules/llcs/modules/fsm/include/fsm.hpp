@@ -12,19 +12,20 @@
 #include <thread>
 
 template <typename AWG_T> class FiniteStateMachine {
+    Server server;
+    TriggerDetector<AWG_T> trigger_detector;
+    LLRS<AWG_T> *l;
+ 
     State *currentState;
     std::unordered_map<StateType, State *> states;
     std::vector<std::vector<State *>> programmable_states;
-    std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
     std::unordered_map<ModuleType, std::function<void()>>
         dyn_state_action_func_map;
-    Server *server;
-    TriggerDetector<AWG_T> *trigger_detector;
-    LLRS<AWG_T> *l;
-    int num_exp_sequence;
-    int16 *pnData;
-    int qwBufferSize;
-
+    int numExperiments = 1;
+    bool HWconfigured;
+    bool SMconfigured;
+    std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
+  
     /**
      * @brief Creates all state objects for the static states of the FSM
      */
@@ -110,13 +111,8 @@ template <typename AWG_T> class FiniteStateMachine {
      */
     void st_CLO_EXEC();
 
-    /**
-     * @brief State to execute the Rydberg excitation module
-     */
-    void st_RYDBERG_EXEC();
-
   public:
-    FiniteStateMachine(Server *s, TriggerDetector<AWG_T> *td);
+    FiniteStateMachine();
     ~FiniteStateMachine();
 
     /**
@@ -143,8 +139,5 @@ template <typename AWG_T> class FiniteStateMachine {
      */
     void saveMetadata(std::string filepath);
 
-    int numExperiments = 1;
-    bool HWconfigured;
-    bool SMconfigured;
 };
 #endif

@@ -1,13 +1,4 @@
-/**
- * @brief   Class that implements a programmable finite state machine for
- * execution of low latency procedures.
- * @date    Oct 2023
- */
-
 #include "fsm.hpp"
-
-using namespace std::this_thread; // sleep_for, sleep_until
-using namespace std::chrono;      // nanoseconds, system_clock, seconds
 
 /**
  * @brief Constructor of the Finite State Machine class
@@ -16,9 +7,7 @@ using namespace std::chrono;      // nanoseconds, system_clock, seconds
  * transitions between these states.
  */
 template <typename AWG_T>
-FiniteStateMachine<AWG_T>::FiniteStateMachine(Server *s,
-                                              TriggerDetector<AWG_T> *td) {
-    std::cout << "FSM:: constructor" << std::endl;
+FiniteStateMachine<AWG_T>::FiniteStateMachine() {
 
     // 1. Create the ST_FAULT state
     State *fault_state =
@@ -26,22 +15,13 @@ FiniteStateMachine<AWG_T>::FiniteStateMachine(Server *s,
     states.insert({ST_FAULT, fault_state});
 
     // Create dynamic state action function map
-    dyn_state_action_func_map = {
-        {M_LLRS, [this]() { this->st_LLRS_EXEC(); }},
-        {M_CLO, [this]() { this->st_CLO_EXEC(); }},
-        {M_RYDBERG, [this]() { this->st_RYDBERG_EXEC(); }}};
+    dyn_state_action_func_map = {{M_LLRS, [this]() { this->st_LLRS_EXEC(); }}};
 
     // Configure static states of the FSM
     setupFSM();
 
     // Begin the state machine the in the ST_IDLE state
     currentState = states[ST_BEGIN];
-
-    // 3. Initiliaze the network server handle
-    server = s;
-
-    // 4. Initiliaze the trigger detector
-    trigger_detector = td;
 }
 
 /**
@@ -50,7 +30,6 @@ FiniteStateMachine<AWG_T>::FiniteStateMachine(Server *s,
  * For every dynamically allocated state object, free the object.
  */
 template <typename AWG_T> FiniteStateMachine<AWG_T>::~FiniteStateMachine() {
-    std::cout << "FSM:: destructor" << std::endl;
 
     states.clear();
 
@@ -431,18 +410,30 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::runFSM() {
     return;
 }
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * * * * * * * * Static State definitions
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * * * * * * * */
+/* * * * * * * * Static State definitions * * * * * * * */
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
-    std::cout << "Starting LLRS setup" << std::endl;
+    std::cout << "FSM:: BEGIN state" << std::endl;
     auto awg = trigger_detector->getAWG();
     l = new LLRS<AWG_T>{awg};
+}
+
+template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
+    std::cout << "FSM:: IDLE state" << std::endl;
+}
+
+template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_HW() {
+    std::cout << "FSM:: CONFIG_HW state" << std::endl;
+    // receive hdf5 filepath from the workstation
+    std::string filepath = server->get_config_file_path();
+
+    //filepath is now the yaml config file
+    filepath = H5Wrapper::convertHWConfig(filepath);
+
     l->setup("21-problem.yml", false, 1);
 
     std::cout << "Starting AWG stream" << std::endl;
+    auto awg = trigger_detector->getAWG();
     auto tb = awg->allocate_transfer_buffer(
         trigger_detector->get_samples_per_idle_segment());
 
@@ -455,27 +446,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
 
     trigger_detector->setup(tb);
     trigger_detector->stream();
-}
-
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
-    std::cout << "FSM:: IDLE state" << std::endl;
-}
-
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_HW() {
-    std::cout << "FSM:: CONFIG_HW state" << std::endl;
-
-    // receive hdf5 filepath from the workstation
-    // std::string filepath = server->get_config_file_path();
-
-    // filepath is now the yaml config file
-    // filepath = H5Wrapper::convertHWConfig(filepath);
-
-    // configure the AWG
-    // auto awg = trigger_detector->getAWG();
-    // awg->read_config(filepath);
-
-    // l->small_setup(filepath);
-
+    
     HWconfigured = true;
 }
 
@@ -569,12 +540,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_FAULT() {
     std::cout << "FSM:: FAULT state" << std::endl;
-
-    return;
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_EXIT() {
-
     std::cout << "FSM:: EXIT state" << std::endl;
 }
 
@@ -584,13 +552,13 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_EXIT() {
  * * * * * * * */
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
-    std::cout << "      FSM:: LLRS_EXEC state" << std::endl;
+    std::cout << "FSM:: LLRS_EXEC state" << std::endl;
 
     std::shared_ptr<AWG_T> awg{trigger_detector->getAWG()};
 
     // LLRS<AWG_T> *l = new LLRS<AWG_T>{awg};
 
-    std::cout << "      FSM:: LLRS_EXEC state" << std::endl;
+    std::cout << "FSM:: LLRS_EXEC state" << std::endl;
     int current_step = awg->get_current_step();
     std::cout << "current step: " << current_step << std::endl;
 
@@ -614,21 +582,6 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
     awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
     trigger_detector->busyWait();
-
-#ifdef LOGGING_RUNTIME
-    l->clean();
-#endif
-    return;
-}
-
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CLO_EXEC() {
-    std::cout << "      FSM:: CLO_EXEC state" << std::endl;
-
-    return;
-}
-
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RYDBERG_EXEC() {
-    std::cout << "      FSM:: RYDBERG_EXEC state" << std::endl;
 
     return;
 }
