@@ -88,7 +88,6 @@ int AWG::configure() {
         set_dout_trigger_mode(SPCM_X1_MODE,
                               SPCM_XMODE_DIGOUTSRC_CH1); /// x1 - take image
     status |= set_dout_async(SPCM_X2_MODE); /// x2 - done/resume clock
-
     status |= spcm_dwGetParam_i32(p_card, SPC_SEQMODE_AVAILMAXSTEPS, &max_step);
     status |= spcm_dwGetParam_i32(p_card, SPC_MIINST_BYTESPERSAMPLE, &bps);
     status |= spcm_dwGetParam_i32(p_card, SPC_CHCOUNT, &lSetChannels);
@@ -288,7 +287,12 @@ void AWG::generate_async_output_pulse(TriggerType type) {
         spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 0);
         spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, config.async_trig_amp);
         spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 0);
+    case RESUME_CLOCK:
+        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 2);
+        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, config.async_trig_amp);
+        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 2);    
     }
+
 }
 
 /**
