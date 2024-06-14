@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) { // <Number of moves>, <numbers of waveforms
     }
 
     {
-        std::string problem_config =
-            std::string("") + "# AWG Global Settings \n \
+        std::string problem_config = std::string("") +
+                                     "# AWG Global Settings \n \
 driver_path:              /dev/spcm0    # the device file system handle : string \n \
 external_clock_freq:      10000000      # Hz : int \n \
 channels:                 [0]           # list of channels : int[] \n \
@@ -43,7 +43,8 @@ amp:                      [140]         # list of amp for each channel in mV : i
 awg_num_segments:         256           # number of segments : int \n \
 sample_rate:              624e6         # sample rate : float \n \
 wfm_mask:                 0x00007fff    # waveform mask : Hex \n \
-waveforms_per_segment: "   + std::to_string(number_of_waveforms_per_segment) +  " # waveforms per segment : int \n \
+waveforms_per_segment: " + std::to_string(number_of_waveforms_per_segment) +
+                                     " # waveforms per segment : int \n \
 null_seg_num_waveforms:   1         # number of the waveforms of the null segment : int \n \
 idle_seg_num_waveforms:   1         # number of the waveforms of the idle segment length : int \n \
 idle_segment_wfm:         false          # whether or not to fill the IDLE segment with static wfms : bool \n \
@@ -58,7 +59,7 @@ vpp:                      140           # peak to peak voltage in mV : int  \n \
 acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int \n \
 async_trig_amp:           3             # trigger Amp in volts : int  \n \
 \n \
- "; 
+ ";
         std::ofstream config_file{std::string("") + PROJECT_BASE_DIR +
                                   "/configs/awg/awg.yml"};
         config_file << problem_config;

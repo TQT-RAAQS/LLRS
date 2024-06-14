@@ -6,7 +6,7 @@
 
 #define AWG_MEMORY_SIZE 4294967296
 
-enum TriggerType { EMCCD , RESUME_CLOCK};
+enum TriggerType { EMCCD, RESUME_CLOCK };
 
 class AWG {
   public:
