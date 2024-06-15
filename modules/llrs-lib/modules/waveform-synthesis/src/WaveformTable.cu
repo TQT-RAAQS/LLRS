@@ -21,6 +21,7 @@ std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
 Synthesis::WaveformTable::WaveformTable(WaveformRepo *p_repo,
                                         bool is_transposed, int waveform_mask) {
 
+    this->is_transposed = is_transposed;
     this->waveform_mask = waveform_mask;
     this->secondary_chan = (is_transposed) ? CHAN_1 : CHAN_0;
     this->primary_chan = (is_transposed) ? CHAN_0 : CHAN_1;
@@ -53,10 +54,12 @@ std::vector<short> Synthesis::WaveformTable::interleave_waveforms(
     std::vector<short> primary_wf, std::vector<short> secondary_wf) {
     std::vector<short> result(primary_wf.size() + secondary_wf.size());
 
+    double primary_coefficient = is_transposed ? 1 : 0.5;
+    double secondary_coefficient = is_transposed ? 0.5 : 1;
     for (size_t idx = 0; idx < primary_wf.size() && idx < secondary_wf.size();
          idx++) {
-        result[idx * 2 + primary_chan] = primary_wf[idx];
-        result[idx * 2 + secondary_chan] = secondary_wf[idx];
+        result[idx * 2 + primary_chan] = primary_wf[idx] * primary_coefficient;
+        result[idx * 2 + secondary_chan] = secondary_wf[idx] * secondary_coefficient;
     }
 
     return std::move(result);
@@ -165,7 +168,11 @@ short *Synthesis::WaveformTable::get_waveform_ptr(WfMoveType move,
 
 void Synthesis::WaveformTable::init_table() {
     base_table.clear();
+<<<<<<< HEAD
     base_table.resize(13 + 2 * primary_size);
+=======
+    base_table.resize(13+2*primary_size);
+>>>>>>> 9291e324d5f2a461b4405dd5f8ab166cd1312901
     if (secondary_size == 1) { // 1D
         WF_PAGE *p_static = get_primary_pointer(STATIC, 0);
         WF_PAGE *p_implant = get_primary_pointer(IMPLANT, 0);
@@ -191,6 +198,7 @@ void Synthesis::WaveformTable::init_table() {
                 std::make_tuple(BACKWARD, NULL_WF, max, *p_backward);
         }
     } else { // 2D
+<<<<<<< HEAD
         WF_PAGE *p_static = get_primary_pointer(STATIC, 0);
         WF_PAGE *p_implant = get_primary_pointer(IMPLANT, 0);
         WF_PAGE *p_extract = get_primary_pointer(EXTRACT, 0);
@@ -199,6 +207,16 @@ void Synthesis::WaveformTable::init_table() {
         WF_PAGE *s_extract = get_secondary_pointer(EXTRACT);
         WF_PAGE *s_right = get_secondary_pointer(RIGHTWARD);
         WF_PAGE *s_left = get_secondary_pointer(LEFTWARD);
+=======
+        WF_PAGE * p_static = get_primary_pointer(STATIC, 0);
+        WF_PAGE * p_implant = get_primary_pointer(IMPLANT, 0);
+        WF_PAGE * p_extract = get_primary_pointer(EXTRACT, 0);
+        WF_PAGE * s_static = get_secondary_pointer(STATIC);
+        WF_PAGE * s_implant = get_secondary_pointer(IMPLANT);
+        WF_PAGE * s_extract = get_secondary_pointer(EXTRACT);
+        WF_PAGE * s_right = get_secondary_pointer(RIGHTWARD);
+        WF_PAGE * s_left = get_secondary_pointer(LEFTWARD);
+>>>>>>> 9291e324d5f2a461b4405dd5f8ab166cd1312901
 
         base_table[IDLE_2D + 0] = std::make_tuple(
             STATIC, STATIC, primary_size, merge_pages(p_static, s_static));

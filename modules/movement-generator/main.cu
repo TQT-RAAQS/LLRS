@@ -24,9 +24,9 @@ int main() {
     {
         double null_duration = 10e-6;
         AWG::TransferBuffer buffer = awg.allocate_transfer_buffer(
-            static_cast<int>(null_duration * awg.get_sample_rate()), false);
+            static_cast<int>(null_duration * awg.get_sample_rate() * awg.get_num_channels()), false);
         awg.fill_transfer_buffer(
-            buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0);
+            buffer, static_cast<int>(null_duration * awg.get_sample_rate() * awg.get_num_channels()), 0);
         awg.init_and_load_range(
             *buffer, static_cast<int>(null_duration * awg.get_sample_rate()), 0,
             1);
