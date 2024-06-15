@@ -21,6 +21,7 @@ std::vector<short> Synthesis::translate_waveform(const std::vector<double> &src,
 Synthesis::WaveformTable::WaveformTable(WaveformRepo *p_repo,
                                         bool is_transposed, int waveform_mask) {
 
+    this->is_transposed = is_transposed;
     this->waveform_mask = waveform_mask;
     this->secondary_chan = (is_transposed) ? CHAN_1 : CHAN_0;
     this->primary_chan = (is_transposed) ? CHAN_0 : CHAN_1;
@@ -53,10 +54,12 @@ std::vector<short> Synthesis::WaveformTable::interleave_waveforms(
     std::vector<short> primary_wf, std::vector<short> secondary_wf) {
     std::vector<short> result(primary_wf.size() + secondary_wf.size());
 
+    double primary_coefficient = is_transposed ? 1 : 0.5;
+    double secondary_coefficient = is_transposed ? 0.5 : 1;
     for (size_t idx = 0; idx < primary_wf.size() && idx < secondary_wf.size();
          idx++) {
-        result[idx * 2 + primary_chan] = primary_wf[idx];
-        result[idx * 2 + secondary_chan] = secondary_wf[idx];
+        result[idx * 2 + primary_chan] = primary_wf[idx] * primary_coefficient;
+        result[idx * 2 + secondary_chan] = secondary_wf[idx] * secondary_coefficient;
     }
 
     return std::move(result);
