@@ -290,8 +290,13 @@ void AWG::generate_async_output_pulse(TriggerType type) {
     case RESUME_CLOCK:
         spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 2);
         spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, config.async_trig_amp);
+<<<<<<< HEAD
         spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 2);
+=======
+        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 2);    
+>>>>>>> 9291e324d5f2a461b4405dd5f8ab166cd1312901
     }
+
 }
 
 /**

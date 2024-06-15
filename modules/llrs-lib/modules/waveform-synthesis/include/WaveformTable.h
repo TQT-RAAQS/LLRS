@@ -44,6 +44,10 @@ using WF_PAGE = std::vector<std::vector<short>>;
  */
 using TABLE_PAGE = std::tuple<WfType, WfType, size_t, WF_PAGE>;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9291e324d5f2a461b4405dd5f8ab166cd1312901
 /**
  * @brief sets a bit of each discretized waveform sample of a to 0 according to
  * WFM_MASK as well as converts sample type from double to short
@@ -75,6 +79,7 @@ class WaveformTable {
     WF_PAGE secondary_rightward;
     std::vector<TABLE_PAGE> base_table;
     int waveform_mask;
+    bool is_transposed;
 
   public:
     /**
