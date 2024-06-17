@@ -13,7 +13,7 @@ waveform_streaming_timing_src = [
   ]
 
 waveform_streaming_test_src = [
-    'main.cu'
+    'test.cu'
   ]
 
 # submodules
