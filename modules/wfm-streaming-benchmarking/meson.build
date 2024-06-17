@@ -12,6 +12,10 @@ waveform_streaming_timing_src = [
     'timing.cu'
   ]
 
+waveform_streaming_test_src = [
+    'main.cu'
+  ]
+
 # submodules
 awg_proj = subproject('awg')
 waveform_synthesis_proj = subproject('waveform-synthesis')
@@ -37,3 +41,8 @@ timing_test = executable('timing-test',
     waveform_streaming_timing_src,
     link_args: '-lstdc++fs',
     dependencies: [awg_dep, waveform_synthesis_dep, solver_dep, setup_dep])
+
+waveform_streaming_test = executable('waveform-streaming-test',
+    waveform_streaming_test_src,
+    link_args: '-lstdc++fs',
+    dependencies: [awg_dep, llrs_lib_waveform_synthesis_dep])
