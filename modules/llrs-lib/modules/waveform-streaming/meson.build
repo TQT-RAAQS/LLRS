@@ -30,8 +30,21 @@ llrs_lib_waveform_streaming = library('llrs-lib-waveform-streaming',
     include_directories: [llrs_lib_waveform_streaming_inc],
     dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
 
+llrs_lib_waveform_streaming_null = library('llrs-lib-waveform-streaming-null', 
+    llrs_lib_waveform_streaming_src,
+    include_directories: [llrs_lib_waveform_streaming_inc],
+    cuda_args: ['-D DETECT_NULL'],
+    dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
+
+
 # dependencies
 llrs_lib_waveform_streaming_dep = declare_dependency(
     include_directories: [llrs_lib_waveform_streaming_inc],
     link_with: llrs_lib_waveform_streaming,
     dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
+
+llrs_lib_waveform_streaming_null_dep = declare_dependency(
+    include_directories: [llrs_lib_waveform_streaming_inc],
+    link_with: llrs_lib_waveform_streaming_null,
+    dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
+
