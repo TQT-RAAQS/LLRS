@@ -129,6 +129,7 @@ template <typename AWG_T> class Sequence {
     void wf_segment_lookup(short *p_buffer_lookup,
                            std::vector<Reconfig::Move> &moves_list,
                            int waveforms_per_segment);
+    std::vector<short> idle_waveforms;
 };
 
 } // namespace Stream

@@ -47,7 +47,7 @@ waveforms_per_segment: " + std::to_string(number_of_waveforms_per_segment) +
                                      " # waveforms per segment : int \n \
 null_seg_num_waveforms:   1         # number of the waveforms of the null segment : int \n \
 idle_seg_num_waveforms:   1         # number of the waveforms of the idle segment length : int \n \
-idle_segment_wfm:         false          # whether or not to fill the IDLE segment with static wfms : bool \n \
+idle_segment_wfm:         true          # whether or not to fill the IDLE segment with static wfms : bool \n \
 \n \
 \n \
 # Trigger Settings \n \
