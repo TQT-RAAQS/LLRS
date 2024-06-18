@@ -59,7 +59,8 @@ std::vector<short> Synthesis::WaveformTable::interleave_waveforms(
     for (size_t idx = 0; idx < primary_wf.size() && idx < secondary_wf.size();
          idx++) {
         result[idx * 2 + primary_chan] = primary_wf[idx] * primary_coefficient;
-        result[idx * 2 + secondary_chan] = secondary_wf[idx] * secondary_coefficient;
+        result[idx * 2 + secondary_chan] =
+            secondary_wf[idx] * secondary_coefficient;
     }
 
     return std::move(result);
