@@ -37,7 +37,8 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
 
     int status = 0;
 
-    // Fill the idle_waveforms buffer to be used for the idle, null segments and also padding the last segment
+    // Fill the idle_waveforms buffer to be used for the idle, null segments and
+    // also padding the last segment
     idle_waveforms.reserve(waveforms_per_segment * awg->get_waveform_length());
     if (awg->get_idle_segment_wfm()) { // depending on user config, either
                                        // fill the buffer with 0s or STATIC
@@ -47,7 +48,7 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
     } else {
         std::fill(idle_waveforms.begin(), idle_waveforms.end(), 0);
     }
-    
+
     // idle segment init
     if (setup_idle_segment) { // Is LLRS responsible for init-ing the IDLE
                               // segment?
@@ -64,14 +65,13 @@ template <typename AWG_T> int Stream::Sequence<AWG_T>::init_segments() {
     {
         typename AWG_T::TransferBuffer tb =
             awg->allocate_transfer_buffer(samples_per_segment, false);
-        for(int i = idle_segment_idx + 1; i <= short_circuit_seg_idx; i++) {
+        for (int i = idle_segment_idx + 1; i <= short_circuit_seg_idx; i++) {
 
-        status |= awg->fill_transfer_buffer(tb, samples_per_segment, i%2?0x7fff:0);
-        status |= awg->init_and_load_range(*tb, samples_per_segment,
-                                          i, 
-                                           i+1);
+            status |= awg->fill_transfer_buffer(tb, samples_per_segment,
+                                                i % 2 ? 0x7fff : 0);
+            status |=
+                awg->init_and_load_range(*tb, samples_per_segment, i, i + 1);
         }
-
     }
 
     // double-sized segment init
@@ -229,8 +229,10 @@ bool Stream::Sequence<AWG_T>::load_multiple_segments(
     int extra_moves = num_moves % waveforms_per_segment;
     int num_whole_segments = num_moves / waveforms_per_segment;
     num_segments_to_load = num_whole_segments + (extra_moves != 0);
-    int sample_filling_required =
-        extra_moves==0?0:(waveforms_per_segment - extra_moves) * awg->get_waveform_length();
+    int sample_filling_required = extra_moves == 0
+                                      ? 0
+                                      : (waveforms_per_segment - extra_moves) *
+                                            awg->get_waveform_length();
 
     // sets last segment to be loaded to point to idle
     last_control_step = idle_step_idx + (num_segments_to_load * 2) - 1;
@@ -407,14 +409,14 @@ void Stream::Sequence<AWG_T>::get_static_wfm(int16 *pnData, size_t num_wfms,
 
 template <typename AWG_T>
 void Stream::Sequence<AWG_T>::load_idle_wfm(short *p_buffer, int num_samples) {
-    if(idle_waveforms.size() >= num_samples) {
-        memcpy(p_buffer, idle_waveforms.data(), num_samples * sizeof(short)); 
+    if (idle_waveforms.size() >= num_samples) {
+        memcpy(p_buffer, idle_waveforms.data(), num_samples * sizeof(short));
     } else {
         if (awg->get_idle_segment_wfm()) { // depending on user config, either
                                            // fill the buffer with 0s or STATIC
                                            // wfms
             get_static_wfm(p_buffer, num_samples / awg->get_waveform_length(),
-                        Nt_x * Nt_y);
+                           Nt_x * Nt_y);
         } else {
             std::fill(p_buffer, p_buffer + num_samples, 0);
         }
