@@ -1,0 +1,3 @@
+vpp:               280                        # VPP used to configure the AWG in mV
+mono_p_max:        4466.835922                # The power corresponding to the maximum amplitude monotonic signal supplied to the Spectrum Analyzer in dBm
+danger_threshold:  32                         # The maximum power safe for being supplied to the target device in dBm

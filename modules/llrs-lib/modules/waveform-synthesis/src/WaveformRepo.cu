@@ -73,9 +73,7 @@ int Synthesis::WaveformRepo::cache_waveform_repo(std::string fname) const {
     if (!file.is_open())
         return LLRS_ERR;
 
-#ifdef POWER_SAFETY
     WaveformPowerCalculator wpc{_vpp};
-#endif
     for (const auto &data : _waveform_hashmap) {
 
         file.write((char *)&data.first, sizeof(uint32_t));
@@ -84,7 +82,6 @@ int Synthesis::WaveformRepo::cache_waveform_repo(std::string fname) const {
             file.write((char *)&val, sizeof(double));
         }
 
-#ifdef POWER_SAFETY
         if (!wpc.is_power_safe(data.second)) {
             file.close();
             std::remove(fname.c_str());
@@ -94,7 +91,6 @@ int Synthesis::WaveformRepo::cache_waveform_repo(std::string fname) const {
             throw std::runtime_error("Power exceeded the allowed threshold for "
                                      "a waveform when caching.");
         }
-#endif
     }
 
     file.close();
@@ -104,9 +100,7 @@ int Synthesis::WaveformRepo::cache_waveform_repo(std::string fname) const {
 
 int Synthesis::WaveformRepo::load_waveform_repo(std::string fname) {
     std::ifstream file(fname, std::ios::in | std::ios::binary);
-#ifdef POWER_SAFETY
     WaveformPowerCalculator wpc(_vpp);
-#endif
 
     if (!file.is_open())
         return LLRS_ERR;
@@ -121,7 +115,6 @@ int Synthesis::WaveformRepo::load_waveform_repo(std::string fname) {
             file.read((char *)&wf[i], sizeof(double));
         }
 
-#ifdef POWER_SAFETY
         if (!wpc.is_power_safe(wf)) {
             file.close();
             std::cerr << "Power exceeded allowed threshold. Power = "
@@ -129,7 +122,6 @@ int Synthesis::WaveformRepo::load_waveform_repo(std::string fname) {
             throw std::runtime_error("Power exceeded the allowed threshold for "
                                      "a waveform when loading.");
         }
-#endif
         _waveform_hashmap[key] = wf;
     }
 
