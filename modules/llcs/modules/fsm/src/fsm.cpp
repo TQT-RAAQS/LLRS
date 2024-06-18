@@ -327,15 +327,9 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
     json json_data;
 
     std::string filePath;
-    std::string parentDir = dirPath.substr(0, dirPath.find_last_of('/'));
-    std::string mainLLRSDir = parentDir.substr(0, parentDir.find_last_of('/'));
-    createFolder(mainLLRSDir);
-    createFolder(parentDir);
-
     for (int i = 0; i < llrs_metadata.size(); i++) {
         filePath =
-            dirPath + "metadata_" + std::to_string(i) + ".json"; // FIX THIS
-        // Extract Metadata and the number of trials and repetitions
+            PROJECT_BASE_DIR + "/resources/metadata/metadata_" + std::to_string(i) + ".json"; 
         const int Nt_x = llrs_metadata.at(i).getNtx();
         const int Nt_y = llrs_metadata.at(i).getNty();
         const int numCycles = llrs_metadata.at(i).getNumCycles();
@@ -371,7 +365,6 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
                 cycle_data["final_atom_configuration"] =
                     atomConfigs[cycle_index + 1];
             }
-
             json_data["Cycle " + std::to_string(cycle_index)] = cycle_data;
         }
 
@@ -382,14 +375,7 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
             return;
         }
         outfile << json_data.dump(2);
-        outfile.close();
     }
-    std::ofstream outfile(dirPath + "saving.done", std::ios::out);
-    if (!outfile.is_open()) {
-        std::cout << "Error opening file: " << filePath << std::endl;
-        return;
-    }
-    outfile.close();
 }
 
 /**
@@ -582,8 +568,6 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
     awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
     trigger_detector->busyWait();
-
-    return;
 }
 
 template class FiniteStateMachine<AWG>;
