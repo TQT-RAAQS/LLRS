@@ -28,41 +28,10 @@ LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
  * @param json_input => config filename
  */
 template <typename AWG_T>
-void LLRS<AWG_T>::small_setup(std::string json_input) {
-    std::cout << "LLRS: setup" << std::endl;
-
-    /* Direct std log to file as its buffer */
-    old_rdbuf = std::clog.rdbuf();
-    std::clog.rdbuf(log_out.rdbuf());
-
-    user_input = Util::JsonWrapper(CONFIG_PATH(json_input));
-
-    /* Configures the target array */
-    const size_t num_target = user_input.read_problem_num_target();
-    std::string target_config_label =
-        user_input.read_problem_target_config_label();
-
-    if (target_config_label == "centre_compact") {
-        target_config = get_target_config(CENTRE_COMPACT, num_target);
-    } else if (target_config_label == "custom") {
-        target_config = user_input.read_problem_target_config();
-    } else {
-        std::cout << "WARNING: NO TARGET READ" << std::endl;
-    }
-    std::cout << "TARGET CONFIG: " << vec_to_str(target_config) << std::endl;
-    /* Image Processing Settings */
+void LLRS<AWG_T>::reset_psf(std::string psf_file) {
     img_proc_obj = Processing::ImageProcessor(
-        PSF_PATH(user_input.read_experiment_psf_path()),
+        PSF_PATH(psf_file),
         metadata.getNtx() * metadata.getNty());
-
-    detection_threshold = user_input.read_experiment_threshold();
-
-    /* Reconfiguration Parameters */
-
-    algo = Util::get_algo_enum(user_input.read_problem_algo());
-
-    solver = Reconfig::Solver(metadata.getNtx(), metadata.getNty(),
-                              awg_sequence->get_wfm_per_segment(), p_collector);
 }
 
 /**
@@ -144,10 +113,7 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
     trial_num = 0;
     rep_num = 0;
     cycle_num = 0;
-    metadata.setNumCycles(0);
-    metadata.setMovesPerCycle({});
-    metadata.setAtomConfigs({});
-    metadata.setRuntimeData({});
+    metadata.reset();
 }
 
 /**
@@ -191,10 +157,7 @@ void LLRS<AWG_T>::create_center_target(std::vector<int32_t> &target_config,
  * @brief resets the LLRS and metadata between shots
  */
 template <typename AWG_T> void LLRS<AWG_T>::reset(bool reset_segments) {
-    metadata.setNumCycles(0);
-    metadata.setMovesPerCycle({});
-    metadata.setAtomConfigs({});
-    metadata.setRuntimeData({});
+    metadata.reset();
     awg_sequence->reset(reset_segments);
 }
 
@@ -373,8 +336,6 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
                                               cycle_num);
 
-                /* Makes sure the null sequence loops itself after all steps are
-                 * taken */
                 /* Clean up the solver buffer */
                 solver.reset();
                 metadata.num_cycles++;
@@ -397,99 +358,10 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
     return 1;
 }
 
-template <typename AWG_T> int LLRS<AWG_T>::getTrialNum() { return trial_num; }
-
-template <typename AWG_T> int LLRS<AWG_T>::getRepNum() { return rep_num; }
-
-template <typename AWG_T> LLRS<AWG_T>::Metadata::Metadata() {}
-
-// Define Metadata getter functions
-template <typename AWG_T> const int LLRS<AWG_T>::Metadata::getNtx() const {
-    return Nt_x;
-}
-
-template <typename AWG_T> const int LLRS<AWG_T>::Metadata::getNty() const {
-    return Nt_y;
-}
-
-template <typename AWG_T>
-const int LLRS<AWG_T>::Metadata::getNumCycles() const {
-    return num_cycles;
-}
-
-template <typename AWG_T>
-const std::vector<std::vector<Reconfig::Move>> &
-LLRS<AWG_T>::Metadata::getMovesPerCycle() const {
-    return moves_per_cycle;
-}
-
-template <typename AWG_T>
-const std::vector<std::vector<int32_t>> &
-LLRS<AWG_T>::Metadata::getAtomConfigs() const {
-    return atom_configs;
-}
-
-template <typename AWG_T>
-const nlohmann::json &LLRS<AWG_T>::Metadata::getRuntimeData() const {
-    return runtime_data;
-}
-
-// Define Metadata setter functions
-template <typename AWG_T>
-void LLRS<AWG_T>::Metadata::setNtx(const int new_Ntx) {
-    Nt_x = new_Ntx;
-}
-
-template <typename AWG_T>
-void LLRS<AWG_T>::Metadata::setNty(const int new_Nty) {
-    Nt_y = new_Nty;
-}
-
-template <typename AWG_T>
-void LLRS<AWG_T>::Metadata::setNumCycles(const int cycles) {
-    num_cycles = cycles;
-}
-
-template <typename AWG_T>
-void LLRS<AWG_T>::Metadata::setMovesPerCycle(
-    const std::vector<std::vector<Reconfig::Move>> &moves) {
-    moves_per_cycle = moves;
-}
-
-template <typename AWG_T>
-void LLRS<AWG_T>::Metadata::setAtomConfigs(
-    const std::vector<std::vector<int32_t>> &configs) {
-    atom_configs = configs;
-}
-
-template <typename AWG_T>
-void LLRS<AWG_T>::setTargetConfig(std::vector<int> new_target_config) {
-    target_config = new_target_config;
-}
-
-template <typename AWG_T>
-void LLRS<AWG_T>::Metadata::addAtomConfigs(
-    const std::vector<int32_t> &atom_config) {
-    std::vector<std::vector<int32_t>> currentAtomConfigs = getAtomConfigs();
-    currentAtomConfigs.push_back(atom_config);
-    setAtomConfigs(currentAtomConfigs);
-}
-
-template <typename AWG_T>
-void LLRS<AWG_T>::Metadata::setRuntimeData(
-    const nlohmann::json &new_runtime_data) {
-    runtime_data = new_runtime_data;
-}
-
 template <typename AWG_T> void LLRS<AWG_T>::clean() {
-
     std::clog.rdbuf(old_rdbuf);
     log_out.close();
-
-    // DKEA: free allocated transfer buffers here
     delete p_collector;
-    // fgc->destroy_handle();
-    // delete fgc;
 }
 
 template class LLRS<AWG>;
