@@ -68,25 +68,22 @@ void Handler::async_listen() {
     }
 }
 
-std::string Handler::get_hdf5_file_path() {
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
-        bool flag = false;
+uint Handler::get_request() {
+    while(true) {
+       uint req;
         {
             std::lock_guard<std::mutex> lock(requestMutex);
-            if (request == RECEIVED_HDF5_FILE_PATH)
-                flag = true;
+            req = request;
         }
-        if (flag)
-            break;
+        if (req != WAITING)
+            return req;
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
     }
-    std::string returnVal;
-    {
-        std::lock_guard<std::mutex> lock(requestMutex);
-        request = WAITING;
-        returnVal = hdf5_file_path;
-    }
-    return returnVal;
+
+}
+
+std::string Handler::get_hdf5_file_path() {
+    return hdf5_file_path;
 }
 
 void Handler::wait_for_done() {
@@ -110,6 +107,14 @@ void Handler::wait_for_done() {
 
 void Handler::send_done() {
     server.send("done");
+    {
+        std::lock_guard<std::mutex> lock(processingMutex);
+        processing = false;
+    }
+}
+
+void Handler::send_200() { 
+    server.send("200");
     {
         std::lock_guard<std::mutex> lock(processingMutex);
         processing = false;
