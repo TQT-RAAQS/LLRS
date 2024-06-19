@@ -82,7 +82,7 @@ int main(int argc, char * argv[]){
         vpp,
         waveform_params_address_x,
         waveform_params_address_y,
-        is_transpose
+        is_transpose, false
     );
     short *move_wf_ptr = wf_table.get_primary_wf_ptr(wf_type, wf_index, block_size, extraction_extent);
 

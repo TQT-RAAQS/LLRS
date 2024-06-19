@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     int vpp = awg.get_vpp();
     auto wf_table =
         Setup::create_wf_table(21, 1, awg_sample_rate, wfm_mask, vpp,
-                               "21_traps.csv", "21_traps.csv", true);
+                               "21_traps.csv", "21_traps.csv", true, false);
     auto transfer_buffer =
         awg.allocate_transfer_buffer(samples_per_segment, cont_buffer);
     awg.init_segment(1, samples_per_segment);
