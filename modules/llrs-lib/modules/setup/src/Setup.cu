@@ -130,7 +130,7 @@ int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
 Synthesis::WaveformTable
 Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
                        int waveform_mask, int vpp, std::string coef_x_fname,
-                       std::string coef_y_fname, bool is_transposed) {
+                       std::string coef_y_fname, bool is_transposed, bool force_reset) {
 
     std::string file_name = "repo." + std::to_string(Nt_x) + "_" +
                             std::to_string(Nt_y) + "_" +
@@ -138,7 +138,7 @@ Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
                             std::to_string(waveform_mask) + ".bin";
     std::string repo_path = WF_REPO_PATH(file_name);
 
-    if (!FILE_EXISTS(repo_path)) {
+    if (force_reset || !FILE_EXISTS(repo_path)) {
         int status = create_wf_repo(Nt_x, Nt_y, sample_rate, waveform_mask, vpp,
                                     coef_x_fname, coef_y_fname);
         if (status != LLRS_OK) {
