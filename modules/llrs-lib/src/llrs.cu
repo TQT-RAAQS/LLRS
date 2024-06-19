@@ -272,6 +272,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 if (Util::target_met(current_config, target_config)) {
                     INFO << "Success: Met Target Configuration -> exit()"
                          << std::endl;
+                    metadata.setTargetMet();
                     awg_sequence->clock_trigger();
                     return 0;
                 }
@@ -334,7 +335,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
 
                 /* Clean up the solver buffer */
                 solver.reset();
-                metadata.num_cycles++;
+                metadata.incrementNumCycles();
             }
 
 #ifdef PRE_SOLVED
