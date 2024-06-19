@@ -321,11 +321,7 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
                 INFO << "Batch Indices:" << vec_to_str(solver.get_batch_ptrs())
                      << std::endl;
 #endif
-
-                metadata.moves_per_cycle.push_back({});
-                metadata.moves_per_cycle.back().insert(
-                    metadata.moves_per_cycle.back().end(), moves_list.begin(),
-                    moves_list.end());
+                metadata.addMovesPerCycle(moves_list);
 
 #ifdef LOGGING_RUNTIME
                 p_collector->get_external_time("IV-Translate", trial_num,
