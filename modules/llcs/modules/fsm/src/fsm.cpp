@@ -1,4 +1,5 @@
 #include "fsm.hpp"
+using json = nlohmann::json;
 
 /**
  * @brief Constructor of the Finite State Machine class
@@ -7,7 +8,7 @@
  * transitions between these states.
  */
 template <typename AWG_T>
-FiniteStateMachine<AWG_T>::FiniteStateMachine() {
+FiniteStateMachine<AWG_T>::FiniteStateMachine(): server{}, trigger_detector{}, l{trigger_detector->getAWG()} {
 
     // 1. Create the ST_FAULT state
     State *fault_state =
@@ -314,14 +315,6 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::printStates() {
     return;
 }
 
-void createFolder(std::string &folderPath) {
-    if (!std::experimental::filesystem::is_directory(folderPath) ||
-        !std::experimental::filesystem::exists(folderPath)) {
-        std::experimental::filesystem::create_directory(folderPath);
-    }
-}
-
-using json = nlohmann::json;
 template <typename AWG_T>
 void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
     json json_data;
@@ -385,23 +378,17 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
  * state transition.
  */
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::runFSM() {
-    State *nextStateToRun;
-
     while (currentState != nullptr) {
         currentState->executeState();
-
         currentState = currentState->getNextState();
     }
-
-    return;
 }
 
 /* * * * * * * * Static State definitions * * * * * * * */
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     std::cout << "FSM:: BEGIN state" << std::endl;
-    auto awg = trigger_detector->getAWG();
-    l = new LLRS<AWG_T>{awg};
+    l.setup(llrs_problem_path, false, 1); // Default problem, operator can reset the problem in the idle step
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
@@ -416,7 +403,22 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_HW() {
     //filepath is now the yaml config file
     filepath = H5Wrapper::convertHWConfig(filepath);
 
-    l->setup("21-problem.yml", false, 1);
+    l->setup(llrs_problem_path, false, 1);
+
+}
+
+template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_SM() {
+    std::cout << "FSM:: CONFIG_SM state" << std::endl;
+
+    // If the FSM loop has already been run before then reset transition map.
+
+    // if (numExperiments > 1) {
+    //     resetTransitions();
+    // }
+    // std::string filepath = server->get_config_file_path();
+
+    // programStates(filepath);
+    numExperiments = 1;
 
     std::cout << "Starting AWG stream" << std::endl;
     auto awg = trigger_detector->getAWG();
@@ -432,23 +434,6 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_HW() {
 
     trigger_detector->setup(tb);
     trigger_detector->stream();
-    
-    HWconfigured = true;
-}
-
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_SM() {
-    std::cout << "FSM:: CONFIG_SM state" << std::endl;
-
-    // If the FSM loop has already been run before then reset transition map.
-
-    // if (numExperiments > 1) {
-    //     resetTransitions();
-    // }
-    // std::string filepath = server->get_config_file_path();
-
-    // programStates(filepath);
-    SMconfigured = true;
-    numExperiments = 1;
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_READY() {
@@ -465,9 +450,6 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_TRIGGER_DONE() {
 template <typename AWG_T>
 void FiniteStateMachine<AWG_T>::st_LAST_TRIGGER_DONE() {
     std::cout << "FSM:: LAST_TRIGGER_DONE state" << std::endl;
-
-    HWconfigured = false;
-    SMconfigured = false;
 
     saveMetadata(server->get_metadata_file_path());
     llrs_metadata.clear();
@@ -504,24 +486,8 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CLOSE_AWG() {
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
-
-    std::cout << "FSM:: CLOSE AWG state" << std::endl;
-
-    auto awg = trigger_detector->getAWG();
-    const int64_t samples_per_segment = awg->get_samples_per_segment();
-
-    std::cout << "Starting AWG stream" << std::endl;
-    auto tb = awg->allocate_transfer_buffer(
-        trigger_detector->get_samples_per_idle_segment());
-
-    if (awg->get_idle_segment_wfm()) {
-        l->get_idle_wfm(tb, trigger_detector->get_samples_per_idle_segment());
-    } else {
-        awg->fill_transfer_buffer(
-            tb, trigger_detector->get_samples_per_idle_segment(), 0);
-    }
-    trigger_detector->setup(tb);
-    trigger_detector->stream();
+    trigger_detector->getAWG()->configure();
+    l.reset_awg(false, 1);
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_FAULT() {
@@ -539,35 +505,13 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_EXIT() {
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     std::cout << "FSM:: LLRS_EXEC state" << std::endl;
-
-    std::shared_ptr<AWG_T> awg{trigger_detector->getAWG()};
-
-    // LLRS<AWG_T> *l = new LLRS<AWG_T>{awg};
-
-    std::cout << "FSM:: LLRS_EXEC state" << std::endl;
-    int current_step = awg->get_current_step();
-    std::cout << "current step: " << current_step << std::endl;
-
-    assert(current_step == 1);
+    assert(trigger_detector->getAWG()->get_current_step() == 1);
     std::cout << "Starting the LLRS" << std::endl;
     l->execute();
     llrs_metadata.emplace_back(l->getMetadata());
     std::cout << "Done LLRS::Execute" << std::endl;
 
-    // should be on llrs idle segment 4
-    // td->resetDetectionSegments();
-    assert(current_step == 1);
-    awg->seqmem_update(1, 0, 1, 0,
-                       SPCSEQ_ENDLOOPALWAYS); // this is slow
-    trigger_detector->busyWait();
-
-    current_step = awg->get_current_step();
-    std::cout << "Current step is: " << current_step << std::endl;
-    assert(current_step == 0);
-
-    // Ensure LLRS Idle is pointing to itself // move this into LLRS reset
-    awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
-    trigger_detector->busyWait();
+    td->reset();
 }
 
 template class FiniteStateMachine<AWG>;
