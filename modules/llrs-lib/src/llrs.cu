@@ -22,17 +22,6 @@ LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
     std::cout << "LLRS: constructor" << std::endl;
 }
 
-/**
- * @brief Quick LLRS setup designed to be done between
- * experimental shots.
- * @param json_input => config filename
- */
-template <typename AWG_T>
-void LLRS<AWG_T>::reset_psf(std::string psf_file) {
-    img_proc_obj = Processing::ImageProcessor(
-        PSF_PATH(psf_file),
-        metadata.getNtx() * metadata.getNty());
-}
 
 /**
  * @brief Sets up the LLRS
@@ -95,17 +84,14 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
     solver = Reconfig::Solver(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment(),
                               p_collector);
 
-    double awg_sample_rate = awg_sequence->get_sample_rate();
-    int wfm_mask = awg_sequence->get_waveform_mask();
-    int vpp = awg_sequence->get_vpp();
+    
     /* Waveform Synthesis Initialization */
-    const double table_sample_rate =
-        _2d ? awg_sample_rate / 2 : awg_sample_rate;
-
     wf_table =
-        Setup::create_wf_table(Nt_x, Nt_y, table_sample_rate, wfm_mask, vpp,
+        Setup::create_wf_table(Nt_x, Nt_y, 
+        _2d ? awg_sequence->get_sample_rate() / 2 : awg_sequence->get_sample_rate(),
+         awg_sequence->get_waveform_mask(), awg_sequence->get_vpp(),
                                user_input.read_experiment_coefx_path(),
-                               user_input.read_experiment_coefy_path(), true);
+                               user_input.read_experiment_coefy_path(), true, false);
 
     awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, Nt_x, Nt_y);
 
@@ -114,6 +100,27 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
     rep_num = 0;
     cycle_num = 0;
     metadata.reset();
+}
+
+template <typename AWG_T>
+void LLRS<AWG_T>::reset_psf(std::string psf_file) {
+    img_proc_obj = Processing::ImageProcessor(
+        PSF_PATH(psf_file),
+        metadata.getNtx() * metadata.getNty());
+}
+
+template <typename AWG_T>void LLRS<AWG_T>::reset_waveform_table() {
+    wf_table = Setup::create_wf_table(
+        metadata.getNtx(), metadata.getNty(),
+        _2d ? awg_sequence->get_sample_rate() / 2 : awg_sequence->get_sample_rate(),
+        awg_sequence->get_waveform_mask(), awg_sequence->get_vpp(),
+        user_input.read_experiment_coefx_path(),
+        user_input.read_experiment_coefy_path(), true, true);
+}
+
+template <typename AWG_T>void LLRS<AWG_T>::reset_problem(std::string algorithm, int num_target) {
+    target_config = get_target_config(CENTRE_COMPACT, num_target);
+    algo = Util::get_algo_enum(algorithm);
 }
 
 /**
