@@ -6,19 +6,7 @@
 template <typename AWG_T>
 TriggerDetector<AWG_T>::TriggerDetector()
     : awg{std::make_shared<AWG_T>()}, samples_per_idle_segment{
-                                          awg->get_idle_segment_length()} {
-    int status = 0;
-
-    // DATA MEMORY
-    // trigger-detector initilizes and loads the first segment
-    auto tb = awg->allocate_transfer_buffer(samples_per_idle_segment, false);
-    awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
-    status |= setup(tb);
-
-    if (!status) {
-        std::cerr << "Problem while trigger detector's setup." << std::endl;
-    }
-}
+                                          awg->get_idle_segment_length()} {}
 
 template <typename AWG_T>
 int TriggerDetector<AWG_T>::setup(typename AWG_T::TransferBuffer &tb) {
@@ -42,6 +30,14 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::stream() {
     return awg->start_stream();
 }
 
+template <typename AWG_T> int TriggerDetector<AWG_T>::reset() {
+    assert(awg->get_current_step() == 1);
+    awg->seqmem_update(1, 0, 1, 0,
+                       SPCSEQ_ENDLOOPALWAYS); 
+    trigger_detector->busyWait();
+    assert(awg->get_current_step() == 0);
+}
+
 template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
     float timeout =
         awg->get_waveform_duration() * awg->get_idle_segment_length() * 1e6;
@@ -62,7 +58,6 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
 }
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::resetDetectionStep() {
-
     return awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
 }
 
