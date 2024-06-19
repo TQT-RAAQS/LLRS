@@ -52,9 +52,9 @@ double Synthesis::WaveformPowerCalculator::get_power_dBm(
 
 bool Synthesis::WaveformPowerCalculator::is_power_safe(
     const std::vector<short> &waveform) {
-    return this->get_power_dBm(waveform) <= this->damage_threshold_dBm;
+    return on?this->get_power_dBm(waveform) <= this->damage_threshold_dBm:true;
 }
 bool Synthesis::WaveformPowerCalculator::is_power_safe(
     const std::vector<double> &waveform) {
-    return this->get_power_dBm(waveform) <= this->damage_threshold_dBm;
+    return on?this->get_power_dBm(waveform) <= this->damage_threshold_dBm:true;
 }
