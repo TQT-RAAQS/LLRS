@@ -8,10 +8,6 @@
 // Image Acquisition
 #define MAX_IMAGE_READ_BUFFER_SIZE size_t(1048576) // 1024 * 1024, unit: #pixels
 
-// Displacements
-#define DISPLACEMENT_RELATIVE_SLOPE 3e4
-#define DISPLACEMENT_FREQUENCY_RELATIVE_SLOPE 2.5e10
-
 // Image Processing
 #define FILTERING_NUM_THREADS size_t(32)
 #define IMAGE_INVERTED_X true
