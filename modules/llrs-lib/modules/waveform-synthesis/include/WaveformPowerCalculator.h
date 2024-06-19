@@ -1,9 +1,10 @@
 #ifndef WAVEFORMPOWERCALCULATOR_H_
 #define WAVEFORMPOWERCALCULATOR_H_
 
-#include "llrs-lib/Settings.h"
+#include "llrs-lib/PreProc.h"
 #include <cmath>
 #include <vector>
+#include <yaml-cpp/yaml.h>
 
 namespace Synthesis {
 

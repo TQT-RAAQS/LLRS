@@ -1,11 +1,17 @@
 #include "WaveformPowerCalculator.h"
 
 Synthesis::WaveformPowerCalculator::WaveformPowerCalculator(int config_vpp) {
-    // This has to be read from a config file before being merged.
-    this->damage_threshold_dBm = 32;
-    this->p0_mw = 4466.835922;
-    this->vpp0 = 280;
-    this->config_vpp = config_vpp;
+    try {
+        YAML::Node config =
+            YAML::LoadFile(POWER_SAFETY_CONFIG_PATH("config.yml"));
+        this->damage_threshold_dBm = config["danger_threshold"].as<double>();
+        this->p0_mw = config["mono_p_max"].as<double>();
+        this->vpp0 = config["vpp"].as<double>();
+        this->config_vpp = config_vpp;
+    } catch (...) {
+        std::cerr << "Error loading power safety config." << std::endl;
+        throw;
+    }
 }
 
 double Synthesis::WaveformPowerCalculator::get_power_mw(

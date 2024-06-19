@@ -254,3 +254,18 @@ The Low-Latency Control System is the system responsible for running the LLRS ex
 
 5. After the experimental shot is completed, the LLCS will transition back to IDLE. Repeat steps 4-5.
 
+# Configuration of the AWG Power Calculator
+
+We need a way of predicting the power streamed by the AWG (and potentially amplified by an electronic amplifier) before supplying it to the target device, e.g. AOMs or AODs. To perform this calculation and to ensure the safety of the device, the following information must be provided. This information can be found by 'callibrating' the AWG.
+
+To do this, follow the following procedure.
+
+1. Keep track of the nominal peak-to-peak voltage configured for the AWG channel you wish to callibrate at `config/awg/awg.yml`.
+
+2. Connect the AWG output to the Spectrum Analyzer. If you wish to use an electronic amplifier in the final setup, you can connect the AWG output to the amplifier and connect the amplifier output to the Spectrum Analyzer instead.
+
+3. Stream a monotonic waveform at some frequency with the maximum amplitude possible. 
+
+4. Fill out the config file at `configs/waveform-power-calculator/config.yml`
+
+Note that this calculator assumes the gain of the AWG/amplifiers for different frequencies is identical.

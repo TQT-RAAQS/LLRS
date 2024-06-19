@@ -37,7 +37,7 @@ llrs_lib_waveform = library('llrs-lib-waveform',
 llrs_lib_waveform_power = library('llrs-lib-waveform-power', 
     llrs_lib_waveform_power_src,
     include_directories: [llrs_lib_waveform_synthesis_inc],
-    dependencies: [])
+    dependencies: [yaml_cpp_dep])
 
 llrs_lib_waveform_repo = library('llrs-lib-waveform-repo', 
     llrs_lib_waveform_repo_src,
