@@ -34,7 +34,7 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::reset() {
     assert(awg->get_current_step() == 1);
     awg->seqmem_update(1, 0, 1, 0,
                        SPCSEQ_ENDLOOPALWAYS); 
-    trigger_detector->busyWait();
+    busyWait();
     assert(awg->get_current_step() == 0);
 }
 
