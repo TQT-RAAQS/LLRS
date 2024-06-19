@@ -53,26 +53,29 @@ template <typename AWG_T> class LLRS {
         int Nt_y;
         int num_cycles;
         std::vector<std::vector<Reconfig::Move>> moves_per_cycle;
-        std::vector<std::vector<short>> atom_configs;
+        std::vector<std::vector<int32_t>> atom_configs;
         nlohmann::json runtime_data;
+        bool target_met = false;
 
       public:
-        // Getter functions
-        const int getNtx() const {return Nt_x;}
-        const int getNty() const {return Nt_y;}
-        const int getNumCycles() const {return num_cycles;}
+        
+        int getNtx() const {return Nt_x;}
+        int getNty() const {return Nt_y;}
+        int getNumCycles() const {return num_cycles;}
+        bool getTargetMet() const {return target_met;}
         const std::vector<std::vector<Reconfig::Move>> &
         getMovesPerCycle() const {
             return moves_per_cycle;
         }
-        const std::vector<std::vector<short>> &getAtomConfigs() const {
+        const std::vector<std::vector<int32_t>> &getAtomConfigs() const {
             return atom_configs;
         }
         const nlohmann::json &getRuntimeData() const {return runtime_data;}
-        const reset() {
+        void reset() {
             Nt_x = 0;
             Nt_y = 0;
             num_cycles = 0;
+            target_met = false;
             moves_per_cycle.clear();
             atom_configs.clear();
             runtime_data.clear();
@@ -81,7 +84,6 @@ template <typename AWG_T> class LLRS {
         }
 
       //private:
-        Metadata();
 
         // Setter functions
         void setNtx(const int Ntx) {Nt_x = Ntx;}
@@ -97,6 +99,9 @@ template <typename AWG_T> class LLRS {
         void setAtomConfigs(const std::vector<std::vector<int32_t>> &configs) {atom_configs = configs;}
         void addAtomConfigs(const std::vector<int32_t> &atom_config) {atom_configs.push_back(atom_config);}
         void setRuntimeData(const nlohmann::json &runtimedata) {runtime_data = runtimedata;}
+        void incrementNumCycles() {num_cycles++;}
+        void setTargetMet() {target_met = true;}
+        friend class LLRS;
     } metadata;
 
     LLRS();
