@@ -3,7 +3,7 @@
 
 #include "llcs/common.hpp"
 #include "llrs.h"
-#include "server.hpp"
+#include "handler.hpp"
 #include "state.hpp"
 #include "trigger-detector.hpp"
 #include <chrono>
@@ -18,9 +18,9 @@ template <typename AWG_T> class FiniteStateMachine {
     std::unordered_map<ModuleType, std::function<void()>>
         dyn_state_action_func_map;
     
-    Server server;
+    Handler server_handler;
     TriggerDetector<AWG_T> trigger_detector;
-    LLRS<AWG_T> l;
+    LLRS<AWG_T> llrs;
   
     int numExperiments = 0;
     std::string llrs_problem_path = "21-problem.yml";
@@ -106,9 +106,9 @@ template <typename AWG_T> class FiniteStateMachine {
     void st_LLRS_EXEC();
 
     /**
-     * @brief State to execute the CLO
+     * @brief Saves metadata of each shot to be returned to the workstation
      */
-    void st_CLO_EXEC();
+    void saveMetadata(std::string filepath);
 
   public:
     FiniteStateMachine();
@@ -132,11 +132,5 @@ template <typename AWG_T> class FiniteStateMachine {
      * @brief Print all states
      */
     void printStates();
-
-    /**
-     * @brief Saves metadata of each shot to be returned to the workstation
-     */
-    void saveMetadata(std::string filepath);
-
 };
 #endif
