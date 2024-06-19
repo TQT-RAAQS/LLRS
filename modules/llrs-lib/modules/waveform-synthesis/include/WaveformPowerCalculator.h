@@ -29,6 +29,7 @@ class WaveformPowerCalculator {
     double p0_mw;
     double vpp, vpp0;
     int config_vpp;
+    bool on;
 };
 inline double WaveformPowerCalculator::mw_to_dBm(double power_mw) {
     return 10 * log10(power_mw);

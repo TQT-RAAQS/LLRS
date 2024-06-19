@@ -4,6 +4,7 @@ Synthesis::WaveformPowerCalculator::WaveformPowerCalculator(int config_vpp) {
     try {
         YAML::Node config =
             YAML::LoadFile(POWER_SAFETY_CONFIG_PATH("config.yml"));
+        this->on = config["on"].as<bool>();
         this->damage_threshold_dBm = config["danger_threshold"].as<double>();
         this->p0_mw = config["mono_p_max"].as<double>();
         this->vpp0 = config["vpp"].as<double>();
