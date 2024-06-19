@@ -78,7 +78,7 @@ async_trig_amp:           3             # trigger Amp in volts : int  \n \
 
     wf_table =
         Setup::create_wf_table(Nt_x, Nt_y, awg_sample_rate, wfm_mask, vpp,
-                               "21_traps.csv", "21_traps.csv", true);
+                               "21_traps.csv", "21_traps.csv", true, false);
     awg_sequence.setup(true, 0, false, Nt_x, Nt_y);
     awg_sequence.start_stream();
 
