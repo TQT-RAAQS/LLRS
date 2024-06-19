@@ -83,7 +83,7 @@ template <typename AWG_T> class LLRS {
             atom_configs.reserve(ATTEMPT_LIMIT);
         }
 
-      //private:
+      private:
 
         // Setter functions
         void setNtx(const int Ntx) {Nt_x = Ntx;}
@@ -112,7 +112,7 @@ template <typename AWG_T> class LLRS {
                int llrs_step_offset, std::string problem_id = "");
     void reset_psf(std::string psf_file);
     void reset_waveform_table();
-    void reset_problem(std::string algorithm, int num_target)
+    void reset_problem(std::string algorithm, int num_target);
     void reset_awg(bool setup_idle_segment, int llrs_step_off) {awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, metadata.getNtx(), metadata.getNty());}
     int execute();
     void reset(bool reset_segments);
