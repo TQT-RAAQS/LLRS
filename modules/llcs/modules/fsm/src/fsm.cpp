@@ -317,55 +317,51 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::printStates() {
 
 template <typename AWG_T>
 void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
-    json json_data;
+    std::string parentDir = dirPath.substr(0, dirPath.find_last_of('/'));
 
-    std::string filePath;
-    for (int i = 0; i < llrs_metadata.size(); i++) {
-        filePath =
-            PROJECT_BASE_DIR + "/resources/metadata/metadata_" + std::to_string(i) + ".json"; 
-        const int Nt_x = llrs_metadata.at(i).getNtx();
-        const int Nt_y = llrs_metadata.at(i).getNty();
-        const int numCycles = llrs_metadata.at(i).getNumCycles();
+    for (size_t i = 0; i < llrs_metadata.size(); i++) {
+        nlohmann::json json_data;
+        std::string filePath = parentDir + "metadata_" + std::to_string(i) + ".json";
+
+        // Save general data 
+        json_data["nt_x"] = llrs_metadata.at(i).getNtx();
+        json_data["nt_y"] = llrs_metadata.at(i).getNty();
+        json_data["cycles"] = llrs_metadata.at(i).getNumCycles();
+        json_data["runtime_data"] = llrs_metadata.at(i).getRuntimeData();
+        json_data["target_met"] = llrs_metadata.at(i).getTargetMet();
+
+        // Save cycles data
         const std::vector<std::vector<Reconfig::Move>> &movesPerCycle =
             llrs_metadata.at(i).getMovesPerCycle();
         const std::vector<std::vector<int32_t>> &atomConfigs =
             llrs_metadata.at(i).getAtomConfigs();
-        const nlohmann::json &runtimeData =
-            llrs_metadata.at(i).getRuntimeData();
 
-        // Save the number of cycles executed and the dimensions of the array
-        json_data["Nt_x"] = Nt_x;
-        json_data["Nt_y"] = Nt_y;
-        json_data["Cycles"] = numCycles;
-        json_data["runtime_data"] = runtimeData;
-
+ 
+        nlohmann::json cycles_data;
         // Save the initial atom configuration
-        for (int cycle_index = 0; cycle_index < numCycles; ++cycle_index) {
-            json cycle_data;
+        for (int cycle_index = 0; cycle_index < llrs_metadata.at(i).getNumCycles(); ++cycle_index) {
+            nlohmann::json cycle_data;
+            cycle_data["initial_atom_config"] = atomConfigs[cycle_index];
 
-            cycle_data["starting_atom_config"] = atomConfigs[cycle_index];
-
+            nlohmann::json jsonMoves;
             if (movesPerCycle.size() > cycle_index) {
-                nlohmann::json jsonMoves;
                 for (const auto &move : movesPerCycle[cycle_index]) {
                     jsonMoves.push_back({std::get<0>(move), std::get<1>(move),
-                                         std::get<2>(move), std::get<3>(move),
-                                         std::get<4>(move)});
+                                            std::get<2>(move), std::get<3>(move),
+                                            std::get<4>(move)});
                 }
-                cycle_data["moves"] = jsonMoves;
             }
-            if (cycle_index < numCycles - 1) {
-                cycle_data["final_atom_configuration"] =
-                    atomConfigs[cycle_index + 1];
-            }
-            json_data["Cycle " + std::to_string(cycle_index)] = cycle_data;
+            cycle_data["moves"] = jsonMoves;
+
+            cycles_data.push_back(cycle_data);
         }
+        json_data["Cycles"] = cycles_data;
 
         // Output the JSON data object to the filepath
         std::ofstream outfile(filePath, std::ios::out);
         if (!outfile.is_open()) {
             std::cout << "Error opening file: " << filePath << std::endl;
-            return;
+            return 1;
         }
         outfile << json_data.dump(2);
     }

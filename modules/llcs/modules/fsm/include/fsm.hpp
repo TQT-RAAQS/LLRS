@@ -24,7 +24,7 @@ template <typename AWG_T> class FiniteStateMachine {
     LLRS<AWG_T> l;
   
     int numExperiments = 0;
-    std::string llrs_problem_path = "21-problem.yml"
+    std::string llrs_problem_path = "21-problem.yml";
     std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
     /**
      * @brief Creates all state objects for the static states of the FSM
