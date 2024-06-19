@@ -13,20 +13,19 @@
 #include <thread>
 
 template <typename AWG_T> class FiniteStateMachine {
-    Server server;
-    TriggerDetector<AWG_T> trigger_detector;
-    LLRS<AWG_T> *l;
- 
     State *currentState;
     std::unordered_map<StateType, State *> states;
     std::vector<std::vector<State *>> programmable_states;
     std::unordered_map<ModuleType, std::function<void()>>
         dyn_state_action_func_map;
-    int numExperiments = 1;
-    bool HWconfigured;
-    bool SMconfigured;
-    std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
+    
+    Server server;
+    TriggerDetector<AWG_T> trigger_detector;
+    LLRS<AWG_T> l;
   
+    int numExperiments = 0;
+    std::string llrs_problem_path = "21-problem.yml"
+    std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
     /**
      * @brief Creates all state objects for the static states of the FSM
      */
