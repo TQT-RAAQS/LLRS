@@ -24,9 +24,6 @@
 #include <yaml-cpp/yaml.h>
 using json = nlohmann::json;
 
-/* Toggle for storing all images taken */
-// #define STORE_IMAGES
-
 enum Target { CENTRE_COMPACT };
 
 template <typename AWG_T> class LLRS {
@@ -79,11 +76,11 @@ template <typename AWG_T> class LLRS {
             moves_per_cycle.clear();
             atom_configs.clear();
             runtime_data.clear();
-            moves_per_cycle.reserve(10);
-            atom_configs.reserve(10);
+            moves_per_cycle.reserve(ATTEMPT_LIMIT);
+            atom_configs.reserve(ATTEMPT_LIMIT);
         }
 
-      private:
+      //private:
         Metadata();
 
         // Setter functions
@@ -93,6 +90,9 @@ template <typename AWG_T> class LLRS {
         void
         setMovesPerCycle(const std::vector<std::vector<Reconfig::Move>> &moves) {
             moves_per_cycle = moves;
+        }
+        void addMovesPerCycle(std::vector<Reconfig::Move> moves) {
+            moves_per_cycle.push_back(moves);
         }
         void setAtomConfigs(const std::vector<std::vector<int32_t>> &configs) {atom_configs = configs;}
         void addAtomConfigs(const std::vector<int32_t> &atom_config) {atom_configs.push_back(atom_config);}
@@ -106,6 +106,7 @@ template <typename AWG_T> class LLRS {
     void setup(std::string json_input, bool setup_idle_segment,
                int llrs_step_offset, std::string problem_id = "");
     void reset_psf(std::string psf_file);
+    void reset_awg(bool setup_idle_segment, int llrs_step_off) {awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, metadata.getNtx(), metadata.getNty());}
     int execute();
     void reset(bool reset_segments);
     std::vector<int32_t> get_target_config(Target target, int num_target);
