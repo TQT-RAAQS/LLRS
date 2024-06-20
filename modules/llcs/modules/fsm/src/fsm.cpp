@@ -239,8 +239,14 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_PSF() {
     std::cout << "FSM:: CONFIG PSF state" << std::endl;
-    // PSF Translator
-    llrs.reset_psf(std::string("psf_file"));
+    std::string str = (PSF_TRANSLATOR_PATH) + "default";
+    const char *psf_translator = str.c_str();
+    const char *command = "python3 ";
+    char fullCommand[256];
+    snprintf(fullCommand, sizeof(fullCommand), "%s%s", command,
+            psf_translator);
+    int result = system(fullCommand);
+    llrs.reset_psf(std::string("default.bin"));
     server_handler.send_200();
 }
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_WAVEFORM() {
