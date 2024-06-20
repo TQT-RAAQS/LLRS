@@ -64,7 +64,92 @@ void Handler::async_listen() {
                     break;
             }
             continue;
-        }
+        } else if (requestStr.substr(requestStr.length() - 4, 4) == ".yml") {
+            {
+                std::lock_guard<std::mutex> lock(requestMutex);
+                llrs_config_file = requestStr;
+                request = RECEIVED_RESET_REQUEST;
+            }
+            {
+                std::lock_guard<std::mutex> lock(processingMutex);
+                processing = true;
+            }
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                bool flag = false;
+                {
+                    std::lock_guard<std::mutex> lock(processingMutex);
+                    if (!processing)
+                        flag = true;
+                }
+                if (flag)
+                    break;
+            }
+            continue;
+        } else if (requestStr == "psf") {
+            {
+                std::lock_guard<std::mutex> lock(requestMutex);
+                request = RECEIVED_PSF_RESET_REQUEST;
+            }
+            {
+                std::lock_guard<std::mutex> lock(processingMutex);
+                processing = true;
+            }
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                bool flag = false;
+                {
+                    std::lock_guard<std::mutex> lock(processingMutex);
+                    if (!processing)
+                        flag = true;
+                }
+                if (flag)
+                    break;
+            }
+            continue;
+        } else if (requestStr == "waveform") {
+            {
+                std::lock_guard<std::mutex> lock(requestMutex);
+                request = RECEIVED_WAVEFORM_RESET_REQUEST;
+            }
+            {
+                std::lock_guard<std::mutex> lock(processingMutex);
+                processing = true;
+            }
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                bool flag = false;
+                {
+                    std::lock_guard<std::mutex> lock(processingMutex);
+                    if (!processing)
+                        flag = true;
+                }
+                if (flag)
+                    break;
+            }
+            continue;
+        } else if (requestStr == "awg") {
+            {
+                std::lock_guard<std::mutex> lock(requestMutex);
+                request = RECEIVED_AWG_RESET_REQUEST;
+            }
+            {
+                std::lock_guard<std::mutex> lock(processingMutex);
+                processing = true;
+            }
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                bool flag = false;
+                {
+                    std::lock_guard<std::mutex> lock(processingMutex);
+                    if (!processing)
+                        flag = true;
+                }
+                if (flag)
+                    break;
+            }
+            continue;
+        } 
     }
 }
 
@@ -74,16 +159,30 @@ uint Handler::get_request() {
         {
             std::lock_guard<std::mutex> lock(requestMutex);
             req = request;
+            request = WAITING;
         }
         if (req != WAITING)
             return req;
         std::this_thread::sleep_for(std::chrono::microseconds(10));
     }
-
 }
 
 std::string Handler::get_hdf5_file_path() {
+    std::string hdf5_file_path;
+    {
+        std::lock_guard<std::mutex> lock(requestMutex);
+        hdf5_file_path = this->hdf5_file_path;
+    } 
     return hdf5_file_path;
+}
+
+std::string Handler::get_llrs_config_file() {
+    std::string config_file;
+    {
+        std::lock_guard<std::mutex> lock(requestMutex);
+        config_file = llrs_config_file;
+    } 
+    return config_file;
 }
 
 void Handler::wait_for_done() {

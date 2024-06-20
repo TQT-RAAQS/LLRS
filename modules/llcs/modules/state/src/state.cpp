@@ -124,22 +124,26 @@ std::string State::getType() {
         return "ST_EXIT";
     case ST_IDLE:
         return "ST_IDLE";
-    case ST_CONFIG_HW:
-        return "ST_CONFIG_HW";
-    case ST_CONFIG_SM:
-        return "ST_CONFIG_SM";
     case ST_READY:
         return "ST_READY";
     case ST_TRIGGER_DONE:
         return "ST_TRIGGER_DONE";
-    case ST_LAST_TRIGGER_DONE:
-        return "ST_LAST_TRIGGER_DONE";
     case ST_LLRS_EXEC:
         return "ST_LLRS_EXEC";
-    case ST_CLO_EXEC:
-        return "ST_CLO_EXEC";
-    case ST_RYDBERG_EXEC:
-        return "ST_RYDBERG_EXEC";
+    case ST_PROCESS_SHOT:
+        return "ST_PROCESS_SHOT";
+    case ST_CLOSE_AWG:
+        return "ST_CLOSE_AWG";
+    case ST_RESTART_AWG:   
+        return "ST_RESTART_AWG";
+    case ST_BEGIN:
+        return "ST_BEGIN";
+    case ST_RESET:
+        return "ST_RESET";
+    case ST_CONFIG_PSF:
+        return "ST_CONFIG_PSF";
+    case ST_CONFIG_WAVEFORM:
+        return "ST_CONFIG_WAVEFORM";
     default:
         return "UNKNOWN_STATE";
     }
