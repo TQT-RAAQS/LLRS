@@ -98,7 +98,7 @@ LabscriptDictType ShotFile::convert_chars_to_labscript_dict(char *chars_dict) {
 
             value = temp_double;
         } else {
-            value = std::stol(str_value);
+            value = std::stoi(str_value);
         }
 
         output.emplace(key, value);
