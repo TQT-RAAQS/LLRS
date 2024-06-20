@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
-using LabscriptDictValueTypes = boost::variant<std::string, long, bool, double>;
+using LabscriptDictValueTypes = boost::variant<std::string, int, bool, double>;
 using LabscriptDictType =
     std::unordered_map<std::string, LabscriptDictValueTypes>;
 
