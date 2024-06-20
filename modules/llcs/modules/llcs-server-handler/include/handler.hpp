@@ -23,6 +23,7 @@ class Handler {
         RECEIVED_DONE                    // 6
     } request = WAITING;
     std::string hdf5_file_path;
+    std::string llrs_config_file;
     bool processing = false;
 
   public:
@@ -33,6 +34,7 @@ class Handler {
     void start_listening();
     uint get_request();
     std::string get_hdf5_file_path();
+    std::string get_llrs_config_file();
     void send_done();
     void send_200();
     void wait_for_done();
