@@ -50,14 +50,7 @@ void GlobalsConfig::read_from_shot_file(ShotFile shotfile) {
             vec_ptr_ptr_dict =
                 static_cast<std::vector<LabscriptDictType> **>(var);
             *vec_ptr_ptr_dict = new std::vector<LabscriptDictType>();
-
-            shotfile.get_global_list_value(global_name, &dict_cstr_vec);
-
-            for (auto &cstr_dict : dict_cstr_vec) {
-                (*vec_ptr_ptr_dict)
-                    ->push_back(
-                        ShotFile::convert_chars_to_labscript_dict(cstr_dict));
-            }
+            shotfile.get_global_list_dict(global_name, *vec_ptr_ptr_dict);
 
             break;
         default:

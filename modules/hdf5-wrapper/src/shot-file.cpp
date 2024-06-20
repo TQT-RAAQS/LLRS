@@ -35,6 +35,19 @@ void ShotFile::get_global_dict(std::string global_name,
     *output = ShotFile::convert_chars_to_labscript_dict(dict_str);
 }
 
+void ShotFile::get_global_list_dict(std::string global_name, 
+    std::vector<LabscriptDictType> *output) {
+
+    std::vector<char *> list_dict_str;
+    get_global_list_value(global_name, &list_dict_str);
+
+    std::vector<LabscriptDictType> result;
+    for (auto &item : list_dict_str) {
+        result.push_back(ShotFile::convert_chars_to_labscript_dict(item));
+    }
+    *output = result;
+}
+
 std::vector<std::string> ShotFile::get_global_names() {
     std::vector<std::string> attribute_names;
 

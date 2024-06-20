@@ -66,6 +66,8 @@ class ShotFile {
         *output = result_vec;
     }
 
+    void get_global_list_dict(std::string global_name, std::vector<LabscriptDictType> *output);
+
     void close_file();
 
     static LabscriptDictType convert_chars_to_labscript_dict(char *chars_dict);
