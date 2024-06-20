@@ -8,7 +8,7 @@ void GlobalsConfig::read_from_shot_file(ShotFile shotfile) {
     LabscriptType labscriptType;
 
     LabscriptDictType **dict_ptr_ptr;
-    std::vector<long> **vec_ptr_ptr_long;
+    std::vector<int> **vec_ptr_ptr_int;
     std::vector<double> **vec_ptr_ptr_double;
     std::vector<bool> **vec_ptr_ptr_bool;
     std::vector<char *> **vec_ptr_ptr_chars;
@@ -26,10 +26,10 @@ void GlobalsConfig::read_from_shot_file(ShotFile shotfile) {
             *dict_ptr_ptr = new LabscriptDictType();
             shotfile.get_global_dict(global_name, *dict_ptr_ptr);
             break;
-        case LabscriptType::LIST_OF_LONG:
-            vec_ptr_ptr_long = static_cast<std::vector<long> **>(var);
-            *vec_ptr_ptr_long = new std::vector<long>();
-            shotfile.get_global_list_value(global_name, *vec_ptr_ptr_long);
+        case LabscriptType::LIST_OF_INT:
+            vec_ptr_ptr_int = static_cast<std::vector<int> **>(var);
+            *vec_ptr_ptr_int = new std::vector<int>();
+            shotfile.get_global_list_value(global_name, *vec_ptr_ptr_int);
             break;
         case LabscriptType::LIST_OF_DOUBLE:
             vec_ptr_ptr_double = static_cast<std::vector<double> **>(var);

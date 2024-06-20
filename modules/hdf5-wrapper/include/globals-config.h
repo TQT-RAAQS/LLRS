@@ -11,7 +11,7 @@
 enum LabscriptType {
     VALUE,
     DICT,
-    LIST_OF_LONG,
+    LIST_OF_INT,
     LIST_OF_DOUBLE,
     LIST_OF_BOOL,
     LIST_OF_CHARS,
