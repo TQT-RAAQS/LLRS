@@ -79,7 +79,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     State *llrs_state = new State([this]() { this->st_LLRS_EXEC(); },
                                   [this]() { return 1; }, f);
     State *trigger_done_state =
-        new State([this]() { this->st_TRIGGER_DONE(); }, [this]() { return this->numExperiments?2:1; }, f);
+        new State([this]() { this->st_TRIGGER_DONE(); }, [this]() { return this->commands_itr==commands.size()?1:2; }, f);
     State *exit_state =
         new State([this]() { this->st_EXIT(); }, []() { return 1; }, NULL);
 
@@ -180,13 +180,12 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
     std::cout << "FSM:: PROCESS_SHOT state" << std::endl;
 
     // receive hdf5 filepath from the workstation
-    std::string filepath = server_handler.get_hdf5_file_path();
+    LLCSConfig llrs_config(ShotFile(server_handler.get_hdf5_file_path()));
+    commands = llrs_config.get_commands();
+    llrs_metadata.reserve(commands.size());  
+    commands_itr = 0;
 
-    //filepath is now the yaml config file
-    filepath = H5Wrapper::convertHWConfig(filepath);
-    llrs_metadata.reserve(1);  // placeholder
 
-    
     std::cout << "Starting AWG stream" << std::endl;
     auto awg = trigger_detector.getAWG();
     auto tb = awg->allocate_transfer_buffer(
@@ -210,10 +209,12 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_READY() {
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_TRIGGER_DONE() {
     std::cout << "FSM:: TRIGGER_DONE state" << std::endl;
     server_handler.wait_for_done();
-    ++numExperiments;
-    if (numExperiments == 0) {
+    ++commands_itr;
+    if (commands_itr == commands.size()) {
         saveMetadata(server_handler.get_hdf5_file_path());
         llrs_metadata.clear();
+    } else {
+        llrs.reset_problem("llrs", 1);
     }
     server_handler.send_done();
 }
@@ -325,139 +326,5 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
     }
 }
 
-/**
- * @brief Program the configurable part of the state machine.
- *
- * Create a state object for every action function that should run during an
- * experimental shot. Adds this state object to the list of state objects in the
- * fsm.
- *
- */
-template <typename AWG_T>
-void FiniteStateMachine<AWG_T>::programStates(std::string filepath) {
-
-    State *fault_transition = states[ST_FAULT];
-    State *ready_state = states[ST_READY];
-    State *trigger_done_state = states[ST_TRIGGER_DONE];
-    State *idle_state = states[ST_IDLE];
-
-    fault_transition->setType(ST_FAULT);
-    ready_state->setType(ST_READY);
-    trigger_done_state->setType(ST_TRIGGER_DONE);
-
-    // Read a config file and configure the transition
-    std::map<std::string, std::vector<ModuleType>> data =
-        H5Wrapper::parseSMConfig(filepath);
-
-    size_t num_keys = data.size();
-    std::cout << "dict size: " << num_keys << std::endl;
-
-    State *state_to_add;
-    std::vector<State *> temp;
-
-    std::string str_trig_num;
-    int trig_num;
-
-    // // Eventually nuke this - just a config file print
-    for (const auto &pair : data) {
-        std::cout << pair.first << ": ";
-        for (const auto &val : pair.second) {
-            std::cout << val << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    for (const auto &pair : data) {
-
-        std::string trig_name = pair.first;
-        std::vector<ModuleType> execution_sequence = pair.second;
-
-        str_trig_num = trig_name.substr(2);
-        trig_num = std::stoi(str_trig_num); // Assume this doesn't error, can
-                                            // add error checking later
-
-        // Push new states in order into temporary list
-        for (ModuleType val : execution_sequence) {
-            std::function<void()> action_function =
-                dyn_state_action_func_map[val];
-
-            state_to_add = new State(
-                action_function, [trig_num]() { return trig_num; },
-                fault_transition); // NOTE: transition may be removed,
-                                   // superfluous for now
-            switch (val) {
-            case M_LLRS:
-                state_to_add->setType(ST_LLRS_EXEC);
-                break;
-            }
-
-            temp.push_back(state_to_add);
-        }
-
-        // Connect the states in temp as a sequence
-        for (size_t i = 0; i < temp.size(); i++) {
-            State *s = temp[i];
-            if (i + 1 < temp.size()) {
-                s->addStateTransition(trig_num, temp[i + 1]);
-            } else {
-                std::cout << "adding transition from " << s->getType();
-                // transition to the ready state to await hardware trigger if
-                // this is not the last sequence
-                if ((size_t)trig_num != num_keys) {
-
-                    // transition to the done shot state at the end of every
-                    // sequence
-                    s->addStateTransition(trig_num, trigger_done_state);
-                    std::cout
-                        << " to "
-                        << s->getNextProgrammableState(trig_num)->getType();
-                    // prevents the transition vector for done from getting
-                    // infinitely large. Used <= since there will always be a
-                    // fault transition
-                    if (s->getNextProgrammableState(trig_num)
-                            ->getTransitionSize() <= trig_num) {
-                        s->getNextProgrammableState(trig_num)
-                            ->addStateTransition(trig_num, ready_state);
-                        std::cout << " to "
-                                  << s->getNextProgrammableState(trig_num)
-                                         ->getNextProgrammableState(trig_num)
-                                         ->getType();
-                    }
-                    std::cout << std::endl;
-                }
-                // transition to the idle state after the last sequence
-                else {
-                    // transition to the done shot 2 state at the end of the
-                    // experiment
-                    s->addStateTransition(trig_num, trigger_done_state);
-                    std::cout
-                        << " to "
-                        << s->getNextProgrammableState(trig_num)->getType();
-                    // prevents the transition map for done 2 from getting
-                    // infinitely large.
-                    if (s->getNextProgrammableState(trig_num)
-                            ->getTransitionSize() == 1) {
-                        s->getNextProgrammableState(trig_num)
-                            ->addStateTransition(1, idle_state);
-                        std::cout << " to "
-                                  << s->getNextProgrammableState(trig_num)
-                                         ->getNextProgrammableState(1)
-                                         ->getType();
-                    }
-                    std::cout << std::endl;
-                }
-            }
-        }
-
-        // add the state transition from the ST_READY state to the new sequence
-        // of states
-        State *first_in_sequence = temp[0];
-
-        ready_state->addStateTransition(trig_num, first_in_sequence);
-
-        programmable_states.push_back(temp);
-        temp.clear();
-    }
-}
 
 template class FiniteStateMachine<AWG>;

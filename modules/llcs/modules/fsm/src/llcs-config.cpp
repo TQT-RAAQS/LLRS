@@ -9,16 +9,16 @@ void LLCSConfig::translate_commands() {
         iterator++;
         type = static_cast<LLCSCommandType>(cmd);
         switch (type) {
-            case MOVE:
+            case MOVE_SHOT:
                 commands.push_back(LLCSCommand(
-                    LLCSCommandType::MOVE,
+                    LLCSCommandType::MOVE_SHOT,
                     get_move_command_data(iterator)
                 ));
                 break;
 
-            case LLRS:
+            case LLRS_SHOT:
                 commands.push_back(LLCSCommand(
-                    LLCSCommandType::MOVE,
+                    LLCSCommandType::LLRS_SHOT,
                     get_llrs_command_data(iterator)
                 ));
                 break;
