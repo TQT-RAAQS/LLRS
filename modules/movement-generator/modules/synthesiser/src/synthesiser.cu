@@ -27,15 +27,15 @@ Synthesiser::Move Synthesiser::process_move(MovementsConfig &movementsConfig,
     move.wait_for_trigger =
         (i == movementsConfig.get_movement_count() - 1)
             ? true
-            : boost::get<long>(moveConfig.at("wait_on_trigger"));
-    move.type = (WfType)boost::get<long>(moveConfig.at("move_type"));
+            : boost::get<int>(moveConfig.at("wait_on_trigger"));
+    move.type = (WfType)boost::get<int>(moveConfig.at("move_type"));
     move.duration = boost::get<double>(moveConfig.at("duration"));
-    move.index = boost::get<long>(moveConfig.at("index_x"));
-    move.offset = boost::get<long>(moveConfig.at("index_y"));
-    move.block_size = boost::get<long>(moveConfig.at("block_size"));
-    move.func_type = (WFFuncType)boost::get<long>(moveConfig.at("wf_type"));
+    move.index = boost::get<int>(moveConfig.at("index_x"));
+    move.offset = boost::get<int>(moveConfig.at("index_y"));
+    move.block_size = boost::get<int>(moveConfig.at("block_size"));
+    move.func_type = (WFFuncType)boost::get<int>(moveConfig.at("wf_type"));
     move.extraction_extent =
-        boost::get<long>(moveConfig.at("extraction_extent"));
+        boost::get<int>(moveConfig.at("extraction_extent"));
     if (move.func_type == TANH_TRANSITION || move.func_type == ERF_TRANSITION) {
         move.vmax = boost::get<double>(moveConfig.at("vmax"));
     }

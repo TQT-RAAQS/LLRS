@@ -23,13 +23,15 @@ using ConfigDescription = std::tuple<std::string, void *, LabscriptType>;
 class GlobalsConfig {
 
     std::vector<ConfigDescription> globals_list;
-    void read_from_shot_file(ShotFile shotfile);
+    void read_from_shot_file();
 
   protected:
+    ShotFile shotfile;
+
     GlobalsConfig(ShotFile shotfile,
                   std::vector<ConfigDescription> globals_list)
-        : globals_list(globals_list) {
-        read_from_shot_file(shotfile);
+        : globals_list(globals_list), shotfile(shotfile) {  
+        read_from_shot_file();
     }
 };
 

@@ -1,6 +1,6 @@
 #include "globals-config.h"
 
-void GlobalsConfig::read_from_shot_file(ShotFile shotfile) {
+void GlobalsConfig::read_from_shot_file() {
     std::string global_name;
 
     void *var;
