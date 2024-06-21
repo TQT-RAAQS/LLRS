@@ -5,6 +5,7 @@
 #include "llrs.h"
 #include "handler.hpp"
 #include "state.hpp"
+#include "llcs-config.h"
 #include "trigger-detector.hpp"
 #include <chrono>
 #include <experimental/filesystem>
@@ -22,9 +23,10 @@ template <typename AWG_T> class FiniteStateMachine {
     TriggerDetector<AWG_T> trigger_detector;
     LLRS<AWG_T> llrs;
   
-    int numExperiments = 0;
     std::string llrs_problem_path = "21-problem.yml";
     std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
+    std::vector<LLCSCommand> commands;
+    int commands_itr = 0;
     void setupFSM();
     void resetTransitions();
 
@@ -111,12 +113,6 @@ template <typename AWG_T> class FiniteStateMachine {
      * appropriate state transition.
      */
     void runFSM();
-
-    /**
-     * @brief Program the configurable part of the state machine, configured by
-     * the workstation via a ZMQ server
-     */
-    void programStates(std::string filepath);
 
     /**
      * @brief Print all states

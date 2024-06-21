@@ -1,16 +1,15 @@
 #include "shot-file.h"
 #include "globals-config.h"
 
-enum LLCSCommandType {
-
-    MOVE = 0,
-    LLRS = 1
-};
-
 using LLRSCommandData = LabscriptDictType;
 using MoveCommandData = std::vector<LabscriptDictType>;
-
 using LLCSCommandData = boost::variant<LLRSCommandData, MoveCommandData>;
+
+enum LLCSCommandType {
+    MOVE_SHOT = 0,
+    LLRS_SHOT = 1
+};
+
 
 class LLCSCommand {
 
