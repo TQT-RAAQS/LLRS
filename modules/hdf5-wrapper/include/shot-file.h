@@ -1,6 +1,7 @@
 #ifndef HDF5_WRAPPER_H_
 #define HDF5_WRAPPER_H_
 
+
 #include "globals-not-found-exceptions.h"
 #include <boost/variant.hpp>
 #include <cassert>
@@ -26,6 +27,10 @@ class ShotFile {
 
     void assert_global_exists(std::string global_name);
     hsize_t get_global_list_value_length(std::string global_name);
+
+  protected:
+    
+    H5::H5File get_file() { return file; }
 
   public:
     ShotFile(std::string address);
