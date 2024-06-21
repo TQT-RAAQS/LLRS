@@ -7,7 +7,8 @@ llcs_fsm_inc = include_directories('include')
 
 # sources
 llcs_fsm_src = [
-    'src/fsm.cpp', 'src/llcs-config.cpp'
+    'src/fsm.cpp', 
+    'src/llcs-config.cpp'
   ]
 
 # submodules
@@ -15,7 +16,6 @@ state_proj =            subproject('state')
 zmq_server_proj =           subproject('zmq-server')
 trigger_detector_proj = subproject('trigger-detector')
 hdf_wrapper_proj =      subproject('hdf5-wrapper')
-h5_wrapper_proj =       subproject('h5-wrapper')
 llrs_lib_proj =         subproject('llrs-lib')
 
 # dependencies
@@ -23,7 +23,6 @@ llcs_state_dep = state_proj.get_variable('llcs_state_dep')
 zmq_server_dep = zmq_server_proj.get_variable('zmq_server_dep')
 llcs_trigger_detector_dep = trigger_detector_proj.get_variable('llcs_trigger_detector_dep')
 hdf5_wrapper_dep = hdf_wrapper_proj.get_variable('hdf5_wrapper_dep')
-h5_wrapper_dep = h5_wrapper_proj.get_variable('h5_wrapper_dep')
 llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_dep')
 
 
@@ -31,10 +30,10 @@ llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_dep')
 llcs_fsm = library('llcs_fsm', 
     llcs_fsm_src,
     include_directories: [llcs_fsm_inc],
-    dependencies: [llcs_state_dep, zmq_server_dep, llcs_trigger_detector_dep, hdf5_wrapper_dep, h5_wrapper_dep, llrs_lib_dep])
+    dependencies: [llcs_state_dep, zmq_server_dep, llcs_trigger_detector_dep, hdf5_wrapper_dep,  llrs_lib_dep])
 
 # dependencies
 llcs_fsm_dep = declare_dependency(
     include_directories: [llcs_fsm_inc],
     link_with: [llcs_fsm],
-    dependencies: [llcs_state_dep, zmq_server_dep, llcs_trigger_detector_dep, hdf5_wrapper_dep, h5_wrapper_dep, llrs_lib_dep])
+    dependencies: [llcs_state_dep, zmq_server_dep, llcs_trigger_detector_dep, hdf5_wrapper_dep,  llrs_lib_dep])

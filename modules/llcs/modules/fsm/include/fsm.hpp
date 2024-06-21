@@ -1,7 +1,6 @@
 #ifndef FSM_HPP_
 #define FSM_HPP_
 
-#include "h5-wrapper.hpp"
 #include "llcs/common.hpp"
 #include "llrs.h"
 #include "server.hpp"
