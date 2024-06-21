@@ -24,9 +24,6 @@
 #include <yaml-cpp/yaml.h>
 using json = nlohmann::json;
 
-/* Toggle for storing all images taken */
-// #define STORE_IMAGES
-
 enum Target { CENTRE_COMPACT };
 
 template <typename AWG_T> class LLRS {
@@ -58,40 +55,53 @@ template <typename AWG_T> class LLRS {
         std::vector<std::vector<Reconfig::Move>> moves_per_cycle;
         std::vector<std::vector<int32_t>> atom_configs;
         nlohmann::json runtime_data;
-
-        friend class LLRS;
+        bool target_met = false;
 
       public:
-        // Getter functions
-        const int getNtx() const;
-        const int getNty() const;
-        const int getNumCycles() const;
+        
+        int getNtx() const {return Nt_x;}
+        int getNty() const {return Nt_y;}
+        int getNumCycles() const {return num_cycles;}
+        bool getTargetMet() const {return target_met;}
         const std::vector<std::vector<Reconfig::Move>> &
-        getMovesPerCycle() const;
-        const std::vector<std::vector<int32_t>> &getAtomConfigs() const;
-        const nlohmann::json &getRuntimeData() const;
-
-        Metadata(const Metadata &other) {
-            Nt_x = other.Nt_x;
-            Nt_y = other.Nt_y;
-            num_cycles = other.num_cycles;
-            moves_per_cycle = other.moves_per_cycle;
-            atom_configs = other.atom_configs;
-            runtime_data = other.runtime_data;
+        getMovesPerCycle() const {
+            return moves_per_cycle;
+        }
+        const std::vector<std::vector<int32_t>> &getAtomConfigs() const {
+            return atom_configs;
+        }
+        const nlohmann::json &getRuntimeData() const {return runtime_data;}
+        void reset() {
+            Nt_x = 0;
+            Nt_y = 0;
+            num_cycles = 0;
+            target_met = false;
+            moves_per_cycle.clear();
+            atom_configs.clear();
+            runtime_data.clear();
+            moves_per_cycle.reserve(ATTEMPT_LIMIT);
+            atom_configs.reserve(ATTEMPT_LIMIT);
         }
 
       private:
-        Metadata();
 
         // Setter functions
-        void setNtx(const int Ntx);
-        void setNty(const int Nty);
-        void setNumCycles(const int cycles);
+        void setNtx(const int Ntx) {Nt_x = Ntx;}
+        void setNty(const int Nty) {Nt_y = Nty;}
+        void setNumCycles(const int cycles) {num_cycles = cycles;}
         void
-        setMovesPerCycle(const std::vector<std::vector<Reconfig::Move>> &moves);
-        void setAtomConfigs(const std::vector<std::vector<int32_t>> &configs);
-        void addAtomConfigs(const std::vector<int32_t> &atom_config);
-        void setRuntimeData(const nlohmann::json &runtime_data);
+        setMovesPerCycle(const std::vector<std::vector<Reconfig::Move>> &moves) {
+            moves_per_cycle = moves;
+        }
+        void addMovesPerCycle(std::vector<Reconfig::Move> moves) {
+            moves_per_cycle.push_back(moves);
+        }
+        void setAtomConfigs(const std::vector<std::vector<int32_t>> &configs) {atom_configs = configs;}
+        void addAtomConfigs(const std::vector<int32_t> &atom_config) {atom_configs.push_back(atom_config);}
+        void setRuntimeData(const nlohmann::json &runtimedata) {runtime_data = runtimedata;}
+        void incrementNumCycles() {num_cycles++;}
+        void setTargetMet() {target_met = true;}
+        friend class LLRS;
     } metadata;
 
     LLRS();
@@ -100,15 +110,16 @@ template <typename AWG_T> class LLRS {
     ~LLRS() { clean(); }
     void setup(std::string json_input, bool setup_idle_segment,
                int llrs_step_offset, std::string problem_id = "");
-    void small_setup(std::string json_input);
+    void reset_psf(std::string psf_file);
+    void reset_waveform_table();
+    void reset_problem(std::string algorithm, int num_target);
+    void reset_awg(bool setup_idle_segment, int llrs_step_off) {awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, metadata.getNtx(), metadata.getNty());}
     int execute();
     void reset(bool reset_segments);
     std::vector<int32_t> get_target_config(Target target, int num_target);
     void create_center_target(std::vector<int32_t> &target_config,
                               int num_target);
     void setTargetConfig(std::vector<int> new_target_config);
-    int getTrialNum();
-    int getRepNum();
     void store_moves();
     const Metadata &getMetadata() const { return metadata; };
     void get_idle_wfm(typename AWG_T::TransferBuffer &tb,

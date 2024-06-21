@@ -13,6 +13,7 @@ class AWG {
     AWG();
     ~AWG();
 
+    int configure();
     int start_stream();
     int reset_card();
     int stop_card();
@@ -119,7 +120,6 @@ class AWG {
     int dwFactor = 1;
     void *continuousBuffer = nullptr;
     uint64 continuousBufferSize = 0;
-    int configure();
     friend class TransferBuffer;
 };
 #endif

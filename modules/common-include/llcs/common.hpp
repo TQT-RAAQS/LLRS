@@ -31,21 +31,18 @@ namespace fs = std::experimental::filesystem;
 // Type Definitions
 enum StateType {
     ST_BEGIN,
-    ST_FAULT,
     ST_IDLE,
-    ST_CONFIG_HW,
-    ST_CONFIG_SM,
-    ST_READY,
-    ST_EXPERIMENT,
-    ST_EXIT,
     ST_RESET,
-    ST_TRIGGER_DONE,
-    ST_LAST_TRIGGER_DONE,
-    ST_CLOSE_AWG,
-    ST_RESTART_AWG,
+    ST_CONFIG_PSF,
+    ST_CONFIG_WAVEFORM,
+    ST_PROCESS_SHOT,
+    ST_READY,
     ST_LLRS_EXEC,
-    ST_CLO_EXEC,
-    ST_RYDBERG_EXEC
+    ST_FAULT,
+    ST_EXIT,
+    ST_TRIGGER_DONE,
+    ST_CLOSE_AWG,
+    ST_RESTART_AWG
 };
 
 enum TransitionType { TR_FAULT, TR_HW, TR_NW, TR_INTERNAL, TR_NULL };
@@ -65,7 +62,6 @@ enum ModuleType { M_LLRS, M_CLO, M_RYDBERG };
 #define SYS_OK 0
 #define SYS_ERR 1
 
-#define LLRS_RESET_PATH (std::string("") + PROJECT_BASE_DIR + "/configs/llrs/config.json")
-#define PSF_CONFIG_PATH (std::string("") + PROJECT_BASE_DIR + "/tools/psf-translator.py")
+#define PSF_TRANSLATOR_PATH (std::string("") + PROJECT_BASE_DIR + "/tools/psf-translator.py")
 
 #endif

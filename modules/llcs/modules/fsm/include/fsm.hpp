@@ -3,7 +3,7 @@
 
 #include "llcs/common.hpp"
 #include "llrs.h"
-#include "server.hpp"
+#include "handler.hpp"
 #include "state.hpp"
 #include "trigger-detector.hpp"
 #include <chrono>
@@ -15,52 +15,53 @@ template <typename AWG_T> class FiniteStateMachine {
     State *currentState;
     std::unordered_map<StateType, State *> states;
     std::vector<std::vector<State *>> programmable_states;
-    std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
     std::unordered_map<ModuleType, std::function<void()>>
         dyn_state_action_func_map;
-    Server *server;
-    TriggerDetector<AWG_T> *trigger_detector;
-    LLRS<AWG_T> *l;
-    int num_exp_sequence;
-    int16 *pnData;
-    int qwBufferSize;
-
-    /**
-     * @brief Creates all state objects for the static states of the FSM
-     */
+    
+    Handler server_handler;
+    TriggerDetector<AWG_T> trigger_detector;
+    LLRS<AWG_T> llrs;
+  
+    int numExperiments = 0;
+    std::string llrs_problem_path = "21-problem.yml";
+    std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
     void setupFSM();
-
-    /**
-     * @brief Reset the configurable sequence of experimental states after each
-     * shot
-     */
     void resetTransitions();
 
     /**
-     * @brief Entry state of the FSM. Creates the LLRS object and streams static
-     * waveforms
+     * @brief Entry state of the FSM. Setups the LLRS object based on default config.
      */
     void st_BEGIN();
 
     /**
      * @brief Idle state. Waits for requests from the server to transition to
-     * another state
+     * another state.
      */
     void st_IDLE();
 
     /**
-     * @brief Configures relevant hardware with data sent by the workstation
+     * @brief Resets the llrs object with a different setup
      */
-    void st_CONFIG_HW();
+    void st_RESET();
 
     /**
-     * @brief Programs the shot sequence with data sent by the workstation
+     * @brief Configures the PSF
      */
-    void st_CONFIG_SM();
+    void st_CONFIG_PSF();
 
+    /**
+     * @brief Configures the waveform
+     */
+    void st_CONFIG_WAVEFORM();
+
+    /**
+     * @brief Processes the shots that are read from the HDF5 file 
+     */
+    void st_PROCESS_SHOT();
+    
     /**
      * @brief Waits for a hardware trigger to begin commencing the experimental
-     * shot sequence
+     * shot sequence.
      */
     void st_READY();
 
@@ -70,23 +71,12 @@ template <typename AWG_T> class FiniteStateMachine {
     void st_TRIGGER_DONE();
 
     /**
-     * @brief State at the end of the experimental shot. Sends relevant metadata
-     * to the workstation.
-     */
-    void st_LAST_TRIGGER_DONE();
-
-    /**
-     * @brief dumps the LLRS object and creates a new one with a different setup
-     */
-    void st_RESET();
-
-    /**
      * @brief Closes AWG card for another device to take over
      */
     void st_CLOSE_AWG();
 
     /**
-     * @brief Reopens AWG card and streams static waveforms
+     * @brief Reopens AWG card
      */
     void st_RESTART_AWG();
 
@@ -106,17 +96,12 @@ template <typename AWG_T> class FiniteStateMachine {
     void st_LLRS_EXEC();
 
     /**
-     * @brief State to execute the CLO
+     * @brief Saves metadata of each shot to be returned to the workstation
      */
-    void st_CLO_EXEC();
-
-    /**
-     * @brief State to execute the Rydberg excitation module
-     */
-    void st_RYDBERG_EXEC();
+    void saveMetadata(std::string filepath);
 
   public:
-    FiniteStateMachine(Server *s, TriggerDetector<AWG_T> *td);
+    FiniteStateMachine();
     ~FiniteStateMachine();
 
     /**
@@ -137,14 +122,5 @@ template <typename AWG_T> class FiniteStateMachine {
      * @brief Print all states
      */
     void printStates();
-
-    /**
-     * @brief Saves metadata of each shot to be returned to the workstation
-     */
-    void saveMetadata(std::string filepath);
-
-    int numExperiments = 1;
-    bool HWconfigured;
-    bool SMconfigured;
 };
 #endif
