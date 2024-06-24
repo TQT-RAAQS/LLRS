@@ -18,6 +18,7 @@ int TriggerDetector<AWG_T>::setup(typename AWG_T::TransferBuffer &tb) {
 
     // SEQUENCE MEMORY
     status |= awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+    status |= awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
 
     // Ensure there is enough time for the first idle segment's pointer to
     // update
@@ -32,9 +33,11 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::stream() {
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::reset() {
     assert(awg->get_current_step() == 1);
+    awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
     awg->seqmem_update(1, 0, 1, 0, SPCSEQ_ENDLOOPALWAYS);
-    busyWait();
-    assert(awg->get_current_step() == 0);
+    while(awg->get_current_step() != 0) {
+    }
+    awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
 }
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
@@ -57,7 +60,10 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
 }
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::resetDetectionStep() {
-    return awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+    int status; 
+    status |= awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
+    status |= awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
+    return status;
 }
 
 /**
@@ -73,7 +79,6 @@ int TriggerDetector<AWG_T>::detectTrigger(int timeout) {
 
     auto startTime = std::chrono::high_resolution_clock::now();
     auto targetDuration = std::chrono::seconds(timeout);
-
     while (true) {
         // Timeout loop break
         if (timeout != -1 &&
@@ -90,7 +95,6 @@ int TriggerDetector<AWG_T>::detectTrigger(int timeout) {
                 << current_step << std::endl;
             std::cout << "last_step: " << last_step << std::endl;
             last_step = current_step;
-
             return current_step;
         }
     }

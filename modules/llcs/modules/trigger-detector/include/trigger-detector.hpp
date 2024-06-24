@@ -22,6 +22,9 @@ template <typename AWG_T> class TriggerDetector {
     int detectTrigger(int timeout = -1);
     std::shared_ptr<AWG_T> &getAWG() { return awg; }
     size_t get_samples_per_idle_segment() { return samples_per_idle_segment; }
+    void reset_segment_size() {
+        samples_per_idle_segment = awg->get_idle_segment_length();
+    }
 };
 
 #endif
