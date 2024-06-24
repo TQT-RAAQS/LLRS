@@ -9,29 +9,26 @@ void LLCSConfig::translate_commands() {
         iterator++;
         type = static_cast<LLCSCommandType>(cmd);
         switch (type) {
-            case MOVE_SHOT:
-                commands.push_back(LLCSCommand(
-                    LLCSCommandType::MOVE_SHOT,
-                    get_move_command_data(iterator)
-                ));
-                break;
+        case MOVE_SHOT:
+            commands.push_back(LLCSCommand(LLCSCommandType::MOVE_SHOT,
+                                           get_move_command_data(iterator)));
+            break;
 
-            case LLRS_SHOT:
-                commands.push_back(LLCSCommand(
-                    LLCSCommandType::LLRS_SHOT,
-                    get_llrs_command_data(iterator)
-                ));
-                break;
+        case LLRS_SHOT:
+            commands.push_back(LLCSCommand(LLCSCommandType::LLRS_SHOT,
+                                           get_llrs_command_data(iterator)));
+            break;
         }
     }
 }
 
 MoveCommandData LLCSConfig::get_move_command_data(int index) {
-    std::string key = "emccd_workstation_movement_waveforms_" + std::to_string(index);
+    std::string key =
+        "emccd_workstation_movement_waveforms_" + std::to_string(index);
     MoveCommandData result;
     shotfile.get_global_list_dict(key, &result);
 
-    return  result;
+    return result;
 }
 
 LLRSCommandData LLCSConfig::get_llrs_command_data(int index) {

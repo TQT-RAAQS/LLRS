@@ -3,10 +3,10 @@
 
 #include "awg.hpp"
 #include "llcs/common.hpp"
+#include <cassert>
 #include <cmath>
 #include <fstream>
 #include <memory>
-#include <cassert>
 
 template <typename AWG_T> class TriggerDetector {
     std::shared_ptr<AWG_T> awg;

@@ -26,7 +26,7 @@ void Server::set_listen_timeout(int timeout) {
     socket.set(zmq::sockopt::rcvtimeo, listen_timeout);
     socket.setsockopt(ZMQ_RCVTIMEO, listen_timeout);
 }
-    
+
 /**
  * @brief The destructor of the server class.
  *
@@ -73,7 +73,6 @@ int Server::listen(std::string &requestStr) {
     }
     return 0;
 }
-
 
 void Server::setMetadataAddress(std::string &requestStr1) {
     replaceStr(requestStr1, "\\", "/");

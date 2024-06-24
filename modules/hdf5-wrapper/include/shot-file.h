@@ -1,13 +1,12 @@
 #ifndef HDF5_WRAPPER_H_
 #define HDF5_WRAPPER_H_
 
-
 #include "globals-not-found-exceptions.h"
 #include <boost/variant.hpp>
 #include <cassert>
 #include <cstring>
-#include <hdf5/serial/H5Cpp.h>
 #include <hdf5/serial/H5Attribute.h>
+#include <hdf5/serial/H5Cpp.h>
 #include <iostream>
 #include <sstream>
 #include <tuple>
@@ -29,7 +28,6 @@ class ShotFile {
     hsize_t get_global_list_value_length(std::string global_name);
 
   protected:
-    
     H5::H5File get_file() { return file; }
 
   public:
@@ -71,7 +69,8 @@ class ShotFile {
         *output = result_vec;
     }
 
-    void get_global_list_dict(std::string global_name, std::vector<LabscriptDictType> *output);
+    void get_global_list_dict(std::string global_name,
+                              std::vector<LabscriptDictType> *output);
 
     void close_file();
 

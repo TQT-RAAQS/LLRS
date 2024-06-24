@@ -8,7 +8,8 @@ using json = nlohmann::json;
  * transitions between these states.
  */
 template <typename AWG_T>
-FiniteStateMachine<AWG_T>::FiniteStateMachine(): server_handler{}, trigger_detector{}, llrs{trigger_detector.getAWG()} {
+FiniteStateMachine<AWG_T>::FiniteStateMachine()
+    : server_handler{}, trigger_detector{}, llrs{trigger_detector.getAWG()} {
 
     // 1. Create the ST_FAULT state
     State *fault_state =
@@ -57,10 +58,10 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     State *idle_state =
         new State([this]() { this->st_IDLE(); },
                   [this]() { return server_handler.get_request(); }, f);
-   State *psf_reset_state =
+    State *psf_reset_state =
         new State([this]() { this->st_CONFIG_PSF(); }, []() { return 1; }, f);
-    State *waveform_reset_state =
-        new State([this]() { this->st_CONFIG_WAVEFORM(); }, []() { return 1; }, f);
+    State *waveform_reset_state = new State(
+        [this]() { this->st_CONFIG_WAVEFORM(); }, []() { return 1; }, f);
     State *llrs_reset_state =
         new State([this]() { this->st_RESET(); }, []() { return 1; }, f);
     State *close_awg_state =
@@ -70,16 +71,17 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
         new State([this]() { this->st_RESTART_AWG(); }, []() { return 1; }, f);
     State *process_shot_state =
         new State([this]() { this->st_PROCESS_SHOT(); }, []() { return 1; }, f);
-    State *ready_state =
-        new State([this]() { this->st_READY(); },
-                  [this]() {
-                    return trigger_detector.detectTrigger(6000) != NO_HW_TRIG?1:-1;
-                  },
-                  f);
+    State *ready_state = new State(
+        [this]() { this->st_READY(); },
+        [this]() {
+            return trigger_detector.detectTrigger(6000) != NO_HW_TRIG ? 1 : -1;
+        },
+        f);
     State *llrs_state = new State([this]() { this->st_LLRS_EXEC(); },
                                   [this]() { return 1; }, f);
-    State *trigger_done_state =
-        new State([this]() { this->st_TRIGGER_DONE(); }, [this]() { return this->commands_itr==commands.size()?1:2; }, f);
+    State *trigger_done_state = new State(
+        [this]() { this->st_TRIGGER_DONE(); },
+        [this]() { return this->commands_itr == commands.size() ? 1 : 2; }, f);
     State *exit_state =
         new State([this]() { this->st_EXIT(); }, []() { return 1; }, NULL);
 
@@ -90,7 +92,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     states.insert({ST_RESTART_AWG, restart_awg_state});
     states.insert({ST_CONFIG_PSF, psf_reset_state});
     states.insert({ST_CONFIG_WAVEFORM, waveform_reset_state});
-    states.insert({ST_PROCESS_SHOT, process_shot_state}); 
+    states.insert({ST_PROCESS_SHOT, process_shot_state});
     states.insert({ST_READY, ready_state});
     states.insert({ST_LLRS_EXEC, llrs_state});
     states.insert({ST_TRIGGER_DONE, trigger_done_state});
@@ -104,7 +106,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     idle_state->addStateTransition(3, psf_reset_state);
     idle_state->addStateTransition(4, waveform_reset_state);
     idle_state->addStateTransition(5, close_awg_state);
-    
+
     close_awg_state->addStateTransition(5, restart_awg_state);
     restart_awg_state->addStateTransition(1, idle_state);
 
@@ -169,7 +171,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::runFSM() {
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     std::cout << "FSM:: BEGIN state" << std::endl;
-    llrs.setup(llrs_problem_path, false, 1); // Default problem, operator can reset the problem in the idle step
+    llrs.setup(
+        llrs_problem_path, false,
+        1); // Default problem, operator can reset the problem in the idle step
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
@@ -182,9 +186,8 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
     // receive hdf5 filepath from the workstation
     LLCSConfig llrs_config(ShotFile(server_handler.get_hdf5_file_path()));
     commands = llrs_config.get_commands();
-    llrs_metadata.reserve(commands.size());  
+    llrs_metadata.reserve(commands.size());
     commands_itr = 0;
-
 
     std::cout << "Starting AWG stream" << std::endl;
     auto awg = trigger_detector.getAWG();
@@ -244,8 +247,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_PSF() {
     const char *psf_translator = str.c_str();
     const char *command = "python3 ";
     char fullCommand[256];
-    snprintf(fullCommand, sizeof(fullCommand), "%s%s", command,
-            psf_translator);
+    snprintf(fullCommand, sizeof(fullCommand), "%s%s", command, psf_translator);
     int result = system(fullCommand);
     llrs.reset_psf(std::string("default.bin"));
     server_handler.send_200();
@@ -280,9 +282,10 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
 
     for (size_t i = 0; i < llrs_metadata.size(); i++) {
         nlohmann::json json_data;
-        std::string filePath = parentDir + "metadata_" + std::to_string(i) + ".json";
+        std::string filePath =
+            parentDir + "metadata_" + std::to_string(i) + ".json";
 
-        // Save general data 
+        // Save general data
         json_data["nt_x"] = llrs_metadata.at(i).getNtx();
         json_data["nt_y"] = llrs_metadata.at(i).getNty();
         json_data["cycles"] = llrs_metadata.at(i).getNumCycles();
@@ -295,10 +298,10 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
         const std::vector<std::vector<int32_t>> &atomConfigs =
             llrs_metadata.at(i).getAtomConfigs();
 
- 
         nlohmann::json cycles_data;
         // Save the initial atom configuration
-        for (int cycle_index = 0; cycle_index < llrs_metadata.at(i).getNumCycles(); ++cycle_index) {
+        for (int cycle_index = 0;
+             cycle_index < llrs_metadata.at(i).getNumCycles(); ++cycle_index) {
             nlohmann::json cycle_data;
             cycle_data["initial_atom_config"] = atomConfigs[cycle_index];
 
@@ -306,8 +309,8 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
             if (movesPerCycle.size() > cycle_index) {
                 for (const auto &move : movesPerCycle[cycle_index]) {
                     jsonMoves.push_back({std::get<0>(move), std::get<1>(move),
-                                            std::get<2>(move), std::get<3>(move),
-                                            std::get<4>(move)});
+                                         std::get<2>(move), std::get<3>(move),
+                                         std::get<4>(move)});
                 }
             }
             cycle_data["moves"] = jsonMoves;
@@ -325,6 +328,5 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
         outfile << json_data.dump(2);
     }
 }
-
 
 template class FiniteStateMachine<AWG>;

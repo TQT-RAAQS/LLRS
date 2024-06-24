@@ -1,15 +1,11 @@
-#include "shot-file.h"
 #include "globals-config.h"
+#include "shot-file.h"
 
 using LLRSCommandData = LabscriptDictType;
 using MoveCommandData = std::vector<LabscriptDictType>;
 using LLCSCommandData = boost::variant<LLRSCommandData, MoveCommandData>;
 
-enum LLCSCommandType {
-    MOVE_SHOT = 0,
-    LLRS_SHOT = 1
-};
-
+enum LLCSCommandType { MOVE_SHOT = 0, LLRS_SHOT = 1 };
 
 class LLCSCommand {
 
@@ -17,8 +13,8 @@ class LLCSCommand {
     const LLCSCommandType type;
     const LLCSCommandData data;
 
-    LLCSCommand(LLCSCommandType type, LLCSCommandData data) :
-        type(type), data(data) {}
+    LLCSCommand(LLCSCommandType type, LLCSCommandData data)
+        : type(type), data(data) {}
 };
 
 class LLCSConfig : protected GlobalsConfig {
@@ -31,15 +27,14 @@ class LLCSConfig : protected GlobalsConfig {
     LLRSCommandData get_llrs_command_data(int index);
 
   public:
-    
     LLCSConfig(ShotFile shotfile)
-        : GlobalsConfig(
-              shotfile,
-              {{"emccd_workstation_commands", &commands_int, LabscriptType::LIST_OF_INT},
-               }) {
-                    translate_commands();
-               }
-
+        : GlobalsConfig(shotfile,
+                        {
+                            {"emccd_workstation_commands", &commands_int,
+                             LabscriptType::LIST_OF_INT},
+                        }) {
+        translate_commands();
+    }
 
     std::vector<LLCSCommand> get_commands() { return commands; }
 };

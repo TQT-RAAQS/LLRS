@@ -58,11 +58,10 @@ template <typename AWG_T> class LLRS {
         bool target_met = false;
 
       public:
-        
-        int getNtx() const {return Nt_x;}
-        int getNty() const {return Nt_y;}
-        int getNumCycles() const {return num_cycles;}
-        bool getTargetMet() const {return target_met;}
+        int getNtx() const { return Nt_x; }
+        int getNty() const { return Nt_y; }
+        int getNumCycles() const { return num_cycles; }
+        bool getTargetMet() const { return target_met; }
         const std::vector<std::vector<Reconfig::Move>> &
         getMovesPerCycle() const {
             return moves_per_cycle;
@@ -70,7 +69,7 @@ template <typename AWG_T> class LLRS {
         const std::vector<std::vector<int32_t>> &getAtomConfigs() const {
             return atom_configs;
         }
-        const nlohmann::json &getRuntimeData() const {return runtime_data;}
+        const nlohmann::json &getRuntimeData() const { return runtime_data; }
         void reset() {
             Nt_x = 0;
             Nt_y = 0;
@@ -84,23 +83,28 @@ template <typename AWG_T> class LLRS {
         }
 
       private:
-
         // Setter functions
-        void setNtx(const int Ntx) {Nt_x = Ntx;}
-        void setNty(const int Nty) {Nt_y = Nty;}
-        void setNumCycles(const int cycles) {num_cycles = cycles;}
-        void
-        setMovesPerCycle(const std::vector<std::vector<Reconfig::Move>> &moves) {
+        void setNtx(const int Ntx) { Nt_x = Ntx; }
+        void setNty(const int Nty) { Nt_y = Nty; }
+        void setNumCycles(const int cycles) { num_cycles = cycles; }
+        void setMovesPerCycle(
+            const std::vector<std::vector<Reconfig::Move>> &moves) {
             moves_per_cycle = moves;
         }
         void addMovesPerCycle(std::vector<Reconfig::Move> moves) {
             moves_per_cycle.push_back(moves);
         }
-        void setAtomConfigs(const std::vector<std::vector<int32_t>> &configs) {atom_configs = configs;}
-        void addAtomConfigs(const std::vector<int32_t> &atom_config) {atom_configs.push_back(atom_config);}
-        void setRuntimeData(const nlohmann::json &runtimedata) {runtime_data = runtimedata;}
-        void incrementNumCycles() {num_cycles++;}
-        void setTargetMet() {target_met = true;}
+        void setAtomConfigs(const std::vector<std::vector<int32_t>> &configs) {
+            atom_configs = configs;
+        }
+        void addAtomConfigs(const std::vector<int32_t> &atom_config) {
+            atom_configs.push_back(atom_config);
+        }
+        void setRuntimeData(const nlohmann::json &runtimedata) {
+            runtime_data = runtimedata;
+        }
+        void incrementNumCycles() { num_cycles++; }
+        void setTargetMet() { target_met = true; }
         friend class LLRS;
     } metadata;
 
@@ -113,7 +117,10 @@ template <typename AWG_T> class LLRS {
     void reset_psf(std::string psf_file);
     void reset_waveform_table();
     void reset_problem(std::string algorithm, int num_target);
-    void reset_awg(bool setup_idle_segment, int llrs_step_off) {awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, metadata.getNtx(), metadata.getNty());}
+    void reset_awg(bool setup_idle_segment, int llrs_step_off) {
+        awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d,
+                            metadata.getNtx(), metadata.getNty());
+    }
     int execute();
     void reset(bool reset_segments);
     std::vector<int32_t> get_target_config(Target target, int num_target);

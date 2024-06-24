@@ -1,11 +1,11 @@
 #ifndef FSM_HPP_
 #define FSM_HPP_
 
+#include "handler.hpp"
+#include "llcs-config.h"
 #include "llcs/common.hpp"
 #include "llrs.h"
-#include "handler.hpp"
 #include "state.hpp"
-#include "llcs-config.h"
 #include "trigger-detector.hpp"
 #include <chrono>
 #include <experimental/filesystem>
@@ -18,11 +18,11 @@ template <typename AWG_T> class FiniteStateMachine {
     std::vector<std::vector<State *>> programmable_states;
     std::unordered_map<ModuleType, std::function<void()>>
         dyn_state_action_func_map;
-    
+
     Handler server_handler;
     TriggerDetector<AWG_T> trigger_detector;
     LLRS<AWG_T> llrs;
-  
+
     std::string llrs_problem_path = "21-problem.yml";
     std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
     std::vector<LLCSCommand> commands;
@@ -31,7 +31,8 @@ template <typename AWG_T> class FiniteStateMachine {
     void resetTransitions();
 
     /**
-     * @brief Entry state of the FSM. Setups the LLRS object based on default config.
+     * @brief Entry state of the FSM. Setups the LLRS object based on default
+     * config.
      */
     void st_BEGIN();
 
@@ -57,10 +58,10 @@ template <typename AWG_T> class FiniteStateMachine {
     void st_CONFIG_WAVEFORM();
 
     /**
-     * @brief Processes the shots that are read from the HDF5 file 
+     * @brief Processes the shots that are read from the HDF5 file
      */
     void st_PROCESS_SHOT();
-    
+
     /**
      * @brief Waits for a hardware trigger to begin commencing the experimental
      * shot sequence.

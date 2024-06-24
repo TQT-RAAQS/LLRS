@@ -130,7 +130,8 @@ int Setup::create_wf_repo(size_t Nt_x, size_t Nt_y, double sample_rate,
 Synthesis::WaveformTable
 Setup::create_wf_table(size_t Nt_x, size_t Nt_y, double sample_rate,
                        int waveform_mask, int vpp, std::string coef_x_fname,
-                       std::string coef_y_fname, bool is_transposed, bool force_reset) {
+                       std::string coef_y_fname, bool is_transposed,
+                       bool force_reset) {
 
     std::string file_name = "repo." + std::to_string(Nt_x) + "_" +
                             std::to_string(Nt_y) + "_" +
