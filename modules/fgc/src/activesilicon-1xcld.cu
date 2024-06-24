@@ -181,6 +181,7 @@ std::vector<uint16_t> Acquisition::ActiveSilicon1XCLD::acquire_single_image() {
         ret_image = get_current_buffer(); // get the current buffer contents
                                           // when check_and_wait finishes
         stop_stream_read();               // stop the stream read
+        std::cout << "Image Acquisition Successful." << std::endl;
 
     } else {
         std::cerr
