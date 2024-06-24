@@ -30,10 +30,10 @@ llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_dep')
 llcs_fsm = library('llcs_fsm', 
     llcs_fsm_src,
     include_directories: [llcs_fsm_inc],
-    dependencies: [llcs_state_dep, llcs_server_handler_dep, llcs_trigger_detector_dep, hd5_wrapper_dep, llrs_lib_dep])
+    dependencies: [llcs_state_dep, llcs_server_handler_dep, llcs_trigger_detector_dep, hdf5_wrapper_dep, llrs_lib_dep])
 
 # dependencies
 llcs_fsm_dep = declare_dependency(
     include_directories: [llcs_fsm_inc],
     link_with: [llcs_fsm],
-    dependencies: [llcs_state_dep, llcs_server_handler_dep, llcs_trigger_detector_dep, hd5_wrapper_dep, llrs_lib_dep])
+    dependencies: [llcs_state_dep, llcs_server_handler_dep, llcs_trigger_detector_dep, hdf5_wrapper_dep, llrs_lib_dep])
