@@ -134,7 +134,7 @@ std::string State::getType() {
         return "ST_PROCESS_SHOT";
     case ST_CLOSE_AWG:
         return "ST_CLOSE_AWG";
-    case ST_RESTART_AWG:   
+    case ST_RESTART_AWG:
         return "ST_RESTART_AWG";
     case ST_BEGIN:
         return "ST_BEGIN";

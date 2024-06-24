@@ -3,8 +3,8 @@
 #include "llcs/common.hpp"
 #include "server.hpp"
 #include "trigger-detector.hpp"
-#include <signal.h>
 #include <memory>
+#include <signal.h>
 
 void my_handler(int s) {
     printf("Caught signal %d\n", s);
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
 
-    FiniteStateMachine<AWG> fsm {};
+    FiniteStateMachine<AWG> fsm{};
 
     fsm.runFSM();
 }

@@ -32,8 +32,7 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::stream() {
 
 template <typename AWG_T> int TriggerDetector<AWG_T>::reset() {
     assert(awg->get_current_step() == 1);
-    awg->seqmem_update(1, 0, 1, 0,
-                       SPCSEQ_ENDLOOPALWAYS); 
+    awg->seqmem_update(1, 0, 1, 0, SPCSEQ_ENDLOOPALWAYS);
     busyWait();
     assert(awg->get_current_step() == 0);
 }

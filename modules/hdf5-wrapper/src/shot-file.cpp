@@ -35,8 +35,8 @@ void ShotFile::get_global_dict(std::string global_name,
     *output = ShotFile::convert_chars_to_labscript_dict(dict_str);
 }
 
-void ShotFile::get_global_list_dict(std::string global_name, 
-    std::vector<LabscriptDictType> *output) {
+void ShotFile::get_global_list_dict(std::string global_name,
+                                    std::vector<LabscriptDictType> *output) {
 
     std::vector<char *> list_dict_str;
     get_global_list_value(global_name, &list_dict_str);

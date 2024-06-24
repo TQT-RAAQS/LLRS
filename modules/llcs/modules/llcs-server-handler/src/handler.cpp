@@ -149,13 +149,13 @@ void Handler::async_listen() {
                     break;
             }
             continue;
-        } 
+        }
     }
 }
 
 uint Handler::get_request() {
-    while(true) {
-       uint req;
+    while (true) {
+        uint req;
         {
             std::lock_guard<std::mutex> lock(requestMutex);
             req = request;
@@ -172,7 +172,7 @@ std::string Handler::get_hdf5_file_path() {
     {
         std::lock_guard<std::mutex> lock(requestMutex);
         hdf5_file_path = this->hdf5_file_path;
-    } 
+    }
     return hdf5_file_path;
 }
 
@@ -181,7 +181,7 @@ std::string Handler::get_llrs_config_file() {
     {
         std::lock_guard<std::mutex> lock(requestMutex);
         config_file = llrs_config_file;
-    } 
+    }
     return config_file;
 }
 
@@ -212,7 +212,7 @@ void Handler::send_done() {
     }
 }
 
-void Handler::send_200() { 
+void Handler::send_200() {
     server.send("200");
     {
         std::lock_guard<std::mutex> lock(processingMutex);

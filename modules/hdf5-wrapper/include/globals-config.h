@@ -30,7 +30,7 @@ class GlobalsConfig {
 
     GlobalsConfig(ShotFile shotfile,
                   std::vector<ConfigDescription> globals_list)
-        : globals_list(globals_list), shotfile(shotfile) {  
+        : globals_list(globals_list), shotfile(shotfile) {
         read_from_shot_file();
     }
 };

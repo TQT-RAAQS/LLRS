@@ -62,6 +62,7 @@ enum ModuleType { M_LLRS, M_CLO, M_RYDBERG };
 #define SYS_OK 0
 #define SYS_ERR 1
 
-#define PSF_TRANSLATOR_PATH (std::string("") + PROJECT_BASE_DIR + "/tools/psf-translator.py")
+#define PSF_TRANSLATOR_PATH                                                    \
+    (std::string("") + PROJECT_BASE_DIR + "/tools/psf-translator.py")
 
 #endif
