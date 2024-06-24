@@ -206,8 +206,10 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
 
     // Setting the LLRS problem for the first shot
     auto config = boost::get<LLRSCommandData>(commands[commands_itr].data);
-    llrs.reset_problem(boost::get<std::string>(config.at("algorithm")), boost::get<int>(config.at("T_x")) * boost::get<int>(config.at("T_y")));
- 
+    llrs.reset_problem(boost::get<std::string>(config.at("algorithm")),
+                       boost::get<int>(config.at("T_x")) *
+                           boost::get<int>(config.at("T_y")));
+
     server_handler.send_done();
 }
 
@@ -226,7 +228,9 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_TRIGGER_DONE() {
         server_handler.send_done();
     } else {
         auto config = boost::get<LLRSCommandData>(commands[commands_itr].data);
-        llrs.reset_problem(boost::get<std::string>(config.at("algorithm")), boost::get<int>(config.at("T_x")) * boost::get<int>(config.at("T_y")));
+        llrs.reset_problem(boost::get<std::string>(config.at("algorithm")),
+                           boost::get<int>(config.at("T_x")) *
+                               boost::get<int>(config.at("T_y")));
     }
 }
 
@@ -234,7 +238,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
     std::cout << "FSM:: RESET state" << std::endl;
     llrs_problem_path = server_handler.get_llrs_config_file();
     llrs.setup(llrs_problem_path, false, 1);
-    trigger_detector.getAWG()->stop_card(); 
+    trigger_detector.getAWG()->stop_card();
     std::cout << "Starting AWG stream" << std::endl;
     auto awg = trigger_detector.getAWG();
     auto tb = awg->allocate_transfer_buffer(
@@ -291,7 +295,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_PSF() {
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_WAVEFORM() {
     std::cout << "FSM:: CONFIG WAVEFORM state" << std::endl;
     llrs.reset_waveform_table();
-    trigger_detector.getAWG()->stop_card(); 
+    trigger_detector.getAWG()->stop_card();
     std::cout << "Starting AWG stream" << std::endl;
     auto awg = trigger_detector.getAWG();
     auto tb = awg->allocate_transfer_buffer(
