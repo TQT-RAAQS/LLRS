@@ -171,23 +171,10 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::runFSM() {
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     std::cout << "FSM:: BEGIN state" << std::endl;
+    trigger_detector.reset_segment_size();
     llrs.setup(
         llrs_problem_path, false,
         1); // Default problem, operator can reset the problem in the idle step
-}
-
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
-    std::cout << "FSM:: IDLE state" << std::endl;
-}
-
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
-    std::cout << "FSM:: PROCESS_SHOT state" << std::endl;
-
-    // receive hdf5 filepath from the workstation
-    LLCSConfig llrs_config(ShotFile(server_handler.get_hdf5_file_path()));
-    commands = llrs_config.get_commands();
-    llrs_metadata.reserve(commands.size());
-    commands_itr = 0;
 
     std::cout << "Starting AWG stream" << std::endl;
     auto awg = trigger_detector.getAWG();
@@ -204,6 +191,26 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
     trigger_detector.stream();
 }
 
+template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
+    std::cout << "FSM:: IDLE state" << std::endl;
+}
+
+template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
+    std::cout << "FSM:: PROCESS_SHOT state" << std::endl;
+
+    // receive hdf5 filepath from the workstation
+    LLCSConfig llrs_config(ShotFile(server_handler.get_hdf5_file_path()));
+    commands = llrs_config.get_commands();
+    llrs_metadata.reserve(commands.size());
+    commands_itr = 0;
+
+    // Setting the LLRS problem for the first shot
+    auto config = boost::get<LLRSCommandData>(commands[commands_itr].data);
+    llrs.reset_problem(boost::get<std::string>(config.at("algorithm")), boost::get<int>(config.at("T_x")) * boost::get<int>(config.at("T_y")));
+ 
+    server_handler.send_done();
+}
+
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_READY() {
     std::cout << "FSM:: READY state" << std::endl;
     std::cout << "Awaiting Hardware Trigger..." << std::endl;
@@ -211,20 +218,36 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_READY() {
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_TRIGGER_DONE() {
     std::cout << "FSM:: TRIGGER_DONE state" << std::endl;
-    server_handler.wait_for_done();
     ++commands_itr;
     if (commands_itr == commands.size()) {
         saveMetadata(server_handler.get_hdf5_file_path());
         llrs_metadata.clear();
+        server_handler.wait_for_done();
+        server_handler.send_done();
     } else {
-        llrs.reset_problem("llrs", 1);
+        auto config = boost::get<LLRSCommandData>(commands[commands_itr].data);
+        llrs.reset_problem(boost::get<std::string>(config.at("algorithm")), boost::get<int>(config.at("T_x")) * boost::get<int>(config.at("T_y")));
     }
-    server_handler.send_done();
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
+    std::cout << "FSM:: RESET state" << std::endl;
     llrs_problem_path = server_handler.get_llrs_config_file();
     llrs.setup(llrs_problem_path, false, 1);
+    trigger_detector.getAWG()->stop_card(); 
+    std::cout << "Starting AWG stream" << std::endl;
+    auto awg = trigger_detector.getAWG();
+    auto tb = awg->allocate_transfer_buffer(
+        trigger_detector.get_samples_per_idle_segment());
+
+    if (awg->get_idle_segment_wfm()) {
+        llrs.get_idle_wfm(tb, trigger_detector.get_samples_per_idle_segment());
+    } else {
+        awg->fill_transfer_buffer(
+            tb, trigger_detector.get_samples_per_idle_segment(), 0);
+    }
+    trigger_detector.setup(tb);
+    trigger_detector.stream();
     server_handler.send_200();
 }
 
@@ -238,12 +261,25 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CLOSE_AWG() {
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
     trigger_detector.getAWG()->configure();
     llrs.reset_awg(false, 1);
+    std::cout << "Starting AWG stream" << std::endl;
+    auto awg = trigger_detector.getAWG();
+    auto tb = awg->allocate_transfer_buffer(
+        trigger_detector.get_samples_per_idle_segment());
+
+    if (awg->get_idle_segment_wfm()) {
+        llrs.get_idle_wfm(tb, trigger_detector.get_samples_per_idle_segment());
+    } else {
+        awg->fill_transfer_buffer(
+            tb, trigger_detector.get_samples_per_idle_segment(), 0);
+    }
+    trigger_detector.setup(tb);
+    trigger_detector.stream();
     server_handler.send_200();
 }
 
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_PSF() {
     std::cout << "FSM:: CONFIG PSF state" << std::endl;
-    std::string str = (PSF_TRANSLATOR_PATH) + "default";
+    std::string str = (PSF_TRANSLATOR_PATH) + " default";
     const char *psf_translator = str.c_str();
     const char *command = "python3 ";
     char fullCommand[256];
@@ -255,6 +291,20 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_PSF() {
 template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_WAVEFORM() {
     std::cout << "FSM:: CONFIG WAVEFORM state" << std::endl;
     llrs.reset_waveform_table();
+    trigger_detector.getAWG()->stop_card(); 
+    std::cout << "Starting AWG stream" << std::endl;
+    auto awg = trigger_detector.getAWG();
+    auto tb = awg->allocate_transfer_buffer(
+        trigger_detector.get_samples_per_idle_segment());
+
+    if (awg->get_idle_segment_wfm()) {
+        llrs.get_idle_wfm(tb, trigger_detector.get_samples_per_idle_segment());
+    } else {
+        awg->fill_transfer_buffer(
+            tb, trigger_detector.get_samples_per_idle_segment(), 0);
+    }
+    trigger_detector.setup(tb);
+    trigger_detector.stream();
     server_handler.send_200();
 }
 
@@ -283,7 +333,7 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
     for (size_t i = 0; i < llrs_metadata.size(); i++) {
         nlohmann::json json_data;
         std::string filePath =
-            parentDir + "metadata_" + std::to_string(i) + ".json";
+            parentDir + "/metadata_" + std::to_string(i) + ".json";
 
         // Save general data
         json_data["nt_x"] = llrs_metadata.at(i).getNtx();

@@ -13,12 +13,14 @@ void Handler::start_listening() {
 
 void Handler::async_listen() {
     std::string requestStr;
+    std::string requestStrNull;
     while (true) {
         server.listen(requestStr);
         if (requestStr == "hello") {
             server.send("hello");
             continue;
         } else if (requestStr == "done") {
+            server.send("ok");
             server.listen(requestStr);
             {
                 std::lock_guard<std::mutex> lock(requestMutex);
@@ -29,7 +31,7 @@ void Handler::async_listen() {
                 processing = true;
             }
             while (true) {
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
                 bool flag = false;
                 {
                     std::lock_guard<std::mutex> lock(processingMutex);
@@ -42,7 +44,7 @@ void Handler::async_listen() {
             continue;
         } else if (requestStr.substr(requestStr.length() - 3, 3) == ".h5") {
             server.send("ok");
-            server.listen(requestStr);
+            server.listen(requestStrNull);
             {
                 std::lock_guard<std::mutex> lock(requestMutex);
                 hdf5_file_path = adjust_address(requestStr);
@@ -53,7 +55,70 @@ void Handler::async_listen() {
                 processing = true;
             }
             while (true) {
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
+                bool flag = false;
+                {
+                    std::lock_guard<std::mutex> lock(processingMutex);
+                    if (!processing)
+                        flag = true;
+                }
+                if (flag)
+                    break;
+            }
+            continue;
+        } else if (requestStr == "psf") {
+            {
+                std::lock_guard<std::mutex> lock(requestMutex);
+                request = RECEIVED_PSF_RESET_REQUEST;
+            }
+            {
+                std::lock_guard<std::mutex> lock(processingMutex);
+                processing = true;
+            }
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
+                bool flag = false;
+                {
+                    std::lock_guard<std::mutex> lock(processingMutex);
+                    if (!processing)
+                        flag = true;
+                }
+                if (flag)
+                    break;
+            }
+            continue;
+        } else if (requestStr == "waveform") {
+            {
+                std::lock_guard<std::mutex> lock(requestMutex);
+                request = RECEIVED_WAVEFORM_RESET_REQUEST;
+            }
+            {
+                std::lock_guard<std::mutex> lock(processingMutex);
+                processing = true;
+            }
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
+                bool flag = false;
+                {
+                    std::lock_guard<std::mutex> lock(processingMutex);
+                    if (!processing)
+                        flag = true;
+                }
+                if (flag)
+                    break;
+            }
+            continue;
+        } else if (requestStr == "awg") {
+            {
+                std::lock_guard<std::mutex> lock(requestMutex);
+                request = RECEIVED_AWG_RESET_REQUEST;
+            }
+            {
+                std::lock_guard<std::mutex> lock(processingMutex);
+                processing = true;
+            }
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
                 bool flag = false;
                 {
                     std::lock_guard<std::mutex> lock(processingMutex);
@@ -75,70 +140,7 @@ void Handler::async_listen() {
                 processing = true;
             }
             while (true) {
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
-                bool flag = false;
-                {
-                    std::lock_guard<std::mutex> lock(processingMutex);
-                    if (!processing)
-                        flag = true;
-                }
-                if (flag)
-                    break;
-            }
-            continue;
-        } else if (requestStr == "psf") {
-            {
-                std::lock_guard<std::mutex> lock(requestMutex);
-                request = RECEIVED_PSF_RESET_REQUEST;
-            }
-            {
-                std::lock_guard<std::mutex> lock(processingMutex);
-                processing = true;
-            }
-            while (true) {
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
-                bool flag = false;
-                {
-                    std::lock_guard<std::mutex> lock(processingMutex);
-                    if (!processing)
-                        flag = true;
-                }
-                if (flag)
-                    break;
-            }
-            continue;
-        } else if (requestStr == "waveform") {
-            {
-                std::lock_guard<std::mutex> lock(requestMutex);
-                request = RECEIVED_WAVEFORM_RESET_REQUEST;
-            }
-            {
-                std::lock_guard<std::mutex> lock(processingMutex);
-                processing = true;
-            }
-            while (true) {
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
-                bool flag = false;
-                {
-                    std::lock_guard<std::mutex> lock(processingMutex);
-                    if (!processing)
-                        flag = true;
-                }
-                if (flag)
-                    break;
-            }
-            continue;
-        } else if (requestStr == "awg") {
-            {
-                std::lock_guard<std::mutex> lock(requestMutex);
-                request = RECEIVED_AWG_RESET_REQUEST;
-            }
-            {
-                std::lock_guard<std::mutex> lock(processingMutex);
-                processing = true;
-            }
-            while (true) {
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
                 bool flag = false;
                 {
                     std::lock_guard<std::mutex> lock(processingMutex);
@@ -154,16 +156,18 @@ void Handler::async_listen() {
 }
 
 uint Handler::get_request() {
+    uint req;
     while (true) {
-        uint req;
         {
             std::lock_guard<std::mutex> lock(requestMutex);
             req = request;
             request = WAITING;
         }
-        if (req != WAITING)
+        if (req != WAITING) {
+            std::cout << "Request received:" << req << std::endl;
             return req;
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
+        }
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 }
 
@@ -187,7 +191,7 @@ std::string Handler::get_llrs_config_file() {
 
 void Handler::wait_for_done() {
     while (true) {
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
         bool flag = false;
         {
             std::lock_guard<std::mutex> lock(requestMutex);
