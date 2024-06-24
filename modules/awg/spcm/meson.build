@@ -1,6 +1,6 @@
 # spcm provided library
 spcm_inc = include_directories('include')
-spcm_provided_lib = meson.current_source_dir() / 'lib' / '*'
+spcm_provided_lib = '-l:libspcm_linux.so' 
 
 # spcm library
 
