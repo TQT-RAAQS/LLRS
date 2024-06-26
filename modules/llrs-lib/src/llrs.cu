@@ -4,15 +4,14 @@
 
 template<typename... Args> LLRS::LLRS(Args&&... args)
     : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
-                            std::ios::app)),
-      p_collector{Util::Collector::get_instance()} {
+                            std::ios::app)) {
     std::cout << "LLRS: constructor" << std::endl;
 
     bool awg_setup, fgc_setup, img_proc_setup, solver_setup = false;
     for (auto& arg : {args...}) {
         if (!awg_setup && typeid(arg) == typeid(std::shared_ptr<AWG>&)) {
             awg_sequence = std::make_unique<Stream::Sequence>(
-            std::move(arg), p_collector, wf_table,
+            std::move(arg), wf_table,
             Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
             awg_setup = true;
         } else if (!fgc_setup && typeid(arg) == typeid(std::unique_ptr<Acquisition::ActiveSilicon1XCLD>&&)) {
@@ -27,7 +26,7 @@ template<typename... Args> LLRS::LLRS(Args&&... args)
         }   
     }
     if (!awg_setup) {
-        awg_sequence = std::make_unique<Stream::Sequence>( p_collector, wf_table,
+        awg_sequence = std::make_unique<Stream::Sequence>(wf_table,
         Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
     }
     if (!fgc_setup) {
@@ -50,13 +49,12 @@ template<typename... Args> LLRS::LLRS(Args&&... args)
  */
 
 void LLRS::setup(std::string input, bool setup_idle_segment,
-                        int llrs_step_off, std::string problem_id) {
+                        int llrs_step_off) {
     std::cout << "LLRS: setup" << std::endl;
 
     /* Direct std log to file as its buffer */
     old_rdbuf = std::clog.rdbuf();
     std::clog.rdbuf(log_out.rdbuf());
-    this->problem_id = problem_id;
 
     user_input = Util::JsonWrapper(CONFIG_PATH(input));
 
@@ -99,8 +97,7 @@ void LLRS::setup(std::string input, bool setup_idle_segment,
 
     algo = Util::get_algo_enum(user_input.read_problem_algo());
 
-    solver->setup(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment(),
-                              p_collector);
+    solver->setup(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment());
 
     /* Waveform Synthesis Initialization */
     wf_table = Setup::create_wf_table(
@@ -114,8 +111,6 @@ void LLRS::setup(std::string input, bool setup_idle_segment,
     awg_sequence->setup(setup_idle_segment, llrs_step_off, _2d, Nt_x, Nt_y);
 
     // extra control logic
-    trial_num = 0;
-    rep_num = 0;
     cycle_num = 0;
     metadata.reset();
 }
@@ -200,18 +195,12 @@ int LLRS::execute() {
         INFO << "Starting cycle " << cycle_num << std::endl;
 #endif
 
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("I", trial_num, rep_num, cycle_num);
-#endif
-
+        START_TIMER("I");
         awg_sequence->emccd_trigger();
         std::vector<uint16_t> current_image =
             fgc->acquire_single_image();
-
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("I", trial_num, rep_num, cycle_num);
-#endif
-
+        END_TIMER("I");
+        
         reset_result.wait();
 
 #ifdef PRE_SOLVED
@@ -240,29 +229,20 @@ int LLRS::execute() {
         t_store_image.detach();
 #endif
 
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("II-Deconvolution", trial_num, rep_num,
-                                    cycle_num);
-#endif
+
+        START_TIMER("II-Deconvolution");
         /* Step 1, apply gaussian psf kernel onto each atom position */
         std::vector<double> filtered_output =
             img_proc_obj->apply_filter(&current_image);
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("II-Deconvolution", trial_num, rep_num,
-                                cycle_num);
-        p_collector->start_timer("II-Threshold", trial_num, rep_num,
-                                    cycle_num);
-#endif
+        END_TIMER("II-Deconvolution");
+
+        START_TIMER("II-Threshold");
         /* Step 2, apply a threshold to the filtered output to get the
             * atom configuration */
         std::vector<int32_t> current_config =
             Processing::apply_threshold(filtered_output,
                                         detection_threshold);
-
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("II-Threshold", trial_num, rep_num,
-                                cycle_num);
-#endif
+        END_TIMER("II-Threshold");
 
 #ifdef LOGGING_VERBOSE
         INFO << "Filtered output: " << vec_to_str(filtered_output)
@@ -297,14 +277,11 @@ int LLRS::execute() {
             break;
         }
 
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Total", trial_num, rep_num,
-                                    cycle_num);
-#endif
+        START_TIMER("III-Total");
         /* Run the solver with a specified algorithm */
         int solve_status =
-            solver->start_solver(algo, current_config, target_config,
-                                trial_num, rep_num, cycle_num);
+            solver->start_solver(algo, current_config, target_config);
+
         if (solve_status != LLRS_OK) {
 #ifdef LOGGING_VERBOSE
             INFO << "Below minimum required number of atoms -> exit()"
@@ -315,14 +292,10 @@ int LLRS::execute() {
 
         /* Translate algorithm output to waveform table key components
             */
-
         std::vector<Reconfig::Move> moves_list =
-            solver->gen_moves_list(algo, trial_num, rep_num, cycle_num);
-
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Total", trial_num, rep_num,
-                                cycle_num);
-#endif
+            solver->gen_moves_list(algo);
+        END_TIMER("III-Total");
+        metadata.addMovesPerCycle(moves_list);
 
 #ifdef LOGGING_VERBOSE
         INFO << "Ran Algorithm: " << user_input.read_problem_algo()
@@ -334,27 +307,17 @@ int LLRS::execute() {
         INFO << "Batch Indices:" << vec_to_str(solver->get_batch_ptrs())
                 << std::endl;
 #endif
-        metadata.addMovesPerCycle(moves_list);
 
-#ifdef LOGGING_RUNTIME
-        p_collector->get_external_time("IV-Translate", trial_num,
-                                        rep_num, cycle_num, 0);
+        GET_EXTERNAL_TIME("IV-Translate", 0);
+        awg_sequence->load_and_stream(moves_list);
 
-#endif
-        awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
-                                        cycle_num);
-
-        /* Clean up the solver buffer */
         solver.reset();
         metadata.incrementNumCycles();
     }
 
 #ifdef LOGGING_RUNTIME
-    /* Log all runtime data as a json based on probelm id */
-    nlohmann::json timing_data = p_collector->gen_runtime_json();
-    std::string output_fname = BENCHMARK_PATH(problem_id);
-    Util::write_json_file(timing_data, output_fname);
-    metadata.setRuntimeData(timing_data);
+    metadata.addRuntimeData(Util::Collector::get_instance()->get_runtime_data());
+    Util::Collector::get_instance()->clear_timers();
 #endif
 
     awg_sequence->clock_trigger();
@@ -364,6 +327,5 @@ int LLRS::execute() {
 void LLRS::clean() {
     std::clog.rdbuf(old_rdbuf);
     log_out.close();
-    delete p_collector;
 }
 

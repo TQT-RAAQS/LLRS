@@ -63,7 +63,6 @@ class Solver {
     std::vector<int32_t> path_system;
     std::vector<int32_t> path_length;
     std::vector<int32_t> initial;
-    Util::Collector *p_collector;
 
   public:
     /**
@@ -73,8 +72,7 @@ class Solver {
      * @param Nt_y
      * @param num_targets
      */
-    void setup(int Nt_x, int Nt_y, int wfm_per_segment,
-           Util::Collector *p_collector);
+    void setup(int Nt_x, int Nt_y, int wfm_per_segment);
 
     /**
      * @brief The unified Solver method for 1D and 2D
@@ -88,8 +86,7 @@ class Solver {
      * @return false
      */
     bool start_solver(Algo algo_select, std::vector<int32_t> initial,
-                      std::vector<int32_t> target, int trial_num, int rep_num,
-                      int cycle_num);
+                      std::vector<int32_t> target);
 
     /**
      *   @brief Generate list of moves for reconfiguration algorithm
@@ -98,8 +95,7 @@ class Solver {
      *   @return A vector of Move tuples representing the primary waveform
      * keying components
      */
-    std::vector<Move> gen_moves_list(Algo algo_select, int trial_num,
-                                     int rep_num, int cycle_num);
+    std::vector<Move> gen_moves_list(Algo algo_select);
 
     /**
      * @brief Resets the Vectors used in the solver based on the dimensions of
