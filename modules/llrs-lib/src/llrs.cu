@@ -7,16 +7,16 @@ template<typename... Args> LLRS::LLRS(Args&&... args)
                             std::ios::app)) {
     std::cout << "LLRS: constructor" << std::endl;
 
-    bool awg_setup, fgc_setup, img_proc_setup, solver_setup = false;
+    bool awg_setup, acq_setup, img_proc_setup, solver_setup = false;
     for (auto& arg : {args...}) {
         if (!awg_setup && typeid(arg) == typeid(std::shared_ptr<AWG>&)) {
             awg_sequence = std::make_unique<Stream::Sequence>(
             std::move(arg), wf_table,
             Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
             awg_setup = true;
-        } else if (!fgc_setup && typeid(arg) == typeid(std::unique_ptr<Acquisition::ActiveSilicon1XCLD>&&)) {
-            fgc = std::move(arg);
-            fgc_setup = true;
+        } else if (!acq_setup && typeid(arg) == typeid(std::unique_ptr<Acquisition::ImageAcquisition>&&)) {
+            image_acquisition = std::move(arg);
+            acq_setup = true;
         } else if (!img_proc_setup && typeid(arg) == typeid(std::unique_ptr<Processing::ImageProcessor>&&)){
             img_proc_obj = std::move(arg);
             img_proc_setup = true;
@@ -29,8 +29,8 @@ template<typename... Args> LLRS::LLRS(Args&&... args)
         awg_sequence = std::make_unique<Stream::Sequence>(wf_table,
         Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
     }
-    if (!fgc_setup) {
-        fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>();
+    if (!acq_setup) {
+        image_acquisition = std::make_unique<Acquisition::ImageAcquisition>();
     }
     if (!img_proc_setup) {
         img_proc_obj = std::make_unique<Processing::ImageProcessor>();
@@ -81,8 +81,8 @@ void LLRS::setup(std::string input, bool setup_idle_segment,
     INFO << "User Input JSON = " << user_input.get_json_data() << std::endl;
 #endif
 
-    /* Camera FGC Settings */
-    fgc->setup(
+    /* Camera Settings */
+    image_acquisition->setup(
         user_input.read_experiment_roi_width(),
         user_input.read_experiment_roi_height(),
         awg_sequence->get_acq_timeout());
@@ -193,13 +193,9 @@ int LLRS::execute() {
 #ifdef LOGGING_VERBOSE
         INFO << "Starting cycle " << cycle_num << std::endl;
 #endif
-        START_TIMER("I");
         awg_sequence->emccd_trigger();
         std::vector<uint16_t> current_image =
-            fgc->acquire_single_image();
-        END_TIMER("I");
-        
-        reset_result.wait();
+            image_acquisition->acquire_single_image();
 
 #ifdef PRE_SOLVED
         char image_file[256];
@@ -209,15 +205,14 @@ int LLRS::execute() {
         strcpy(image_file, image_file_path.c_str());
         current_image = fgc->acquire_stored_image(image_file);
 #endif
-        if (current_image.empty()) {
-            ERROR << "Image Acquisition Failed." << std::endl;
-            break;
-        }
+        
 
 #ifdef LOGGING_VERBOSE
         INFO << "Acquired Image of size " << current_image.size()
                 << std::endl;
 #endif
+
+        reset_result.wait();
 
 #ifdef STORE_IMAGES
         std::thread t_store_image(
