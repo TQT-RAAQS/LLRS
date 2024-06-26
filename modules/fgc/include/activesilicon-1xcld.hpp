@@ -7,13 +7,13 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <thread>
+#include <png.h>
 
 #ifdef ENABLE_CUDA
 #include "buffer.hpp"
 #include <cuda.h>
 #endif
 
-namespace Acquisition {
 
 class ActiveSilicon1XCLD {
 
@@ -27,10 +27,6 @@ class ActiveSilicon1XCLD {
                        int acquisition_timeout, uint32_t roi_xoffset = 0,
                        uint32_t roi_yoffset = 0, uint32_t vbin = 1,
                        uint32_t hbin = 1);
-    /*
-     * Waits for an image to be acquired before returning
-     * Returns: A 2D short array representation of the acquired image
-     */
     std::vector<uint16_t> acquire_single_image();
     std::vector<uint16_t> acquire_stored_image(const char *filename);
 
@@ -98,6 +94,5 @@ class ActiveSilicon1XCLD {
 
     void init_image_buffer();
 };
-} // namespace Acquisition
 
 #endif

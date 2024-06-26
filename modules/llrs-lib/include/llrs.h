@@ -9,7 +9,7 @@
 #include "Solver.h"
 #include "WaveformRepo.h"
 #include "WaveformTable.h"
-#include "activesilicon-1xcld.hpp"
+#include "acquisition.h"
 #include "awg.hpp"
 #include "llrs-lib/PreProc.h"
 #include "llrs-lib/Settings.h"
@@ -28,7 +28,7 @@ class LLRS {
     double detection_threshold;
 
     std::unique_ptr<Stream::Sequence> awg_sequence;
-    std::unique_ptr<Acquisition::ActiveSilicon1XCLD> fgc;
+    std::unique_ptr<Acquisition::ImageAcquisition> image_acquisition;
     std::unique_ptr<Processing::ImageProcessor> img_proc_obj;
     std::unique_ptr<Reconfig::Solver> solver;
     Synthesis::WaveformTable wf_table;
@@ -105,7 +105,7 @@ class LLRS {
     /**
      * @brief Construct a new LLRS object
      * 
-     * @tparam Args list of arguments that must include the unique or shared pointers correspoding to the AWG, FGC, Image Processor, and solver objects 
+     * @tparam Args list of arguments that must include the unique or shared pointers correspoding to the AWG, Image Acquisition, Image Processor, and solver objects 
      */
     template<typename... Args> LLRS(Args&&... args);
     void clean();
