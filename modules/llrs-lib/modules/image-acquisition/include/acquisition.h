@@ -1,3 +1,5 @@
+#ifndef ACQUISITION_H
+#define ACQUISITION_H
 #include "Collector.h"
 #include "activesilicon-1xcld.hpp"
 
@@ -5,6 +7,7 @@
 namespace Acquisition {
     
     class ImageAcquisition {
+      protected:
         ActiveSilicon1XCLD fgc;
 
       public:
@@ -15,3 +18,4 @@ namespace Acquisition {
         virtual std::vector<uint16_t> acquire_single_image();
     };
 }
+#endif
