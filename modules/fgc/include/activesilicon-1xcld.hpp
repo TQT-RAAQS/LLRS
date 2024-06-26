@@ -18,6 +18,7 @@ namespace Acquisition {
 class ActiveSilicon1XCLD {
 
   public:
+    ActiveSilicon1XCLD() {}
     ~ActiveSilicon1XCLD();
     ActiveSilicon1XCLD(const ActiveSilicon1XCLD &) = delete;
     ActiveSilicon1XCLD &operator=(const ActiveSilicon1XCLD &) = delete;

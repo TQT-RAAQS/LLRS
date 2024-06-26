@@ -37,7 +37,8 @@ int main(int argc, char *argv[]) {
     results.reserve(reps);
 
     // initialize Image Processing object
-    Processing::ImageProcessor img_proc_obj(psf_path, N_t);
+    Processing::ImageProcessor img_proc_obj{};
+    img_proc_obj.setup(psf_path, N_t);
 
     //
     for (int i = 0; i < reps; ++i) {

@@ -18,7 +18,7 @@ template<typename... Args> LLRS::LLRS(Args&&... args)
         } else if (!fgc_setup && typeid(arg) == typeid(std::unique_ptr<Acquisition::ActiveSilicon1XCLD>&&)) {
             fgc = std::move(arg);
             fgc_setup = true;
-        } else if (!img_proc_setup && typeid(arg) == typeid(std::unqiue_ptr<Processing::ImageProcessor>&&)){
+        } else if (!img_proc_setup && typeid(arg) == typeid(std::unique_ptr<Processing::ImageProcessor>&&)){
             img_proc_obj = std::move(arg);
             img_proc_setup = true;
         } else if (!solver_setup && typeid(arg) == typeid(std::unique_ptr<Reconfig::Solver>&&)){
@@ -84,13 +84,13 @@ void LLRS::setup(std::string input, bool setup_idle_segment,
 #endif
 
     /* Camera FGC Settings */
-    fgc.setup(
+    fgc->setup(
         user_input.read_experiment_roi_width(),
         user_input.read_experiment_roi_height(),
         awg_sequence->get_acq_timeout());
 
     /* Image Processing Settings */
-    img_proc_obj.setup(
+    img_proc_obj->setup(
         PSF_PATH(user_input.read_experiment_psf_path()), Nt_x * Nt_y);
 
     detection_threshold = user_input.read_experiment_threshold();
@@ -99,7 +99,7 @@ void LLRS::setup(std::string input, bool setup_idle_segment,
 
     algo = Util::get_algo_enum(user_input.read_problem_algo());
 
-    solver.setup(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment(),
+    solver->setup(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment(),
                               p_collector);
 
     /* Waveform Synthesis Initialization */
@@ -121,7 +121,7 @@ void LLRS::setup(std::string input, bool setup_idle_segment,
 }
 
 void LLRS::reset_psf(std::string psf_file) {
-    img_proc_obj = Processing::ImageProcessor(
+    img_proc_obj->setup(
         PSF_PATH(psf_file), metadata.getNtx() * metadata.getNty());
 }
 
@@ -246,7 +246,7 @@ int LLRS::execute() {
 #endif
         /* Step 1, apply gaussian psf kernel onto each atom position */
         std::vector<double> filtered_output =
-            img_proc_obj.apply_filter(&current_image);
+            img_proc_obj->apply_filter(&current_image);
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("II-Deconvolution", trial_num, rep_num,
                                 cycle_num);
@@ -303,7 +303,7 @@ int LLRS::execute() {
 #endif
         /* Run the solver with a specified algorithm */
         int solve_status =
-            solver.start_solver(algo, current_config, target_config,
+            solver->start_solver(algo, current_config, target_config,
                                 trial_num, rep_num, cycle_num);
         if (solve_status != LLRS_OK) {
 #ifdef LOGGING_VERBOSE
@@ -317,7 +317,7 @@ int LLRS::execute() {
             */
 
         std::vector<Reconfig::Move> moves_list =
-            solver.gen_moves_list(algo, trial_num, rep_num, cycle_num);
+            solver->gen_moves_list(algo, trial_num, rep_num, cycle_num);
 
 #ifdef LOGGING_RUNTIME
         p_collector->end_timer("III-Total", trial_num, rep_num,
@@ -327,11 +327,11 @@ int LLRS::execute() {
 #ifdef LOGGING_VERBOSE
         INFO << "Ran Algorithm: " << user_input.read_problem_algo()
                 << std::endl;
-        INFO << "Source:" << vec_to_str(solver.get_src_atoms())
+        INFO << "Source:" << vec_to_str(solver->get_src_atoms())
                 << std::endl;
-        INFO << "Destination:" << vec_to_str(solver.get_dst_atoms())
+        INFO << "Destination:" << vec_to_str(solver->get_dst_atoms())
                 << std::endl;
-        INFO << "Batch Indices:" << vec_to_str(solver.get_batch_ptrs())
+        INFO << "Batch Indices:" << vec_to_str(solver->get_batch_ptrs())
                 << std::endl;
 #endif
         metadata.addMovesPerCycle(moves_list);

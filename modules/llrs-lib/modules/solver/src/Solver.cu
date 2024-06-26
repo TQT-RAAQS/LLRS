@@ -70,14 +70,23 @@ Reconfig::Algo get_algo_enum(std::string name) {
  * @param Nt_y
  */
 void Reconfig::Solver::setup(int Nt_x, int Nt_y, int wfm_per_segment,
-                         Util::Collector *p_collector)
-    : Nt_x{Nt_x}, Nt_y{Nt_y}, num_atoms_initial{0}, num_atoms_target{0},
-      wfm_per_segment{wfm_per_segment}, matching_src(Nt_x * Nt_y, 0),
-      matching_dst(Nt_x * Nt_y, 0), src(Nt_x * Nt_x * Nt_y * Nt_y, 0),
-      dst(Nt_x * Nt_x * Nt_y * Nt_y, 0), blk(Nt_x * Nt_x * Nt_y * Nt_y, 0),
-      batch_ptrs(Nt_x * Nt_x * Nt_y * Nt_y, 0),
-      path_system(Nt_x * Nt_x * Nt_y * Nt_y, 0),
-      path_length(Nt_x * Nt_y, 0), initial{}, p_collector{p_collector} {}
+                         Util::Collector *p_collector) {
+        this->Nt_x = Nt_x;
+        this->Nt_y = Nt_y;
+        this->num_atoms_initial = 0;
+        this->num_atoms_target = 0;
+        this->wfm_per_segment = wfm_per_segment;
+        this->matching_src = std::vector<int>(Nt_x * Nt_y, 0);
+        this->matching_dst = std::vector<int>(Nt_x * Nt_y, 0);
+        this->src = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+        this->dst = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+        this->blk = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+        this->batch_ptrs = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+        this->path_system = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+        this->path_length = std::vector<int>(Nt_x * Nt_y, 0);
+        this->initial = std::vector<int>(Nt_x * Nt_y, 0);
+        this->p_collector = p_collector;
+    }
 
 /**
  *   @brief Start the solver with a selected algorithm, initial and target
@@ -702,7 +711,8 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
     std::vector<int32_t> current_config(init, init + Nt_x * Nt_y);
     std::vector<int32_t> target_config(target, target + Nt_x * Nt_y);
 
-    Reconfig::Solver solver(Nt_x, Nt_y, 32, NULL);
+    Reconfig::Solver solver;
+    solver.setup(Nt_x, Nt_y, 32, NULL);
 
     float batching_time = 0;
     solver.start_solver(algo, current_config, target_config, 0, 0, 0);
