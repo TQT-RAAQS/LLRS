@@ -3,13 +3,11 @@
  * @brief Class that contains the necessary code to detect hardware trigger
  * events
  */
-template <typename AWG_T>
-TriggerDetector<AWG_T>::TriggerDetector()
-    : awg{std::make_shared<AWG_T>()}, samples_per_idle_segment{
+TriggerDetector::TriggerDetector()
+    : awg{std::make_shared<AWG>()}, samples_per_idle_segment{
                                           awg->get_idle_segment_length()} {}
 
-template <typename AWG_T>
-int TriggerDetector<AWG_T>::setup(typename AWG_T::TransferBuffer &tb) {
+int TriggerDetector::setup(typename AWG::TransferBuffer &tb) {
 
     int status = 0;
 
@@ -27,11 +25,11 @@ int TriggerDetector<AWG_T>::setup(typename AWG_T::TransferBuffer &tb) {
     return status;
 }
 
-template <typename AWG_T> int TriggerDetector<AWG_T>::stream() {
+int TriggerDetector::stream() {
     return awg->start_stream();
 }
 
-template <typename AWG_T> int TriggerDetector<AWG_T>::reset() {
+int TriggerDetector::reset() {
     assert(awg->get_current_step() == 1);
     awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
     awg->seqmem_update(1, 0, 1, 0, SPCSEQ_ENDLOOPALWAYS);
@@ -40,7 +38,7 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::reset() {
     awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
 }
 
-template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
+int TriggerDetector::busyWait() {
     float timeout =
         awg->get_waveform_duration() * awg->get_idle_segment_length() * 1e6;
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -59,7 +57,7 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::busyWait() {
     return 0;
 }
 
-template <typename AWG_T> int TriggerDetector<AWG_T>::resetDetectionStep() {
+int TriggerDetector::resetDetectionStep() {
     int status;
     status |= awg->seqmem_update(0, 0, 1, 1, SPCSEQ_ENDLOOPONTRIG);
     status |= awg->seqmem_update(1, 0, 1, 1, SPCSEQ_ENDLOOPALWAYS);
@@ -72,8 +70,7 @@ template <typename AWG_T> int TriggerDetector<AWG_T>::resetDetectionStep() {
  * If a timeout value is given, then that value is used, otherwise
  * it will listen for a hw trigger forever.
  */
-template <typename AWG_T>
-int TriggerDetector<AWG_T>::detectTrigger(int timeout) {
+int TriggerDetector::detectTrigger(int timeout) {
     int current_step = awg->get_current_step();
     int last_step = current_step;
 
@@ -101,5 +98,3 @@ int TriggerDetector<AWG_T>::detectTrigger(int timeout) {
 
     return -1;
 }
-
-template class TriggerDetector<AWG>;

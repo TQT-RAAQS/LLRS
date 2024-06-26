@@ -67,20 +67,14 @@ class Solver {
 
   public:
     /**
-     * @brief Construct a new Solver object
+     * @brief Setup a new Solver object
      *
      * @param Nt_x
      * @param Nt_y
      * @param num_targets
      */
-    Solver(int Nt_x, int Nt_y, int wfm_per_segment,
+    void setup(int Nt_x, int Nt_y, int wfm_per_segment,
            Util::Collector *p_collector);
-
-    /**
-     * @brief Construct a new Solver object (Default Constructor)
-     *
-     */
-    Solver() = default;
 
     /**
      * @brief The unified Solver method for 1D and 2D
