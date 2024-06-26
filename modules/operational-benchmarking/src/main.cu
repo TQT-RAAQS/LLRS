@@ -123,7 +123,8 @@ int main(int argc, char *argv[]) {
 
             while (!Util::target_met(rep_config, target_config)) {
 
-                Reconfig::Solver solver(Nt_x, Nt_y, 32, nullptr);
+                Reconfig::Solver solver;
+                solver.setup(Nt_x, Nt_y, 32, nullptr);
 
                 // Initialize trap array object
                 TrapArray trap_array =

@@ -19,10 +19,14 @@
  */
 void Acquisition::ActiveSilicon1XCLD::setup(
     uint32_t roi_width, uint32_t roi_height, int acquisition_timeout,
-    uint32_t roi_xoffset, uint32_t roi_yoffset, uint32_t vbin, uint32_t hbin)
-    : _roi_width(roi_width), _roi_height(roi_height), _roi_xoffset(roi_xoffset),
-      _roi_yoffset(roi_yoffset), _vbin(vbin), _hbin(hbin),
-      _acquisition_timeout(acquisition_timeout) {
+    uint32_t roi_xoffset, uint32_t roi_yoffset, uint32_t vbin, uint32_t hbin) {
+    _roi_width = roi_width;
+    _roi_height = roi_height;
+    _roi_xoffset = roi_xoffset;
+    _roi_yoffset = roi_yoffset;
+    _vbin = vbin;
+    _hbin = hbin;
+    _acquisition_timeout = acquisition_timeout;
     /* Create handle and load default settings base on the PCF file */
     std::string NADA = "";
     std::string pcf_config_path = std::string(

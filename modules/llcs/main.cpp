@@ -18,7 +18,6 @@ int main(int argc, char *argv[]) {
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
 
-    FiniteStateMachine<AWG> fsm{};
-
+    FiniteStateMachine fsm{};
     fsm.runFSM();
 }
