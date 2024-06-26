@@ -31,9 +31,7 @@ void write_to_pgm(const std::vector<uint16_t> &image, int width, int height);
 
 class ImageProcessor {
   public:
-    // Constructor of ImageProcessor class
-    ImageProcessor(std::string psf_file, size_t num_trap);
-    ImageProcessor() = default;
+    void setup(std::string psf_file, size_t num_trap);
 
     // Applies a filter to the image using the stored PSF and returns an array
     // indicating the presence or absence of atoms in the corresponding trap.

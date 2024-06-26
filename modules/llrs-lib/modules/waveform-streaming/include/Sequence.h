@@ -14,7 +14,7 @@
 
 namespace Stream {
 
-template <typename AWG_T> class Sequence {
+class Sequence {
   public:
     Sequence(Util::Collector *p_collector, Synthesis::WaveformTable &wf_table,
              double waveform_duration)
@@ -36,7 +36,7 @@ template <typename AWG_T> class Sequence {
         configure();
     }
 
-    Sequence(std::shared_ptr<AWG_T> &awg, Util::Collector *p_collector,
+    Sequence(std::shared_ptr<AWG> &awg, Util::Collector *p_collector,
              Synthesis::WaveformTable &wf_table, double waveform_duration)
         : awg{awg}, p_collector{p_collector}, wf_table{wf_table},
           lookup_buffer{awg->allocate_transfer_buffer(
@@ -88,7 +88,7 @@ template <typename AWG_T> class Sequence {
     void start_stream() { awg->start_stream(); }
 
   private:
-    std::shared_ptr<AWG_T> awg;
+    std::shared_ptr<AWG> awg;
     Util::Collector *p_collector;
     Synthesis::WaveformTable &wf_table;
 
@@ -107,9 +107,9 @@ template <typename AWG_T> class Sequence {
     int short_circuit_null_step;
     int short_circuit_step;
 
-    typename AWG_T::TransferBuffer lookup_buffer;
-    typename AWG_T::TransferBuffer upload_buffer;
-    typename AWG_T::TransferBuffer double_sized_buffer;
+    typename AWG::TransferBuffer lookup_buffer;
+    typename AWG::TransferBuffer upload_buffer;
+    typename AWG::TransferBuffer double_sized_buffer;
 
     size_t move_idx;
     size_t load_seg_idx;

@@ -18,20 +18,14 @@ namespace Acquisition {
 class ActiveSilicon1XCLD {
 
   public:
-    ActiveSilicon1XCLD(uint32_t roi_width, uint32_t roi_height,
-                       int acquisition_timeout, uint32_t roi_xoffset = 0,
-                       uint32_t roi_yoffset = 0, uint32_t vbin = 1,
-                       uint32_t hbin = 1);
-    ActiveSilicon1XCLD() = default;
-
-    /*
-     * Destructor for ActiveSilicon1XCLD class
-     */
     ~ActiveSilicon1XCLD();
-
     ActiveSilicon1XCLD(const ActiveSilicon1XCLD &) = delete;
     ActiveSilicon1XCLD &operator=(const ActiveSilicon1XCLD &) = delete;
 
+    void setup(uint32_t roi_width, uint32_t roi_height,
+                       int acquisition_timeout, uint32_t roi_xoffset = 0,
+                       uint32_t roi_yoffset = 0, uint32_t vbin = 1,
+                       uint32_t hbin = 1);
     /*
      * Waits for an image to be acquired before returning
      * Returns: A 2D short array representation of the acquired image

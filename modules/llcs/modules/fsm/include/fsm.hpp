@@ -12,7 +12,7 @@
 #include <memory>
 #include <thread>
 
-template <typename AWG_T> class FiniteStateMachine {
+class FiniteStateMachine {
     State *currentState;
     std::unordered_map<StateType, State *> states;
     std::vector<std::vector<State *>> programmable_states;
@@ -20,11 +20,11 @@ template <typename AWG_T> class FiniteStateMachine {
         dyn_state_action_func_map;
 
     Handler server_handler;
-    TriggerDetector<AWG_T> trigger_detector;
-    LLRS<AWG_T> llrs;
+    TriggerDetector trigger_detector;
+    LLRS llrs;
 
     std::string llrs_problem_path = "21-problem.yml";
-    std::vector<typename LLRS<AWG_T>::Metadata> llrs_metadata;
+    std::vector<typename LLRS::Metadata> llrs_metadata;
     std::vector<LLCSCommand> commands;
     int commands_itr = 0;
     void setupFSM();

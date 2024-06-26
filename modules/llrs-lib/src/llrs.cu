@@ -1,25 +1,44 @@
 #include "llrs.h"
 
-template <typename AWG_T>
-LLRS<AWG_T>::LLRS()
-    : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
-                            std::ios::app)),
-      p_collector{Util::Collector::get_instance()},
-      awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(
-          p_collector, wf_table,
-          Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")))} {
-    std::cout << "LLRS: constructor" << std::endl;
-}
 
-template <typename AWG_T>
-LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
+
+template<typename... Args> LLRS::LLRS(Args&&... args)
     : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
                             std::ios::app)),
-      p_collector{Util::Collector::get_instance()},
-      awg_sequence{std::make_unique<Stream::Sequence<AWG_T>>(
-          awg, p_collector, wf_table,
-          Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")))} {
+      p_collector{Util::Collector::get_instance()} {
     std::cout << "LLRS: constructor" << std::endl;
+
+    bool awg_setup, fgc_setup, img_proc_setup, solver_setup = false;
+    for (auto& arg : {args...}) {
+        if (!awg_setup && typeid(arg) == typeid(std::shared_ptr<AWG>&)) {
+            awg_sequence = std::make_unique<Stream::Sequence>(
+            std::move(arg), p_collector, wf_table,
+            Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
+            awg_setup = true;
+        } else if (!fgc_setup && typeid(arg) == typeid(std::unique_ptr<Acquisition::ActiveSilicon1XCLD>&&)) {
+            fgc = std::move(arg);
+            fgc_setup = true;
+        } else if (!img_proc_setup && typeid(arg) == typeid(std::unqiue_ptr<Processing::ImageProcessor>&&)){
+            img_proc_obj = std::move(arg);
+            img_proc_setup = true;
+        } else if (!solver_setup && typeid(arg) == typeid(std::unique_ptr<Reconfig::Solver>&&)){
+            solver = std::move(arg);
+            solver_setup = true;
+        }   
+    }
+    if (!awg_setup) {
+        awg_sequence = std::make_unique<Stream::Sequence>( p_collector, wf_table,
+        Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
+    }
+    if (!fgc_setup) {
+        fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>();
+    }
+    if (!img_proc_setup) {
+        img_proc_obj = std::make_unique<Processing::ImageProcessor>();
+    }
+    if (!solver_setup) {
+        solver = std::make_unique<Reconfig::Solver>();
+    }
 }
 
 /**
@@ -29,8 +48,8 @@ LLRS<AWG_T>::LLRS(std::shared_ptr<AWG_T> &awg)
  * @param llrs_step_off => index of idle step (sequence memory)
  * @param problem_id => metadata filepath
  */
-template <typename AWG_T>
-void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
+
+void LLRS::setup(std::string input, bool setup_idle_segment,
                         int llrs_step_off, std::string problem_id) {
     std::cout << "LLRS: setup" << std::endl;
 
@@ -65,13 +84,13 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
 #endif
 
     /* Camera FGC Settings */
-    fgc = std::make_unique<Acquisition::ActiveSilicon1XCLD>(
+    fgc.setup(
         user_input.read_experiment_roi_width(),
         user_input.read_experiment_roi_height(),
         awg_sequence->get_acq_timeout());
 
     /* Image Processing Settings */
-    img_proc_obj = Processing::ImageProcessor(
+    img_proc_obj.setup(
         PSF_PATH(user_input.read_experiment_psf_path()), Nt_x * Nt_y);
 
     detection_threshold = user_input.read_experiment_threshold();
@@ -80,7 +99,7 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
 
     algo = Util::get_algo_enum(user_input.read_problem_algo());
 
-    solver = Reconfig::Solver(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment(),
+    solver.setup(Nt_x, Nt_y, awg_sequence->get_wfm_per_segment(),
                               p_collector);
 
     /* Waveform Synthesis Initialization */
@@ -101,12 +120,12 @@ void LLRS<AWG_T>::setup(std::string input, bool setup_idle_segment,
     metadata.reset();
 }
 
-template <typename AWG_T> void LLRS<AWG_T>::reset_psf(std::string psf_file) {
+void LLRS::reset_psf(std::string psf_file) {
     img_proc_obj = Processing::ImageProcessor(
         PSF_PATH(psf_file), metadata.getNtx() * metadata.getNty());
 }
 
-template <typename AWG_T> void LLRS<AWG_T>::reset_waveform_table() {
+void LLRS::reset_waveform_table() {
     wf_table = Setup::create_wf_table(
         metadata.getNtx(), metadata.getNty(),
         _2d ? awg_sequence->get_sample_rate() / 2
@@ -116,8 +135,8 @@ template <typename AWG_T> void LLRS<AWG_T>::reset_waveform_table() {
         user_input.read_experiment_coefy_path(), true, true);
 }
 
-template <typename AWG_T>
-void LLRS<AWG_T>::reset_problem(std::string algorithm, int num_target) {
+
+void LLRS::reset_problem(std::string algorithm, int num_target) {
     target_config = get_target_config(CENTRE_COMPACT, num_target);
     algo = Util::get_algo_enum(algorithm);
 }
@@ -128,8 +147,8 @@ void LLRS<AWG_T>::reset_problem(std::string algorithm, int num_target) {
  * @param target => label of target config
  * @param num_target => number of atoms in target array
  */
-template <typename AWG_T>
-std::vector<int32_t> LLRS<AWG_T>::get_target_config(Target target,
+
+std::vector<int32_t> LLRS::get_target_config(Target target,
                                                     int num_target) {
     std::vector<int32_t> target_config(num_trap, 0);
 
@@ -148,8 +167,8 @@ std::vector<int32_t> LLRS<AWG_T>::get_target_config(Target target,
  * @brief creates a center compact target array
  * @param num_target => number of atoms in target array
  */
-template <typename AWG_T>
-void LLRS<AWG_T>::create_center_target(std::vector<int32_t> &target_config,
+
+void LLRS::create_center_target(std::vector<int32_t> &target_config,
                                        int num_target) {
 
     int start_index = (num_trap / 2) - (num_target / 2);
@@ -162,7 +181,7 @@ void LLRS<AWG_T>::create_center_target(std::vector<int32_t> &target_config,
 /**
  * @brief resets the LLRS and metadata between shots
  */
-template <typename AWG_T> void LLRS<AWG_T>::reset(bool reset_segments) {
+void LLRS::reset(bool reset_segments) {
     metadata.reset();
     awg_sequence->reset(reset_segments);
 }
@@ -170,184 +189,165 @@ template <typename AWG_T> void LLRS<AWG_T>::reset(bool reset_segments) {
 /**
  * @brief executes the LLRS loop
  */
-template <typename AWG_T> int LLRS<AWG_T>::execute() {
+int LLRS::execute() {
     std::cout << "LLRS: execute" << std::endl;
+    for (cycle_num = 0; true; ++cycle_num) {
 
-#ifdef PRE_SOLVED
-    /* Loop through all of the solutions when pre-solved is toggled on */
-    Json::Value problem_soln = Util::read_json_file(SOLN_PATH(problem_id));
-    for (trial_num = 0; problem_soln.isMember(TRIAL_NAME(trial_num));
-         trial_num++) {
-        Json::Value trial_soln = problem_soln[TRIAL_NAME(trial_num)];
-        for (rep_num = 0; trial_soln.isMember(REP_NAME(rep_num)); rep_num++) {
-            Json::Value rep_soln = trial_soln[REP_NAME(rep_num)];
-#endif
-
-            for (cycle_num = 0; true; cycle_num++) {
-
-                auto reset_result = std::async(
-                    std::launch::async, &LLRS<AWG_T>::reset, this, false);
+        auto reset_result = std::async(
+            std::launch::async, &LLRS::reset, this, false);
 
 #ifdef LOGGING_VERBOSE
-                INFO << "~~~~~~~~~~~~Starting cycle " << cycle_num
-                     << " of repetition " << rep_num << " of trial "
-                     << trial_num << "~~~~~~~~~~~~" << std::endl;
+        INFO << "Starting cycle " << cycle_num << std::endl;
 #endif
 
 #ifdef LOGGING_RUNTIME
-                p_collector->start_timer("I", trial_num, rep_num, cycle_num);
+        p_collector->start_timer("I", trial_num, rep_num, cycle_num);
 #endif
 
-                awg_sequence->emccd_trigger();
-                std::vector<uint16_t> current_image =
-                    fgc->acquire_single_image();
+        awg_sequence->emccd_trigger();
+        std::vector<uint16_t> current_image =
+            fgc->acquire_single_image();
 
 #ifdef LOGGING_RUNTIME
-                p_collector->end_timer("I", trial_num, rep_num, cycle_num);
+        p_collector->end_timer("I", trial_num, rep_num, cycle_num);
 #endif
 
-                reset_result.wait();
+        reset_result.wait();
 
 #ifdef PRE_SOLVED
-                char image_file[256];
-                std::string image_file_path =
-                    (std::string("") + PROJECT_BASE_DIR +
-                     "/resources/images/fake-image.png");
-                strcpy(image_file, image_file_path.c_str());
-                current_image = fgc->acquire_stored_image(image_file);
+        char image_file[256];
+        std::string image_file_path =
+            (std::string("") + PROJECT_BASE_DIR +
+                "/resources/images/fake-image.png");
+        strcpy(image_file, image_file_path.c_str());
+        current_image = fgc->acquire_stored_image(image_file);
 #endif
-                if (current_image.empty()) {
-                    ERROR << "Image Acquisition Failed." << std::endl;
-                    break;
-                }
+        if (current_image.empty()) {
+            ERROR << "Image Acquisition Failed." << std::endl;
+            break;
+        }
 
 #ifdef LOGGING_VERBOSE
-                INFO << "Acquired Image of size " << current_image.size()
-                     << std::endl;
+        INFO << "Acquired Image of size " << current_image.size()
+                << std::endl;
 #endif
 
 #ifdef STORE_IMAGES
-                std::thread t_store_image(
-                    &Processing::write_to_pgm, current_image,
-                    user_input.read_experiment_roi_width(),
-                    user_input.read_experiment_roi_height());
-                t_store_image.detach();
+        std::thread t_store_image(
+            &Processing::write_to_pgm, current_image,
+            user_input.read_experiment_roi_width(),
+            user_input.read_experiment_roi_height());
+        t_store_image.detach();
 #endif
 
 #ifdef LOGGING_RUNTIME
-                p_collector->start_timer("II-Deconvolution", trial_num, rep_num,
-                                         cycle_num);
+        p_collector->start_timer("II-Deconvolution", trial_num, rep_num,
+                                    cycle_num);
 #endif
-                /* Step 1, apply gaussian psf kernel onto each atom position */
-                std::vector<double> filtered_output =
-                    img_proc_obj.apply_filter(&current_image);
+        /* Step 1, apply gaussian psf kernel onto each atom position */
+        std::vector<double> filtered_output =
+            img_proc_obj.apply_filter(&current_image);
 #ifdef LOGGING_RUNTIME
-                p_collector->end_timer("II-Deconvolution", trial_num, rep_num,
-                                       cycle_num);
-                p_collector->start_timer("II-Threshold", trial_num, rep_num,
-                                         cycle_num);
+        p_collector->end_timer("II-Deconvolution", trial_num, rep_num,
+                                cycle_num);
+        p_collector->start_timer("II-Threshold", trial_num, rep_num,
+                                    cycle_num);
 #endif
-                /* Step 2, apply a threshold to the filtered output to get the
-                 * atom configuration */
-                std::vector<int32_t> current_config =
-                    Processing::apply_threshold(filtered_output,
-                                                detection_threshold);
+        /* Step 2, apply a threshold to the filtered output to get the
+            * atom configuration */
+        std::vector<int32_t> current_config =
+            Processing::apply_threshold(filtered_output,
+                                        detection_threshold);
 
 #ifdef LOGGING_RUNTIME
-                p_collector->end_timer("II-Threshold", trial_num, rep_num,
-                                       cycle_num);
+        p_collector->end_timer("II-Threshold", trial_num, rep_num,
+                                cycle_num);
 #endif
 
 #ifdef LOGGING_VERBOSE
-                INFO << "Filtered output: " << vec_to_str(filtered_output)
-                     << std::endl;
+        INFO << "Filtered output: " << vec_to_str(filtered_output)
+                << std::endl;
 #endif
 
 #ifdef PRE_SOLVED
-                /* SWAP with pre-solved from processed */
-                current_config =
-                    Util::vector_transform(rep_soln[CYCLE_NAME(cycle_num)]);
+        /* SWAP with pre-solved from processed */
+        current_config =
+            Util::vector_transform(rep_soln[CYCLE_NAME(cycle_num)]);
 #endif
 
 #ifdef LOGGING_VERBOSE
-                INFO << "Current configuration: " << vec_to_str(current_config)
-                     << std::endl;
+        INFO << "Current configuration: " << vec_to_str(current_config)
+                << std::endl;
 #endif
-                metadata.addAtomConfigs(current_config);
+        metadata.addAtomConfigs(current_config);
 
-                if (Util::target_met(current_config, target_config)) {
-                    INFO << "Success: Met Target Configuration -> exit()"
-                         << std::endl;
-                    metadata.setTargetMet();
-                    awg_sequence->clock_trigger();
-                    return 0;
-                }
-
-                if (cycle_num >= ATTEMPT_LIMIT) {
-#ifdef LOGGING_VERBOSE
-                    INFO << "Exceeded limit in attempting to solve a trial."
-                         << std::endl;
-#endif /* Attempt to solve the same problem too many time, exit the loop */
-                    break;
-                }
-
-#ifdef LOGGING_RUNTIME
-                p_collector->start_timer("III-Total", trial_num, rep_num,
-                                         cycle_num);
-#endif
-                /* Run the solver with a specified algorithm */
-                int solve_status =
-                    solver.start_solver(algo, current_config, target_config,
-                                        trial_num, rep_num, cycle_num);
-                if (solve_status != LLRS_OK) {
-#ifdef LOGGING_VERBOSE
-                    INFO << "Below minimum required number of atoms -> exit()"
-                         << std::endl;
-#endif /* Target num atom > Current num atoms, exit the loop */
-                    break;
-                }
-
-                /* Translate algorithm output to waveform table key components
-                 */
-
-                std::vector<Reconfig::Move> moves_list =
-                    solver.gen_moves_list(algo, trial_num, rep_num, cycle_num);
-
-#ifdef LOGGING_RUNTIME
-                p_collector->end_timer("III-Total", trial_num, rep_num,
-                                       cycle_num);
-#endif
-
-#ifdef LOGGING_VERBOSE
-                INFO << "Ran Algorithm: " << user_input.read_problem_algo()
-                     << std::endl;
-                INFO << "Source:" << vec_to_str(solver.get_src_atoms())
-                     << std::endl;
-                INFO << "Destination:" << vec_to_str(solver.get_dst_atoms())
-                     << std::endl;
-                INFO << "Batch Indices:" << vec_to_str(solver.get_batch_ptrs())
-                     << std::endl;
-#endif
-                metadata.addMovesPerCycle(moves_list);
-
-#ifdef LOGGING_RUNTIME
-                p_collector->get_external_time("IV-Translate", trial_num,
-                                               rep_num, cycle_num, 0);
-
-#endif
-
-                awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
-                                              cycle_num);
-
-                /* Clean up the solver buffer */
-                solver.reset();
-                metadata.incrementNumCycles();
-            }
-
-#ifdef PRE_SOLVED
+        if (Util::target_met(current_config, target_config)) {
+            INFO << "Success: Met Target Configuration -> exit()"
+                    << std::endl;
+            metadata.setTargetMet();
+            awg_sequence->clock_trigger();
+            return 0;
         }
-    }
+
+        if (cycle_num >= ATTEMPT_LIMIT) {
+#ifdef LOGGING_VERBOSE
+            INFO << "Exceeded limit in attempting to solve a trial."
+                    << std::endl;
+#endif /* Attempt to solve the same problem too many time, exit the loop */
+            break;
+        }
+
+#ifdef LOGGING_RUNTIME
+        p_collector->start_timer("III-Total", trial_num, rep_num,
+                                    cycle_num);
 #endif
+        /* Run the solver with a specified algorithm */
+        int solve_status =
+            solver.start_solver(algo, current_config, target_config,
+                                trial_num, rep_num, cycle_num);
+        if (solve_status != LLRS_OK) {
+#ifdef LOGGING_VERBOSE
+            INFO << "Below minimum required number of atoms -> exit()"
+                    << std::endl;
+#endif /* Target num atom > Current num atoms, exit the loop */
+            break;
+        }
+
+        /* Translate algorithm output to waveform table key components
+            */
+
+        std::vector<Reconfig::Move> moves_list =
+            solver.gen_moves_list(algo, trial_num, rep_num, cycle_num);
+
+#ifdef LOGGING_RUNTIME
+        p_collector->end_timer("III-Total", trial_num, rep_num,
+                                cycle_num);
+#endif
+
+#ifdef LOGGING_VERBOSE
+        INFO << "Ran Algorithm: " << user_input.read_problem_algo()
+                << std::endl;
+        INFO << "Source:" << vec_to_str(solver.get_src_atoms())
+                << std::endl;
+        INFO << "Destination:" << vec_to_str(solver.get_dst_atoms())
+                << std::endl;
+        INFO << "Batch Indices:" << vec_to_str(solver.get_batch_ptrs())
+                << std::endl;
+#endif
+        metadata.addMovesPerCycle(moves_list);
+
+#ifdef LOGGING_RUNTIME
+        p_collector->get_external_time("IV-Translate", trial_num,
+                                        rep_num, cycle_num, 0);
+
+#endif
+        awg_sequence->load_and_stream(moves_list, trial_num, rep_num,
+                                        cycle_num);
+
+        /* Clean up the solver buffer */
+        solver.reset();
+        metadata.incrementNumCycles();
+    }
 
 #ifdef LOGGING_RUNTIME
     /* Log all runtime data as a json based on probelm id */
@@ -361,10 +361,9 @@ template <typename AWG_T> int LLRS<AWG_T>::execute() {
     return 1;
 }
 
-template <typename AWG_T> void LLRS<AWG_T>::clean() {
+void LLRS::clean() {
     std::clog.rdbuf(old_rdbuf);
     log_out.close();
     delete p_collector;
 }
 
-template class LLRS<AWG>;

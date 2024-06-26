@@ -69,12 +69,12 @@ void Processing::write_to_pgm(const std::vector<uint16_t> &image, int width,
 }
 
 /**
- * @brief Constructor of ImageProcessor class, takes in path to psf file and
+ * @brief setup of ImageProcessor class, takes in path to psf file and
  * number of traps
  * @param psf_path the path to the psf file
  * @param num_traps number of traps
  */
-Processing::ImageProcessor::ImageProcessor(std::string psf_path,
+void Processing::ImageProcessor::setup(std::string psf_path,
                                            size_t num_traps) {
     // Open the psf file in binary mode
     std::ifstream fin(psf_path, std::ios_base::in | std::ios_base::binary);

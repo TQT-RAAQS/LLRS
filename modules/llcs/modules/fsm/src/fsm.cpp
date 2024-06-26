@@ -7,8 +7,8 @@ using json = nlohmann::json;
  * Construct state objects for all states in the FSM. Connect the state
  * transitions between these states.
  */
-template <typename AWG_T>
-FiniteStateMachine<AWG_T>::FiniteStateMachine()
+
+FiniteStateMachine::FiniteStateMachine()
     : server_handler{}, trigger_detector{}, llrs{trigger_detector.getAWG()} {
 
     // 1. Create the ST_FAULT state
@@ -31,7 +31,7 @@ FiniteStateMachine<AWG_T>::FiniteStateMachine()
  *
  * For every dynamically allocated state object, free the object.
  */
-template <typename AWG_T> FiniteStateMachine<AWG_T>::~FiniteStateMachine() {
+ FiniteStateMachine::~FiniteStateMachine() {
     states.clear();
     for (auto stateVector : programmable_states) {
         for (State *state : stateVector) {
@@ -49,7 +49,7 @@ template <typename AWG_T> FiniteStateMachine<AWG_T>::~FiniteStateMachine() {
  * Adds this state object to the list of state objects in the fsm.
  *
  */
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
+ void FiniteStateMachine::setupFSM() {
 
     State *f = states[ST_FAULT];
 
@@ -135,7 +135,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::setupFSM() {
     f->setType(ST_FAULT);
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::resetTransitions() {
+ void FiniteStateMachine::resetTransitions() {
 
     State *ready_state = states[ST_READY];
     State *fault_state = states[ST_FAULT];
@@ -151,7 +151,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::resetTransitions() {
     ready_state->resetTransitionMap();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::printStates() {
+ void FiniteStateMachine::printStates() {
     for (const auto &pair : states) {
         State *state = pair.second;
         state->printState();
@@ -159,7 +159,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::printStates() {
     }
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::runFSM() {
+ void FiniteStateMachine::runFSM() {
     server_handler.start_listening();
     while (currentState != nullptr) {
         currentState->executeState();
@@ -169,7 +169,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::runFSM() {
 
 /* * * * * * * * Static State definitions * * * * * * * */
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
+ void FiniteStateMachine::st_BEGIN() {
     std::cout << "FSM:: BEGIN state" << std::endl;
     trigger_detector.reset_segment_size();
     llrs.setup(
@@ -191,11 +191,11 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_BEGIN() {
     trigger_detector.stream();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_IDLE() {
+ void FiniteStateMachine::st_IDLE() {
     std::cout << "FSM:: IDLE state" << std::endl;
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
+ void FiniteStateMachine::st_PROCESS_SHOT() {
     std::cout << "FSM:: PROCESS_SHOT state" << std::endl;
 
     // receive hdf5 filepath from the workstation
@@ -213,12 +213,12 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_PROCESS_SHOT() {
     server_handler.send_done();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_READY() {
+ void FiniteStateMachine::st_READY() {
     std::cout << "FSM:: READY state" << std::endl;
     std::cout << "Awaiting Hardware Trigger..." << std::endl;
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_TRIGGER_DONE() {
+ void FiniteStateMachine::st_TRIGGER_DONE() {
     std::cout << "FSM:: TRIGGER_DONE state" << std::endl;
     ++commands_itr;
     if (commands_itr == commands.size()) {
@@ -234,7 +234,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_TRIGGER_DONE() {
     }
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
+ void FiniteStateMachine::st_RESET() {
     std::cout << "FSM:: RESET state" << std::endl;
     llrs_problem_path = server_handler.get_llrs_config_file();
     llrs.setup(llrs_problem_path, false, 1);
@@ -255,14 +255,14 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESET() {
     server_handler.send_200();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CLOSE_AWG() {
+ void FiniteStateMachine::st_CLOSE_AWG() {
     std::cout << "FSM:: CLOSE AWG state" << std::endl;
     trigger_detector.getAWG()->stop_card();
     trigger_detector.getAWG()->close_card();
     server_handler.send_200();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
+ void FiniteStateMachine::st_RESTART_AWG() {
     trigger_detector.getAWG()->configure();
     llrs.reset_awg(false, 1);
     std::cout << "Starting AWG stream" << std::endl;
@@ -281,7 +281,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_RESTART_AWG() {
     server_handler.send_200();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_PSF() {
+ void FiniteStateMachine::st_CONFIG_PSF() {
     std::cout << "FSM:: CONFIG PSF state" << std::endl;
     std::string str = (PSF_TRANSLATOR_PATH) + " default";
     const char *psf_translator = str.c_str();
@@ -292,7 +292,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_PSF() {
     llrs.reset_psf(std::string("default.bin"));
     server_handler.send_200();
 }
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_WAVEFORM() {
+ void FiniteStateMachine::st_CONFIG_WAVEFORM() {
     std::cout << "FSM:: CONFIG WAVEFORM state" << std::endl;
     llrs.reset_waveform_table();
     trigger_detector.getAWG()->stop_card();
@@ -312,7 +312,7 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_CONFIG_WAVEFORM() {
     server_handler.send_200();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
+ void FiniteStateMachine::st_LLRS_EXEC() {
     std::cout << "FSM:: LLRS_EXEC state" << std::endl;
     assert(trigger_detector.getAWG()->get_current_step() == 1);
     std::cout << "Starting the LLRS" << std::endl;
@@ -322,16 +322,16 @@ template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_LLRS_EXEC() {
     trigger_detector.reset();
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_FAULT() {
+ void FiniteStateMachine::st_FAULT() {
     std::cout << "FSM:: FAULT state" << std::endl;
 }
 
-template <typename AWG_T> void FiniteStateMachine<AWG_T>::st_EXIT() {
+ void FiniteStateMachine::st_EXIT() {
     std::cout << "FSM:: EXIT state" << std::endl;
 }
 
-template <typename AWG_T>
-void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
+
+void FiniteStateMachine::saveMetadata(std::string dirPath) {
     std::string parentDir = dirPath.substr(0, dirPath.find_last_of('/'));
 
     for (size_t i = 0; i < llrs_metadata.size(); i++) {
@@ -383,4 +383,3 @@ void FiniteStateMachine<AWG_T>::saveMetadata(std::string dirPath) {
     }
 }
 
-template class FiniteStateMachine<AWG>;

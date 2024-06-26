@@ -26,18 +26,18 @@ using json = nlohmann::json;
 
 enum Target { CENTRE_COMPACT };
 
-template <typename AWG_T> class LLRS {
+class LLRS {
     int trial_num;
     int rep_num;
     int cycle_num;
     double detection_threshold;
 
+    std::unique_ptr<Stream::Sequence> awg_sequence;
+    std::unique_ptr<Acquisition::ActiveSilicon1XCLD> fgc;
+    std::unique_ptr<Processing::ImageProcessor> img_proc_obj;
+    std::unique_ptr<Reconfig::Solver> solver;
     Util::Collector *p_collector;
     Synthesis::WaveformTable wf_table;
-    std::unique_ptr<Stream::Sequence<AWG_T>> awg_sequence;
-    std::unique_ptr<Acquisition::ActiveSilicon1XCLD> fgc;
-    Processing::ImageProcessor img_proc_obj;
-    Reconfig::Solver solver;
     std::ofstream log_out;
     std::streambuf *old_rdbuf;
     Util::JsonWrapper user_input;
@@ -108,8 +108,12 @@ template <typename AWG_T> class LLRS {
         friend class LLRS;
     } metadata;
 
-    LLRS();
-    LLRS(std::shared_ptr<AWG_T> &awg);
+    /**
+     * @brief Construct a new LLRS object
+     * 
+     * @tparam Args list of arguments that must include the unique or shared pointers correspoding to the AWG, FGC, Image Processor, and solver objects 
+     */
+    template<typename... Args> LLRS(Args&&... args);
     void clean();
     ~LLRS() { clean(); }
     void setup(std::string json_input, bool setup_idle_segment,
@@ -129,7 +133,7 @@ template <typename AWG_T> class LLRS {
     void setTargetConfig(std::vector<int> new_target_config);
     void store_moves();
     const Metadata &getMetadata() const { return metadata; };
-    void get_idle_wfm(typename AWG_T::TransferBuffer &tb,
+    void get_idle_wfm(typename AWG::TransferBuffer &tb,
                       size_t samples_per_segment) {
         awg_sequence->get_static_wfm(
             *tb, samples_per_segment / awg_sequence->get_waveform_length(),

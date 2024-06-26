@@ -64,12 +64,12 @@ Reconfig::Algo get_algo_enum(std::string name) {
 /// Solver Class
 
 /**
- * @brief Construct a new Solver object
+ * @brief Setup a new Solver object
  *
  * @param Nt_x
  * @param Nt_y
  */
-Reconfig::Solver::Solver(int Nt_x, int Nt_y, int wfm_per_segment,
+void Reconfig::Solver::setup(int Nt_x, int Nt_y, int wfm_per_segment,
                          Util::Collector *p_collector)
     : Nt_x{Nt_x}, Nt_y{Nt_y}, num_atoms_initial{0}, num_atoms_target{0},
       wfm_per_segment{wfm_per_segment}, matching_src(Nt_x * Nt_y, 0),
