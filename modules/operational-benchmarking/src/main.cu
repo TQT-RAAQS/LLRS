@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
             while (!Util::target_met(rep_config, target_config)) {
 
                 Reconfig::Solver solver;
-                solver.setup(Nt_x, Nt_y, 32, nullptr);
+                solver.setup(Nt_x, Nt_y, 32);
 
                 // Initialize trap array object
                 TrapArray trap_array =
@@ -144,8 +144,8 @@ int main(int argc, char *argv[]) {
                 // Start solver and generate moves list
 
                 std::vector<Reconfig::Move> moves_list;
-                solver.start_solver(algo, rep_config, target_config, 0, 0, 0);
-                moves_list = solver.gen_moves_list(algo, 0, 0, 0);
+                solver.start_solver(algo, rep_config, target_config);
+                moves_list = solver.gen_moves_list(algo);
 
 // Output the moves list and count number of extraction/implantation
 #ifdef DEBUG

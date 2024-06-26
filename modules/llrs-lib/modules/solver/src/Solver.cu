@@ -69,8 +69,7 @@ Reconfig::Algo get_algo_enum(std::string name) {
  * @param Nt_x
  * @param Nt_y
  */
-void Reconfig::Solver::setup(int Nt_x, int Nt_y, int wfm_per_segment,
-                         Util::Collector *p_collector) {
+void Reconfig::Solver::setup(int Nt_x, int Nt_y, int wfm_per_segment) {
         this->Nt_x = Nt_x;
         this->Nt_y = Nt_y;
         this->num_atoms_initial = 0;
@@ -85,7 +84,6 @@ void Reconfig::Solver::setup(int Nt_x, int Nt_y, int wfm_per_segment,
         this->path_system = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
         this->path_length = std::vector<int>(Nt_x * Nt_y, 0);
         this->initial = std::vector<int>(Nt_x * Nt_y, 0);
-        this->p_collector = p_collector;
     }
 
 /**
@@ -100,8 +98,7 @@ void Reconfig::Solver::setup(int Nt_x, int Nt_y, int wfm_per_segment,
  */
 bool Reconfig::Solver::start_solver(Algo algo_select,
                                     std::vector<int32_t> initial,
-                                    std::vector<int32_t> target, int trial_num,
-                                    int rep_num, int cycle_num) {
+                                    std::vector<int32_t> target) {
 
     int *sol_length = new int();
     int *num_batches = new int();
@@ -142,81 +139,55 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
 
     case LINEAR_EXACT_V2_1D:
         /// Matching
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Matching");
         lin_exact_cpu_v2_generate_matching // if supported algorithm is provided
                                            // then perform matching
             (&initial[0], &target[0], initial.size(), num_atoms_initial,
              num_atoms_target, &matching_src[0], &matching_dst[0]);
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
-        p_collector->start_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Matching");
         /// Batching
+        START_TIMER("III-Batching");
         lin_exact_1d_cpu_v2_block_output_generator(
             &matching_src[0], &matching_dst[0], num_atoms_target, &src[0],
             &dst[0], &blk[0], &batch_ptrs[0], num_batches, sol_length);
+        END_TIMER("III-Batching");
         break;
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
     case REDREC_CPU_V2_2D:
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Matching");
         redrec_v2 /// gets batching time internally
             (&initial[0], num_atoms_initial, Nt_x, Nt_y, reservoir_height,
              &src[0], &dst[0], &batch_ptrs[0], num_batches, sol_length);
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Matching");
         break;
     case ARO_CPU_2D:
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Matching");
         aro_serial_cpu(&initial[0], &target[0], Nt_y, Nt_x, num_atoms_initial,
                        num_atoms_target, 1, 0,
                        1, /// do rerouting, don't do atom_isolation, do ordering
                        &src[0], &dst[0], sol_length, &path_system[0],
                        &path_length[0]);
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Matching");
         break;
     case REDREC_CPU_V3_2D:
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Matching");
         redrec_cpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
                    &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Matching");
         break;
     case REDREC_GPU_V3_2D:
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Matching");
         redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
                    &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Matching");
         break;
     case BIRD_CPU_2D:
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Matching");
         bird_cpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
                  &matching_dst[0], &src[0], &dst[0], sol_length,
                  &path_system[0], &path_length[0]);
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Matching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Matching");
         break;
     default:
         throw std::invalid_argument("Algorithm not supported");
@@ -239,14 +210,10 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
  *   @return A vector of Move tuples representing the primary waveform keying
  * components
  */
-std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
-                                                             int trial_num,
-                                                             int rep_num,
-                                                             int cycle_num) {
+std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select) {
 
     std::vector<Reconfig::Move> ret;
     switch (algo_select) {
-
     case LINEAR_EXACT_V2_1D:
     case LINEAR_EXACT_1D: {
         size_t paddings_required =
@@ -274,9 +241,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
         return ret;
     }
     case REDREC_CPU_V2_2D: {
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Batching");
         for (auto itr = batch_ptrs.begin(); itr != batch_ptrs.end();
              itr++) // iterate through the batchings
         {
@@ -351,18 +316,14 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
                 }
             }
         }
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Batching");
         break;
     }
 
     case BIRD_CPU_2D:
     case REDREC_GPU_V3_2D:
     case REDREC_CPU_V3_2D: {
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
+        START_TIMER("III-Batching");
         std::vector<int> single_atom_start, single_atom_end, single_atom_dir;
         int i = 0;
         while (i < src.size()) {
@@ -456,24 +417,11 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
                              0); // block_size == extraction_extent here
             i = j;
         }
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Batching");
         break;
     }
     case ARO_CPU_2D: {
-#ifdef DEBUG_BATCHING_ARO
-        // Prining ungrouped moves
-        std::cout << "UNGROUPED MOVES" << std::endl;
-        for (int idx = 0; idx < _src.size(); idx++) {
-            std::cout << "SRC: " << _src[idx] << " DEST: " << _dst[idx]
-                      << std::endl;
-        }
-#endif
-#ifdef LOGGING_RUNTIME
-        p_collector->start_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
-
+        START_TIMER("III-Batching");
         std::vector<int> single_atom_start, single_atom_end, single_atom_dir;
         int i = 0;
         while (i < src.size()) {
@@ -488,15 +436,6 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
             }
             single_atom_end.push_back(dst[i - 1]);
         }
-
-#ifdef DEBUG_BATCHING_ARO
-        // Prining grouped moves
-        std::cout << "GROUPED MOVES" << std::endl;
-        for (int idx = 0; idx < single_atom_start.size(); idx++) {
-            std::cout << "SRC: " << single_atom_start[idx]
-                      << " DEST: " << single_atom_end[idx] << std::endl;
-        }
-#endif
 
         /// creating binary array to track locations of atoms between moves
         std::vector<int> atoms{};
@@ -545,19 +484,6 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
                             for (int atom_idx = lower_range;
                                  atom_idx < upper_range; atom_idx += Nt_x) {
                                 if (atoms[atom_idx] == 1) {
-#ifdef DEBUG_BATCHING_ARO
-                                    std::cout << "LOWER RANGE: " << lower_range
-                                              << " UPPER RANGE: " << upper_range
-                                              << std::endl;
-                                    std::cout << "DOWNWARD MIN: " << new_min
-                                              << " ATOM_IDX: " << atom_idx
-                                              << " NEW_MAX: " << new_max
-                                              << std::endl;
-                                    std::cout
-                                        << "DOWNWARD DID NOT MAKE MOVE: MIN: "
-                                        << new_min << " ATOM_IDX: " << atom_idx
-                                        << " NEW_MAX: " << new_max << std::endl;
-#endif
                                     moving_extra_atom = true;
                                     break;
                                 }
@@ -577,19 +503,6 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
                             for (int atom_idx = lower_range;
                                  atom_idx < upper_range; atom_idx += Nt_x) {
                                 if (atoms[atom_idx] == 1) {
-#ifdef DEBUG_BATCHING_ARO
-                                    std::cout << "LOWER RANGE: " << lower_range
-                                              << " UPPER RANGE: " << upper_range
-                                              << std::endl;
-                                    std::cout << "UPWARD MIN: " << new_min
-                                              << " ATOM_IDX: " << atom_idx
-                                              << " NEW_MAX: " << new_max
-                                              << std::endl;
-                                    std::cout
-                                        << "UPWARD DID NOT MAKE MOVE: MIN: "
-                                        << new_min << " ATOM_IDX: " << atom_idx
-                                        << " NEW_MAX: " << new_max << std::endl;
-#endif
                                     moving_extra_atom = true;
                                     break;
                                 }
@@ -671,9 +584,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select,
                              0); // block_size == extraction_extent here
             i = j;
         }
-#ifdef LOGGING_RUNTIME
-        p_collector->end_timer("III-Batching", trial_num, rep_num, cycle_num);
-#endif
+        END_TIMER("III-Batching");
         break;
     }
     default:
@@ -712,13 +623,12 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
     std::vector<int32_t> target_config(target, target + Nt_x * Nt_y);
 
     Reconfig::Solver solver;
-    solver.setup(Nt_x, Nt_y, 32, NULL);
+    solver.setup(Nt_x, Nt_y, 32);
 
-    float batching_time = 0;
-    solver.start_solver(algo, current_config, target_config, 0, 0, 0);
+    solver.start_solver(algo, current_config, target_config);
 
     std::vector<Reconfig::Move> moves_list =
-        solver.gen_moves_list(algo, 0, 0, 0);
+        solver.gen_moves_list(algo);
     *sol_len = moves_list.size();
     std::cout << *sol_len << std::endl;
 

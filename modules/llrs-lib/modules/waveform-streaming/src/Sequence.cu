@@ -156,39 +156,27 @@ void Stream::Sequence::reset(bool reset_segments) {
 
 
 bool Stream::Sequence::load_single_segment(
-    std::vector<Reconfig::Move> &moves_list, int trial_num, int rep_num,
-    int cycle_num) {
+    std::vector<Reconfig::Move> &moves_list) {
 
     move_idx = 0;
 
     // lookup all waveforms and load it into the transfer buffer
-#ifdef LOGGING_RUNTIME
-    p_collector->start_timer("V-Latency", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
-#endif
-
+    START_TIMER("V-Latency");
+    START_TIMER("V-First-Lookup");
     wf_segment_lookup(*double_sized_buffer, moves_list,
                       waveforms_per_segment * 2);
-
-#ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Upload", trial_num, rep_num, cycle_num);
-#endif
-
+    END_TIMER("V-First-Lookup");
+    
+    START_TIMER("V-First-Upload");
     // upload the segment
     awg->load_data(short_circuit_seg_idx, *double_sized_buffer,
                    samples_per_segment * 2 * sizeof(short));
+    END_TIMER("V-First-Upload");
+    END_TIMER("V-Latency");
+    GET_EXTERNAL_TIME("V-First-Update", 0);
+    GET_EXTERNAL_TIME("V-Second-Lookup", 0);
+    GET_EXTERNAL_TIME("V-Second-Upload", 0);
 
-#ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-First-Upload", trial_num, rep_num, cycle_num);
-    p_collector->end_timer("V-Latency", trial_num, rep_num, cycle_num);
-    p_collector->get_external_time("V-First-Update", trial_num, rep_num,
-                                   cycle_num, 0);
-    p_collector->get_external_time("V-Second-Lookup", trial_num, rep_num,
-                                   cycle_num, 0);
-    p_collector->get_external_time("V-Second-Upload", trial_num, rep_num,
-                                   cycle_num, 0);
-#endif
     // sets last segment (double-size segment) to be loaded to point to idle
     awg->seqmem_update(short_circuit_step, short_circuit_seg_idx, 1,
                        idle_step_idx, SPCSEQ_ENDLOOPALWAYS);
@@ -196,29 +184,22 @@ bool Stream::Sequence::load_single_segment(
     // point idle to the double sized segment
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, short_circuit_step,
                        SPCSEQ_ENDLOOPALWAYS);
-
-#ifdef LOGGING_RUNTIME
-    p_collector->start_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
-#endif
-
+    START_TIMER("V-Load_Stream");
+    
     while (awg->get_current_step() == idle_step_idx) {
     }
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
                        SPCSEQ_ENDLOOPALWAYS);
     while (awg->get_current_step() != idle_step_idx) {
     }
-
-#ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
-#endif
+    END_TIMER("V-Load_Stream");
 
     return 0;
 }
 
 
 bool Stream::Sequence::load_multiple_segments(
-    std::vector<Reconfig::Move> &moves_list, int trial_num, int rep_num,
-    int cycle_num) {
+    std::vector<Reconfig::Move> &moves_list) {
 
     int num_moves = moves_list.size();
     move_idx = 0;
@@ -244,18 +225,12 @@ bool Stream::Sequence::load_multiple_segments(
     short *upload_pointer = *upload_buffer;
 
     // lookup first segment
-#ifdef LOGGING_RUNTIME
-    p_collector->start_timer("V-Latency", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
-#endif
-
+    START_TIMER("V-Latency");
+    START_TIMER("V-First-Lookup");
     wf_segment_lookup(lookup_pointer, moves_list, waveforms_per_segment);
+    END_TIMER("V-First-Lookup");
 
-#ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-First-Lookup", trial_num, rep_num, cycle_num);
-    p_collector->start_timer("V-First-Upload", trial_num, rep_num, cycle_num);
-#endif
-
+    START_TIMER("V-First-Upload");
     // swap buffers
     std::swap(lookup_pointer, upload_pointer);
 
@@ -264,25 +239,15 @@ bool Stream::Sequence::load_multiple_segments(
                                samples_per_segment * sizeof(short));
 
     // lookup second segment
-#ifdef LOGGING_RUNTIME
-    p_collector->start_timer("V-Second-Lookup", trial_num, rep_num, cycle_num);
-#endif
-
+    START_TIMER("V-Second-Lookup");
     wf_segment_lookup(lookup_pointer, moves_list, waveforms_per_segment);
-
-#ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-Second-Lookup", trial_num, rep_num, cycle_num);
-#endif
-
+    END_TIMER("V-Second-Lookup");
+    
     // wait for old transfer to finish
     awg->wait_for_data_load();
+    END_TIMER("V-First-Upload");
 
-#ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-First-Upload", trial_num, rep_num, cycle_num);
-
-    p_collector->start_timer("V-Second-Upload", trial_num, rep_num, cycle_num);
-#endif
-
+    START_TIMER("V-Second-Upload");
     // load all segments
     for (load_seg_idx = idle_segment_idx + 2;
          load_seg_idx <= num_segments_to_load + idle_segment_idx;
@@ -305,14 +270,10 @@ bool Stream::Sequence::load_multiple_segments(
         // wait for old upload to finish
         awg->wait_for_data_load();
 
-#ifdef LOGGING_RUNTIME
         if (load_seg_idx == idle_segment_idx + 2) {
-            p_collector->end_timer("V-Second-Upload", trial_num, rep_num,
-                                   cycle_num);
-            p_collector->start_timer("V-First-Update", trial_num, rep_num,
-                                     cycle_num);
+            END_TIMER("V-Second-Upload");
+            START_TIMER("V-First-Update");
         }
-#endif
 
         // ---update sequence memory---
         old_control = idle_step_idx + load_seg_idx * 2 - 3;
@@ -333,13 +294,9 @@ bool Stream::Sequence::load_multiple_segments(
         if (load_seg_idx == (idle_segment_idx + 2)) {
             awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, old_control,
                                SPCSEQ_ENDLOOPALWAYS);
-#ifdef LOGGING_RUNTIME
-            p_collector->end_timer("V-First-Update", trial_num, rep_num,
-                                   cycle_num);
-            p_collector->end_timer("V-Latency", trial_num, rep_num, cycle_num);
-            p_collector->start_timer("V-Load_Stream", trial_num, rep_num,
-                                     cycle_num);
-#endif
+            END_TIMER("V-First-Update");
+            END_TIMER("V-Latency");
+            START_TIMER("V-Load_Stream");
         }
     }
 
@@ -370,11 +327,8 @@ bool Stream::Sequence::load_multiple_segments(
     }
 
 #endif
-
-#ifdef LOGGING_RUNTIME
-    p_collector->end_timer("V-Load_Stream", trial_num, rep_num, cycle_num);
-#endif
-
+    END_TIMER("V-Load_Stream");
+    
     return 0;
 }
 

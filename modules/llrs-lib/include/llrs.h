@@ -27,8 +27,6 @@ using json = nlohmann::json;
 enum Target { CENTRE_COMPACT };
 
 class LLRS {
-    int trial_num;
-    int rep_num;
     int cycle_num;
     double detection_threshold;
 
@@ -36,7 +34,6 @@ class LLRS {
     std::unique_ptr<Acquisition::ActiveSilicon1XCLD> fgc;
     std::unique_ptr<Processing::ImageProcessor> img_proc_obj;
     std::unique_ptr<Reconfig::Solver> solver;
-    Util::Collector *p_collector;
     Synthesis::WaveformTable wf_table;
     std::ofstream log_out;
     std::streambuf *old_rdbuf;
@@ -45,7 +42,6 @@ class LLRS {
     std::vector<int> target_config;
     bool _2d = false;
     int num_trap;
-    std::string problem_id;
 
   public:
     class Metadata {
@@ -54,7 +50,7 @@ class LLRS {
         int num_cycles;
         std::vector<std::vector<Reconfig::Move>> moves_per_cycle;
         std::vector<std::vector<int32_t>> atom_configs;
-        nlohmann::json runtime_data;
+        std::vector<std::vector<std::tuple<std::string, long long>>> runtime_data;
         bool target_met = false;
 
       public:
@@ -69,7 +65,7 @@ class LLRS {
         const std::vector<std::vector<int32_t>> &getAtomConfigs() const {
             return atom_configs;
         }
-        const nlohmann::json &getRuntimeData() const { return runtime_data; }
+        const std::vector<std::vector<std::tuple<std::string, long long>>> &getRuntimeData() const { return runtime_data; }
         void reset() {
             Nt_x = 0;
             Nt_y = 0;
@@ -80,6 +76,7 @@ class LLRS {
             runtime_data.clear();
             moves_per_cycle.reserve(ATTEMPT_LIMIT);
             atom_configs.reserve(ATTEMPT_LIMIT);
+            runtime_data.reserve(ATTEMPT_LIMIT);
         }
 
       private:
@@ -100,8 +97,8 @@ class LLRS {
         void addAtomConfigs(const std::vector<int32_t> &atom_config) {
             atom_configs.push_back(atom_config);
         }
-        void setRuntimeData(const nlohmann::json &runtimedata) {
-            runtime_data = runtimedata;
+        void addRuntimeData(std::vector<std::tuple<std::string, long long>> cycleRuntimedata) {
+            runtime_data.push_back(cycleRuntimedata);
         }
         void incrementNumCycles() { num_cycles++; }
         void setTargetMet() { target_met = true; }
@@ -117,7 +114,7 @@ class LLRS {
     void clean();
     ~LLRS() { clean(); }
     void setup(std::string json_input, bool setup_idle_segment,
-               int llrs_step_offset, std::string problem_id = "");
+               int llrs_step_offset);
     void reset_psf(std::string psf_file);
     void reset_waveform_table();
     void reset_problem(std::string algorithm, int num_target);

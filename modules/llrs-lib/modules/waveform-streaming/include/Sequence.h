@@ -16,9 +16,9 @@ namespace Stream {
 
 class Sequence {
   public:
-    Sequence(Util::Collector *p_collector, Synthesis::WaveformTable &wf_table,
+    Sequence(Synthesis::WaveformTable &wf_table,
              double waveform_duration)
-        : awg{std::make_shared<AWG>()}, p_collector{p_collector},
+        : awg{std::make_shared<AWG>()},
           wf_table{wf_table}, lookup_buffer{awg->allocate_transfer_buffer(
                                   awg->get_samples_per_segment(), false)},
           upload_buffer{awg->allocate_transfer_buffer(
@@ -36,9 +36,9 @@ class Sequence {
         configure();
     }
 
-    Sequence(std::shared_ptr<AWG> &awg, Util::Collector *p_collector,
+    Sequence(std::shared_ptr<AWG> &awg, 
              Synthesis::WaveformTable &wf_table, double waveform_duration)
-        : awg{awg}, p_collector{p_collector}, wf_table{wf_table},
+        : awg{awg},  wf_table{wf_table},
           lookup_buffer{awg->allocate_transfer_buffer(
               awg->get_samples_per_segment(), false)},
           upload_buffer{awg->allocate_transfer_buffer(
@@ -58,18 +58,13 @@ class Sequence {
 
     int setup(bool setup_idle_segment, int idle_step_idx, bool _2d, int Nt_x,
               int Nt_y);
-    bool load_and_stream(std::vector<Reconfig::Move> &moves_list, int trial_num,
-                         int rep_num, int cycle_num) {
+    bool load_and_stream(std::vector<Reconfig::Move> &moves_list) {
         return moves_list.size() <= waveforms_per_segment * 2
-                   ? load_single_segment(moves_list, trial_num, rep_num,
-                                         cycle_num)
-                   : load_multiple_segments(moves_list, trial_num, rep_num,
-                                            cycle_num);
+                   ? load_single_segment(moves_list)
+                   : load_multiple_segments(moves_list);
     }
-    bool load_single_segment(std::vector<Reconfig::Move> &moves_list,
-                             int trial_num, int rep_num, int cycle_num);
-    bool load_multiple_segments(std::vector<Reconfig::Move> &moves_list,
-                                int trial_num, int rep_num, int cycle_num);
+    bool load_single_segment(std::vector<Reconfig::Move> &moves_list);
+    bool load_multiple_segments(std::vector<Reconfig::Move> &moves_list);
     void emccd_trigger() { awg->generate_async_output_pulse(EMCCD); }
     void clock_trigger() { awg->generate_async_output_pulse(RESUME_CLOCK); }
     void reset(bool reset_segments);
@@ -89,7 +84,6 @@ class Sequence {
 
   private:
     std::shared_ptr<AWG> awg;
-    Util::Collector *p_collector;
     Synthesis::WaveformTable &wf_table;
 
     bool setup_idle_segment = true;
