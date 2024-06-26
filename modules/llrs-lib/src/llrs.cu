@@ -197,16 +197,6 @@ int LLRS::execute() {
         std::vector<uint16_t> current_image =
             image_acquisition->acquire_single_image();
 
-#ifdef PRE_SOLVED
-        char image_file[256];
-        std::string image_file_path =
-            (std::string("") + PROJECT_BASE_DIR +
-                "/resources/images/fake-image.png");
-        strcpy(image_file, image_file_path.c_str());
-        current_image = fgc->acquire_stored_image(image_file);
-#endif
-        
-
 #ifdef LOGGING_VERBOSE
         INFO << "Acquired Image of size " << current_image.size()
                 << std::endl;

@@ -1,4 +1,4 @@
-#include "awg.hpp"
+#include "acquisition-stored.h"
 #include "llrs.h"
 #include <cstdlib>
 #include <fstream>
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         return LLRS_ERR;
     }
 
-    std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
+    std::shared_ptr<AWG> awg{std::make_shared<AWG>(), dynamic_cast<std::unique_ptr<Acquisition::ImageAcquisition>>(std::make_unique<Acquisition::ImageAcquisitionStored>())};
     LLRS l{awg};
     l.setup(problem_config, true, 0);
 

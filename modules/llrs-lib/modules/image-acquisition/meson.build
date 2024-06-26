@@ -8,7 +8,9 @@ llrs_lib_image_acquisition_inc = include_directories('include')
 # sources
 llrs_lib_image_acquisition_src = [
     'src/acquisition.cu',
+    'src/acquisition-stored.cu'
   ]
+
 
 # submodules
 collector_proj =          subproject('collector')
