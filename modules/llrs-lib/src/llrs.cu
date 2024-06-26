@@ -190,11 +190,9 @@ int LLRS::execute() {
 
         auto reset_result = std::async(
             std::launch::async, &LLRS::reset, this, false);
-
 #ifdef LOGGING_VERBOSE
         INFO << "Starting cycle " << cycle_num << std::endl;
 #endif
-
         START_TIMER("I");
         awg_sequence->emccd_trigger();
         std::vector<uint16_t> current_image =
@@ -228,7 +226,6 @@ int LLRS::execute() {
             user_input.read_experiment_roi_height());
         t_store_image.detach();
 #endif
-
 
         START_TIMER("II-Deconvolution");
         /* Step 1, apply gaussian psf kernel onto each atom position */

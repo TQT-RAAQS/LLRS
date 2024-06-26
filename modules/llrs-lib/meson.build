@@ -35,16 +35,12 @@ llrs_lib_waveform_synthesis_dep = waveform_synthesis_proj.get_variable('llrs_lib
 awg_dep = awg_proj.get_variable('awg_dep')
 fgc_dep = fgc_proj.get_variable('fgc_dep')
 
-# external dependencies
-nlohmann_json_dep = dependency('nlohmann_json')
-jsoncpp_dep = dependency('jsoncpp')
-
 # targets
 llrs_lib = shared_library('llrs-lib',
     llrs_lib_src,
     link_args: '-lstdc++fs',
     include_directories: [llrs_lib_inc],
-    dependencies: [nlohmann_json_dep, jsoncpp_dep, llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep],
+    dependencies: [llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep],
     install: true)
 
 llrs_lib_pre_solved = shared_library('llrs-lib-pre-solved',
@@ -52,17 +48,17 @@ llrs_lib_pre_solved = shared_library('llrs-lib-pre-solved',
     cuda_args: ['-D LOGGING_RUNTIME', '-D PRE_SOLVED'],
     link_args: '-lstdc++fs',
     include_directories: [llrs_lib_inc],
-    dependencies: [nlohmann_json_dep, jsoncpp_dep, llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep],
+    dependencies: [llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep],
     install: true)
 
 # export dependencies
 llrs_lib_dep = declare_dependency(
     include_directories: llrs_lib_inc,
     link_with: llrs_lib,
-    dependencies: [nlohmann_json_dep, jsoncpp_dep, llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep])
+    dependencies: [llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep])
 
 llrs_lib_pre_solved_dep = declare_dependency(
     include_directories: llrs_lib_inc,
     link_with: llrs_lib_pre_solved,
-    dependencies: [nlohmann_json_dep, jsoncpp_dep, llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep])
+    dependencies: [llrs_lib_setup_dep, llrs_lib_jsonwrapper_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_waveform_streaming_dep, llrs_lib_image_processing_dep, llrs_lib_utility_dep, fgc_dep, awg_dep])
 
