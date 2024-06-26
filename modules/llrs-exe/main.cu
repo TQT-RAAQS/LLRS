@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
     awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
 
-    LLRS *l = new LLRS{awg};
+    LLRS *l = new LLRS(awg);
     l->setup(problem_config, false, llrs_idle_step);
 
     std::cout << "Starting AWG stream" << std::endl;

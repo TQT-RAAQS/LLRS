@@ -69,7 +69,7 @@ async_trig_amp:           3             # trigger Amp in volts : int  \n \
         Synthesis::read_waveform_duration(WFM_CONFIG_PATH("config.yml"));
 
     Synthesis::WaveformTable wf_table;
-    Stream::Sequence awg_sequence(nullptr, wf_table, waveform_duration);
+    Stream::Sequence awg_sequence(wf_table, waveform_duration);
 
     double awg_sample_rate = awg_sequence.get_sample_rate();
     int waveform_length = awg_sequence.get_waveform_length();
@@ -85,7 +85,7 @@ async_trig_amp:           3             # trigger Amp in volts : int  \n \
     int counter = 0;
     for (int i = 0; i < num_rep; i++) {
         auto moves = generate_moves(number_of_moves);
-        counter += awg_sequence.load_and_stream(moves, 0, 0, 0);
+        counter += awg_sequence.load_and_stream(moves);
         awg_sequence.reset(false);
     }
     std::cout << (float)counter / num_rep << std::endl;

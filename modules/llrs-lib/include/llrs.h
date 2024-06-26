@@ -19,10 +19,7 @@
 #include <future>
 #include <iostream>
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <vector>
-#include <yaml-cpp/yaml.h>
-using json = nlohmann::json;
 
 enum Target { CENTRE_COMPACT };
 
