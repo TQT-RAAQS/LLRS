@@ -1,4 +1,5 @@
 #include "acquisition-stored.h"
+#include "ImageProcessor-replace.h"
 #include "llrs.h"
 #include <cstdlib>
 #include <fstream>
@@ -24,9 +25,10 @@ int main(int argc, char *argv[]) {
                   << std::endl;
         return LLRS_ERR;
     }
-
-    std::shared_ptr<AWG> awg{std::make_shared<AWG>(), dynamic_cast<std::unique_ptr<Acquisition::ImageAcquisition>>(std::make_unique<Acquisition::ImageAcquisitionStored>())};
-    LLRS l{awg};
+    
+    std::shared_ptr<AWG> awg{std::make_shared<AWG>()};
+    std::shared_ptr<Processing::ImageProcessorReplace> image_processor{std::make_shared<Processing::ImageProcessorReplace>()};
+    LLRS l{awg, std::dynamic_pointer_cast<Acquisition::ImageAcquisition>(std::make_shared<Acquisition::ImageAcquisitionStored>()), std::dynamic_pointer_cast<Processing::ImageProcessor>(image_processor)};
     l.setup(problem_config, true, 0);
 
     awg->start_stream();
@@ -38,8 +40,14 @@ int main(int argc, char *argv[]) {
          ++trial_num) {
         Json::Value trial_soln = problem_soln[TRIAL_NAME(trial_num)];
         std::vector<REP_INFO> trial_timers;
+        /* SWAP with pre-solved from processed */
         for (int rep_num = 0; trial_soln.isMember(REP_NAME(rep_num)); ++rep_num) {
             Json::Value rep_soln = trial_soln[REP_NAME(rep_num)];
+            std::vector<std::vector<int32_t>> configs;
+            for (int cycle_num = 0; rep_soln.isMember(CYCLE_NAME(cycle_num)); ++cycle_num) {
+                configs.push_back(Util::vector_transform(rep_soln[CYCLE_NAME(cycle_num)]));
+            }
+            image_processor->set_configs(configs);
             l.execute();
             trial_timers.push_back(l.getMetadata().getRuntimeData());
         }

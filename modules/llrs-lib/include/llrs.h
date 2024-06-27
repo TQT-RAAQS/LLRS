@@ -28,9 +28,9 @@ class LLRS {
     double detection_threshold;
 
     std::unique_ptr<Stream::Sequence> awg_sequence;
-    std::unique_ptr<Acquisition::ImageAcquisition> image_acquisition;
-    std::unique_ptr<Processing::ImageProcessor> img_proc_obj;
-    std::unique_ptr<Reconfig::Solver> solver;
+    std::shared_ptr<Acquisition::ImageAcquisition> image_acquisition;
+    std::shared_ptr<Processing::ImageProcessor> img_proc_obj;
+    std::shared_ptr<Reconfig::Solver> solver;
     Synthesis::WaveformTable wf_table;
     std::ofstream log_out;
     std::streambuf *old_rdbuf;
@@ -107,7 +107,7 @@ class LLRS {
      * 
      * @tparam Args list of arguments that must include the unique or shared pointers correspoding to the AWG, Image Acquisition, Image Processor, and solver objects 
      */
-    template<typename... Args> LLRS(Args&&... args);
+    LLRS(std::shared_ptr<AWG> awg = nullptr, std::shared_ptr<Acquisition::ImageAcquisition> img_acq = nullptr, std::shared_ptr<Processing::ImageProcessor> img_proc = nullptr, std::shared_ptr<Reconfig::Solver> solver = nullptr);
     void clean();
     ~LLRS() { clean(); }
     void setup(std::string json_input, bool setup_idle_segment,
