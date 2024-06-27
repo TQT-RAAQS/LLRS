@@ -1,45 +1,14 @@
 #include "llrs.h"
-
-
-
-template<typename... Args> LLRS::LLRS(Args&&... args)
+LLRS::LLRS(std::shared_ptr<AWG> awg, std::shared_ptr<Acquisition::ImageAcquisition> img_acq, std::shared_ptr<Processing::ImageProcessor> img_proc, std::shared_ptr<Reconfig::Solver> solver)
     : log_out(std::ofstream(LOGGING_PATH(std::string("main-log.txt")),
                             std::ios::app)) {
     std::cout << "LLRS: constructor" << std::endl;
-
-    bool awg_setup, acq_setup, img_proc_setup, solver_setup = false;
-    for (auto& arg : {args...}) {
-        if (!awg_setup && typeid(arg) == typeid(std::shared_ptr<AWG>&)) {
-            awg_sequence = std::make_unique<Stream::Sequence>(
-            std::move(arg), wf_table,
-            Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
-            awg_setup = true;
-        } else if (!acq_setup && typeid(arg) == typeid(std::unique_ptr<Acquisition::ImageAcquisition>&&)) {
-            image_acquisition = std::move(arg);
-            acq_setup = true;
-        } else if (!img_proc_setup && typeid(arg) == typeid(std::unique_ptr<Processing::ImageProcessor>&&)){
-            img_proc_obj = std::move(arg);
-            img_proc_setup = true;
-        } else if (!solver_setup && typeid(arg) == typeid(std::unique_ptr<Reconfig::Solver>&&)){
-            solver = std::move(arg);
-            solver_setup = true;
-        }   
-    }
-    if (!awg_setup) {
-        awg_sequence = std::make_unique<Stream::Sequence>(wf_table,
-        Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
-    }
-    if (!acq_setup) {
-        image_acquisition = std::make_unique<Acquisition::ImageAcquisition>();
-    }
-    if (!img_proc_setup) {
-        img_proc_obj = std::make_unique<Processing::ImageProcessor>();
-    }
-    if (!solver_setup) {
-        solver = std::make_unique<Reconfig::Solver>();
-    }
+    
+    awg_sequence = awg? std::make_unique<Stream::Sequence>(awg, wf_table, Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml"))) : std::make_unique<Stream::Sequence>(wf_table, Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
+    image_acquisition = img_acq? img_acq : std::make_shared<Acquisition::ImageAcquisition>();
+    img_proc_obj = img_proc? img_proc :std::make_shared<Processing::ImageProcessor>();
+    solver = solver? solver : std::make_shared<Reconfig::Solver>();
 }
-
 /**
  * @brief Sets up the LLRS
  * @param input => config filename
@@ -212,32 +181,19 @@ int LLRS::execute() {
         t_store_image.detach();
 #endif
 
-        START_TIMER("II-Deconvolution");
         /* Step 1, apply gaussian psf kernel onto each atom position */
         std::vector<double> filtered_output =
             img_proc_obj->apply_filter(&current_image);
-        END_TIMER("II-Deconvolution");
 
-        START_TIMER("II-Threshold");
         /* Step 2, apply a threshold to the filtered output to get the
             * atom configuration */
         std::vector<int32_t> current_config =
-            Processing::apply_threshold(filtered_output,
+            img_proc_obj->apply_threshold(filtered_output,
                                         detection_threshold);
-        END_TIMER("II-Threshold");
 
 #ifdef LOGGING_VERBOSE
         INFO << "Filtered output: " << vec_to_str(filtered_output)
                 << std::endl;
-#endif
-
-#ifdef PRE_SOLVED
-        /* SWAP with pre-solved from processed */
-        current_config =
-            Util::vector_transform(rep_soln[CYCLE_NAME(cycle_num)]);
-#endif
-
-#ifdef LOGGING_VERBOSE
         INFO << "Current configuration: " << vec_to_str(current_config)
                 << std::endl;
 #endif

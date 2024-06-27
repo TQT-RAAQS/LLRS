@@ -63,13 +63,13 @@ int main(int argc, char *argv[]) {
     awg->fill_transfer_buffer(tb, samples_per_idle_segment, 0);
     awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
 
-    LLRS *l = new LLRS(awg);
-    l->setup(problem_config, false, llrs_idle_step);
+    LLRS l {awg};
+    l.setup(problem_config, false, llrs_idle_step);
 
     std::cout << "Starting AWG stream" << std::endl;
 
     if (awg->get_idle_segment_wfm()) {
-        l->get_idle_wfm(tb, samples_per_idle_segment);
+        l.get_idle_wfm(tb, samples_per_idle_segment);
         awg->init_and_load_range(*tb, samples_per_idle_segment, 0, 1);
     }
 
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
                     << current_seg << std::endl;
 
                 std::cout << "Starting the LLRS" << std::endl;
-                int success = l->execute();
+                int success = l.execute();
                 std::cout << "Done LLRS::Execute" << std::endl;
                 ++num_of_executions;
                 if (success == 0)
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
                 awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1,
                                    llrs_idle_step, SPCSEQ_ENDLOOPALWAYS);
 
-                l->reset(true);
+                l.reset(true);
             }
         }
         if (flag) {

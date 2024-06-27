@@ -139,6 +139,8 @@ void Processing::ImageProcessor::setup(std::string psf_path,
  */
 std::vector<double>
 Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
+    
+    START_TIMER("II-Deconvolution");
     // Throw an error is we have an empty input image
     if (p_input_img->empty()) {
         throw std::runtime_error(
@@ -168,6 +170,7 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
         running_sums[kernel_idx] = cur_sum;
 #endif
     }
+    END_TIMER("II-Deconvolution");
 
     return std::move(running_sums);
 }
@@ -184,8 +187,10 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
  */
 
 std::vector<int32_t>
-Processing::apply_threshold(std::vector<double> filtered_vec,
+Processing::ImageProcessor::apply_threshold(std::vector<double> filtered_vec,
                             double threshold) {
+
+    START_TIMER("II-Threshold");
     std::vector<int32_t> atom_configuration(filtered_vec.size(), 0);
     for (int trap_idx = 0; trap_idx < filtered_vec.size(); trap_idx++) {
         if (filtered_vec[trap_idx] >
@@ -194,5 +199,7 @@ Processing::apply_threshold(std::vector<double> filtered_vec,
             atom_configuration[trap_idx] = 1;
         }
     }
+    END_TIMER("II-Threshold");
+    
     return std::move(atom_configuration);
 }
