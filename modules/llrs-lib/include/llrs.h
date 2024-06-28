@@ -47,7 +47,8 @@ class LLRS {
         int num_cycles;
         std::vector<std::vector<Reconfig::Move>> moves_per_cycle;
         std::vector<std::vector<int32_t>> atom_configs;
-        std::vector<std::vector<std::tuple<std::string, long long>>> runtime_data;
+        std::vector<std::vector<std::tuple<std::string, long long>>>
+            runtime_data;
         bool target_met = false;
 
       public:
@@ -62,7 +63,10 @@ class LLRS {
         const std::vector<std::vector<int32_t>> &getAtomConfigs() const {
             return atom_configs;
         }
-        const std::vector<std::vector<std::tuple<std::string, long long>>> &getRuntimeData() const { return runtime_data; }
+        const std::vector<std::vector<std::tuple<std::string, long long>>> &
+        getRuntimeData() const {
+            return runtime_data;
+        }
         void reset() {
             Nt_x = 0;
             Nt_y = 0;
@@ -94,7 +98,8 @@ class LLRS {
         void addAtomConfigs(const std::vector<int32_t> &atom_config) {
             atom_configs.push_back(atom_config);
         }
-        void addRuntimeData(std::vector<std::tuple<std::string, long long>> cycleRuntimedata) {
+        void addRuntimeData(
+            std::vector<std::tuple<std::string, long long>> cycleRuntimedata) {
             runtime_data.push_back(cycleRuntimedata);
         }
         void incrementNumCycles() { num_cycles++; }
@@ -104,10 +109,15 @@ class LLRS {
 
     /**
      * @brief Construct a new LLRS object
-     * 
-     * @tparam Args list of arguments that must include the unique or shared pointers correspoding to the AWG, Image Acquisition, Image Processor, and solver objects 
+     *
+     * @tparam Args list of arguments that must include the unique or shared
+     * pointers correspoding to the AWG, Image Acquisition, Image Processor, and
+     * solver objects
      */
-    LLRS(std::shared_ptr<AWG> awg = nullptr, std::shared_ptr<Acquisition::ImageAcquisition> img_acq = nullptr, std::shared_ptr<Processing::ImageProcessor> img_proc = nullptr, std::shared_ptr<Reconfig::Solver> solver = nullptr);
+    LLRS(std::shared_ptr<AWG> awg = nullptr,
+         std::shared_ptr<Acquisition::ImageAcquisition> img_acq = nullptr,
+         std::shared_ptr<Processing::ImageProcessor> img_proc = nullptr,
+         std::shared_ptr<Reconfig::Solver> solver = nullptr);
     void clean();
     ~LLRS() { clean(); }
     void setup(std::string json_input, bool setup_idle_segment,

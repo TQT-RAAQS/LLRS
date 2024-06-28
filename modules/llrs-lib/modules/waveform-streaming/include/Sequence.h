@@ -16,11 +16,10 @@ namespace Stream {
 
 class Sequence {
   public:
-    Sequence(Synthesis::WaveformTable &wf_table,
-             double waveform_duration)
-        : awg{std::make_shared<AWG>()},
-          wf_table{wf_table}, lookup_buffer{awg->allocate_transfer_buffer(
-                                  awg->get_samples_per_segment(), false)},
+    Sequence(Synthesis::WaveformTable &wf_table, double waveform_duration)
+        : awg{std::make_shared<AWG>()}, wf_table{wf_table},
+          lookup_buffer{awg->allocate_transfer_buffer(
+              awg->get_samples_per_segment(), false)},
           upload_buffer{awg->allocate_transfer_buffer(
               awg->get_samples_per_segment(), false)},
           double_sized_buffer{awg->allocate_transfer_buffer(
@@ -36,9 +35,9 @@ class Sequence {
         configure();
     }
 
-    Sequence(std::shared_ptr<AWG> &awg, 
-             Synthesis::WaveformTable &wf_table, double waveform_duration)
-        : awg{awg},  wf_table{wf_table},
+    Sequence(std::shared_ptr<AWG> &awg, Synthesis::WaveformTable &wf_table,
+             double waveform_duration)
+        : awg{awg}, wf_table{wf_table},
           lookup_buffer{awg->allocate_transfer_buffer(
               awg->get_samples_per_segment(), false)},
           upload_buffer{awg->allocate_transfer_buffer(

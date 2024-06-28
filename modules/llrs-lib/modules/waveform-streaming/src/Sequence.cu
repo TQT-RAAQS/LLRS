@@ -1,6 +1,6 @@
 #include "Sequence.h"
 
- void Stream::Sequence::configure() {
+void Stream::Sequence::configure() {
     num_total_segments = awg->get_num_segments();
     waveforms_per_segment = awg->get_waveforms_per_segment();
     samples_per_segment = awg->get_samples_per_segment();
@@ -18,9 +18,8 @@
     awg->fill_transfer_buffer(double_sized_buffer, samples_per_segment * 2, 0);
 }
 
-
 int Stream::Sequence::setup(bool setup_idle_segment, int idle_step_idx,
-                                   bool _2d, int Nt_x, int Nt_y) {
+                            bool _2d, int Nt_x, int Nt_y) {
     this->idle_step_idx = idle_step_idx;
     short_circuit_step = idle_step_idx + short_circuit_seg_idx * 2 - 1;
     short_circuit_null_step = idle_step_idx + short_circuit_seg_idx * 2;
@@ -33,7 +32,7 @@ int Stream::Sequence::setup(bool setup_idle_segment, int idle_step_idx,
     return 0;
 }
 
- int Stream::Sequence::init_segments() {
+int Stream::Sequence::init_segments() {
 
     int status = 0;
 
@@ -103,7 +102,7 @@ int Stream::Sequence::setup(bool setup_idle_segment, int idle_step_idx,
     return status;
 }
 
- int Stream::Sequence::init_steps() {
+int Stream::Sequence::init_steps() {
     // make idle step point to itself
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
                        SPCSEQ_ENDLOOPALWAYS);
@@ -139,7 +138,6 @@ int Stream::Sequence::setup(bool setup_idle_segment, int idle_step_idx,
     return 0;
 }
 
-
 void Stream::Sequence::reset(bool reset_segments) {
     if (reset_segments) {
         init_segments();
@@ -154,7 +152,6 @@ void Stream::Sequence::reset(bool reset_segments) {
     played_first_seg = 0;
 }
 
-
 bool Stream::Sequence::load_single_segment(
     std::vector<Reconfig::Move> &moves_list) {
 
@@ -166,7 +163,7 @@ bool Stream::Sequence::load_single_segment(
     wf_segment_lookup(*double_sized_buffer, moves_list,
                       waveforms_per_segment * 2);
     END_TIMER("V-First-Lookup");
-    
+
     START_TIMER("V-First-Upload");
     // upload the segment
     awg->load_data(short_circuit_seg_idx, *double_sized_buffer,
@@ -185,7 +182,7 @@ bool Stream::Sequence::load_single_segment(
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, short_circuit_step,
                        SPCSEQ_ENDLOOPALWAYS);
     START_TIMER("V-Load_Stream");
-    
+
     while (awg->get_current_step() == idle_step_idx) {
     }
     awg->seqmem_update(idle_step_idx, idle_segment_idx, 1, idle_step_idx,
@@ -196,7 +193,6 @@ bool Stream::Sequence::load_single_segment(
 
     return 0;
 }
-
 
 bool Stream::Sequence::load_multiple_segments(
     std::vector<Reconfig::Move> &moves_list) {
@@ -242,7 +238,7 @@ bool Stream::Sequence::load_multiple_segments(
     START_TIMER("V-Second-Lookup");
     wf_segment_lookup(lookup_pointer, moves_list, waveforms_per_segment);
     END_TIMER("V-Second-Lookup");
-    
+
     // wait for old transfer to finish
     awg->wait_for_data_load();
     END_TIMER("V-First-Upload");
@@ -328,10 +324,9 @@ bool Stream::Sequence::load_multiple_segments(
 
 #endif
     END_TIMER("V-Load_Stream");
-    
+
     return 0;
 }
-
 
 void Stream::Sequence::wf_segment_lookup(
     short *p_buffer_lookup, std::vector<Reconfig::Move> &moves_list,
@@ -349,9 +344,8 @@ void Stream::Sequence::wf_segment_lookup(
     }
 }
 
-
 void Stream::Sequence::get_static_wfm(int16 *pnData, size_t num_wfms,
-                                             int Nt_x) {
+                                      int Nt_x) {
 
     short *move_wf_ptr = wf_table.get_primary_wf_ptr(STATIC, 0, Nt_x, Nt_x);
     auto wfm_length = awg->get_waveform_length();
@@ -360,7 +354,6 @@ void Stream::Sequence::get_static_wfm(int16 *pnData, size_t num_wfms,
                wfm_length * sizeof(short));
     }
 }
-
 
 void Stream::Sequence::load_idle_wfm(short *p_buffer, int num_samples) {
     if (idle_waveforms.size() >= num_samples) {
@@ -376,4 +369,3 @@ void Stream::Sequence::load_idle_wfm(short *p_buffer, int num_samples) {
         }
     }
 }
-

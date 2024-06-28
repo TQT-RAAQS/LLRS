@@ -15,9 +15,10 @@
  *   @param roi_yoffset The y offset of the top-left corner of the ROI from the
  * top-left corner of the camera sensor.
  */
-void ActiveSilicon1XCLD::setup(
-    uint32_t roi_width, uint32_t roi_height, int acquisition_timeout,
-    uint32_t roi_xoffset, uint32_t roi_yoffset, uint32_t vbin, uint32_t hbin) {
+void ActiveSilicon1XCLD::setup(uint32_t roi_width, uint32_t roi_height,
+                               int acquisition_timeout, uint32_t roi_xoffset,
+                               uint32_t roi_yoffset, uint32_t vbin,
+                               uint32_t hbin) {
     _roi_width = roi_width;
     _roi_height = roi_height;
     _roi_xoffset = roi_xoffset;

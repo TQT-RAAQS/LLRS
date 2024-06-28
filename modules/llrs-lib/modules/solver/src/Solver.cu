@@ -627,8 +627,7 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
 
     solver.start_solver(algo, current_config, target_config);
 
-    std::vector<Reconfig::Move> moves_list =
-        solver.gen_moves_list(algo);
+    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo);
     *sol_len = moves_list.size();
     std::cout << *sol_len << std::endl;
 

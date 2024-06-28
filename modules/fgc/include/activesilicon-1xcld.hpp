@@ -6,14 +6,13 @@
 #include "settings.hpp"
 #include <boost/asio.hpp>
 #include <iostream>
-#include <thread>
 #include <png.h>
+#include <thread>
 
 #ifdef ENABLE_CUDA
 #include "buffer.hpp"
 #include <cuda.h>
 #endif
-
 
 class ActiveSilicon1XCLD {
 
@@ -23,10 +22,9 @@ class ActiveSilicon1XCLD {
     ActiveSilicon1XCLD(const ActiveSilicon1XCLD &) = delete;
     ActiveSilicon1XCLD &operator=(const ActiveSilicon1XCLD &) = delete;
 
-    void setup(uint32_t roi_width, uint32_t roi_height,
-                       int acquisition_timeout, uint32_t roi_xoffset = 0,
-                       uint32_t roi_yoffset = 0, uint32_t vbin = 1,
-                       uint32_t hbin = 1);
+    void setup(uint32_t roi_width, uint32_t roi_height, int acquisition_timeout,
+               uint32_t roi_xoffset = 0, uint32_t roi_yoffset = 0,
+               uint32_t vbin = 1, uint32_t hbin = 1);
     std::vector<uint16_t> acquire_single_image();
     std::vector<uint16_t> acquire_stored_image(const char *filename);
 

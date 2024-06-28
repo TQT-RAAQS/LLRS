@@ -16,16 +16,14 @@
 #define NUM_TIMERS 15
 
 #ifdef LOGGING_RUNTIME
-    #define START_TIMER(module)                                 \
-        Util::Collector::get_instance()->start_timer(module)
-    #define END_TIMER(module)                                   \
-        Util::Collector::get_instance()->end_timer(module)
-    #define GET_EXTERNAL_TIME(module, time)                      \
-        Util::Collector::get_instance()->get_external_time(module, time)
-#else 
-    #define START_TIMER(module)
-    #define END_TIMER(module)
-    #define GET_EXTERNAL_TIME(module, time)
+#define START_TIMER(module) Util::Collector::get_instance()->start_timer(module)
+#define END_TIMER(module) Util::Collector::get_instance()->end_timer(module)
+#define GET_EXTERNAL_TIME(module, time)                                        \
+    Util::Collector::get_instance()->get_external_time(module, time)
+#else
+#define START_TIMER(module)
+#define END_TIMER(module)
+#define GET_EXTERNAL_TIME(module, time)
 #endif
 
 namespace Util {
@@ -47,7 +45,10 @@ class Collector {
     void end_timer(const std::string &module);
     void get_external_time(const std::string &module, float time);
     std::vector<std::tuple<std::string, long long>> get_runtime_data();
-    void clear_timers() {timers.clear(); timers.reserve(NUM_TIMERS);}
+    void clear_timers() {
+        timers.clear();
+        timers.reserve(NUM_TIMERS);
+    }
 };
 
 } // namespace Util

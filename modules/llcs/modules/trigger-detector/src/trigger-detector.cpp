@@ -5,7 +5,7 @@
  */
 TriggerDetector::TriggerDetector()
     : awg{std::make_shared<AWG>()}, samples_per_idle_segment{
-                                          awg->get_idle_segment_length()} {}
+                                        awg->get_idle_segment_length()} {}
 
 int TriggerDetector::setup(typename AWG::TransferBuffer &tb) {
 
@@ -25,9 +25,7 @@ int TriggerDetector::setup(typename AWG::TransferBuffer &tb) {
     return status;
 }
 
-int TriggerDetector::stream() {
-    return awg->start_stream();
-}
+int TriggerDetector::stream() { return awg->start_stream(); }
 
 int TriggerDetector::reset() {
     assert(awg->get_current_step() == 1);
