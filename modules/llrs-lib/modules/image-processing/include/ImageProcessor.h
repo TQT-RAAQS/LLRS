@@ -34,6 +34,7 @@ class ImageProcessor {
     std::vector<double> apply_filter(std::vector<uint16_t> *p_input_img);
     virtual std::vector<int32_t> apply_threshold(std::vector<double> filtered_vec,
                                      double threshold);
+    virtual ~ImageProcessor() {}
 
   private:
     std::vector<std::vector<PSF_PAIR>> _psf;

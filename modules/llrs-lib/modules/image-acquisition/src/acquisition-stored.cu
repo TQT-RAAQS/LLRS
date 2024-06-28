@@ -3,7 +3,7 @@
 std::vector<uint16_t> Acquisition::ImageAcquisitionStored::acquire_single_image() {
     std::vector <uint16_t> current_image;
     START_TIMER("I");
-    //current_image = fgc.acquire_single_image();
+    current_image = fgc.acquire_single_image();
     END_TIMER("I");
 
 
