@@ -1,5 +1,6 @@
 #ifndef SOLVER_H_
 #define SOLVER_H_
+
 #include "Algorithms.h"
 #include "Collector.h"
 #include "WaveformTable.h"

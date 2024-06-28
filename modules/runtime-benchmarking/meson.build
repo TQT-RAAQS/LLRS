@@ -9,15 +9,12 @@ run_bench_src = [
 
 # submodules
 llrs_lib_proj =   subproject('llrs-lib')
-image_acquisition_proj = subproject('image-acquisition')
-
 
 # dependencies
-llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_dep')
-llrs_lib_image_acquisition_dep = image_acquisition_proj.get_variable('llrs_lib_image_acquisition_dep')
+llrs_lib_dep = llrs_lib_proj.get_variable('llrs_lib_runtime_dep')
 
 # targets
 run_bench = executable('run-bench',
     run_bench_src,
     cuda_args: ['-D LOGGING_RUNTIME'],
-    dependencies: [llrs_lib_dep, llrs_lib_image_acquisition_dep])
+    dependencies: [llrs_lib_dep])

@@ -70,21 +70,21 @@ Reconfig::Algo get_algo_enum(std::string name) {
  * @param Nt_y
  */
 void Reconfig::Solver::setup(int Nt_x, int Nt_y, int wfm_per_segment) {
-        this->Nt_x = Nt_x;
-        this->Nt_y = Nt_y;
-        this->num_atoms_initial = 0;
-        this->num_atoms_target = 0;
-        this->wfm_per_segment = wfm_per_segment;
-        this->matching_src = std::vector<int>(Nt_x * Nt_y, 0);
-        this->matching_dst = std::vector<int>(Nt_x * Nt_y, 0);
-        this->src = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
-        this->dst = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
-        this->blk = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
-        this->batch_ptrs = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
-        this->path_system = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
-        this->path_length = std::vector<int>(Nt_x * Nt_y, 0);
-        this->initial = std::vector<int>(Nt_x * Nt_y, 0);
-    }
+    this->Nt_x = Nt_x;
+    this->Nt_y = Nt_y;
+    this->num_atoms_initial = 0;
+    this->num_atoms_target = 0;
+    this->wfm_per_segment = wfm_per_segment;
+    this->matching_src = std::vector<int>(Nt_x * Nt_y, 0);
+    this->matching_dst = std::vector<int>(Nt_x * Nt_y, 0);
+    this->src = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+    this->dst = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+    this->blk = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+    this->batch_ptrs = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+    this->path_system = std::vector<int>(Nt_x * Nt_x * Nt_y * Nt_y, 0);
+    this->path_length = std::vector<int>(Nt_x * Nt_y, 0);
+    this->initial = std::vector<int>(Nt_x * Nt_y, 0);
+}
 
 /**
  *   @brief Start the solver with a selected algorithm, initial and target

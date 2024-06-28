@@ -23,6 +23,11 @@ llrs_lib_waveform_synthesis_dep = waveform_synthesis_proj.get_variable('llrs_lib
 # targets
 llrs_lib_solver = library('llrs-lib-solver', 
     llrs_lib_solver_src,
+    include_directories: [llrs_lib_solver_inc],
+    dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])
+
+llrs_lib_solver_runtime = library('llrs-lib-solver-runtime', 
+    llrs_lib_solver_src,
     cuda_args: ['-D LOGGING_RUNTIME'],
     include_directories: [llrs_lib_solver_inc],
     dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])
@@ -43,3 +48,9 @@ llrs_lib_solver_so_dep = declare_dependency(
     include_directories: [llrs_lib_solver_inc],
     link_with: llrs_lib_solver_so,
     dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])
+
+llrs_lib_solver_runtime_dep = declare_dependency(
+    include_directories: [llrs_lib_solver_inc],
+    link_with: llrs_lib_solver_runtime,
+    dependencies: [llrs_lib_reconfiguration_dep, llrs_lib_collector_dep, llrs_lib_waveform_synthesis_dep])
+
