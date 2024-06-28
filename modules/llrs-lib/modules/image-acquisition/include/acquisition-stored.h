@@ -5,11 +5,11 @@
 #include "llrs-lib/PreProc.h"
 
 namespace Acquisition {
-    
-    class ImageAcquisitionStored : public ImageAcquisition{
-      
-      public:
-        std::vector<uint16_t> acquire_single_image() override;
-    };
-}
+
+class ImageAcquisitionStored : public ImageAcquisition {
+
+  public:
+    std::vector<uint16_t> acquire_single_image() override;
+};
+} // namespace Acquisition
 #endif

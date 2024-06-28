@@ -1,8 +1,7 @@
 #include "ImageProcessor-replace.h"
 
-std::vector<int32_t>
-Processing::ImageProcessorReplace::apply_threshold(std::vector<double> filtered_vec,
-                            double threshold) {
+std::vector<int32_t> Processing::ImageProcessorReplace::apply_threshold(
+    std::vector<double> filtered_vec, double threshold) {
 
     START_TIMER("II-Threshold");
     std::vector<int32_t> atom_configuration(filtered_vec.size(), 0);
@@ -14,6 +13,6 @@ Processing::ImageProcessorReplace::apply_threshold(std::vector<double> filtered_
         }
     }
     END_TIMER("II-Threshold");
-    
+
     return configs.at(cycleCount++);
 }

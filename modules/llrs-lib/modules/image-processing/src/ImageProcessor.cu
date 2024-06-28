@@ -74,8 +74,7 @@ void Processing::write_to_pgm(const std::vector<uint16_t> &image, int width,
  * @param psf_path the path to the psf file
  * @param num_traps number of traps
  */
-void Processing::ImageProcessor::setup(std::string psf_path,
-                                           size_t num_traps) {
+void Processing::ImageProcessor::setup(std::string psf_path, size_t num_traps) {
     // Open the psf file in binary mode
     std::ifstream fin(psf_path, std::ios_base::in | std::ios_base::binary);
 
@@ -139,7 +138,7 @@ void Processing::ImageProcessor::setup(std::string psf_path,
  */
 std::vector<double>
 Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
-    
+
     START_TIMER("II-Deconvolution");
     // Throw an error is we have an empty input image
     if (p_input_img->empty()) {
@@ -188,7 +187,7 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
 
 std::vector<int32_t>
 Processing::ImageProcessor::apply_threshold(std::vector<double> filtered_vec,
-                            double threshold) {
+                                            double threshold) {
 
     START_TIMER("II-Threshold");
     std::vector<int32_t> atom_configuration(filtered_vec.size(), 0);
@@ -200,6 +199,6 @@ Processing::ImageProcessor::apply_threshold(std::vector<double> filtered_vec,
         }
     }
     END_TIMER("II-Threshold");
-    
+
     return std::move(atom_configuration);
 }

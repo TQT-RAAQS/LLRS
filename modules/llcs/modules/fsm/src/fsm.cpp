@@ -31,7 +31,7 @@ FiniteStateMachine::FiniteStateMachine()
  *
  * For every dynamically allocated state object, free the object.
  */
- FiniteStateMachine::~FiniteStateMachine() {
+FiniteStateMachine::~FiniteStateMachine() {
     states.clear();
     for (auto stateVector : programmable_states) {
         for (State *state : stateVector) {
@@ -49,7 +49,7 @@ FiniteStateMachine::FiniteStateMachine()
  * Adds this state object to the list of state objects in the fsm.
  *
  */
- void FiniteStateMachine::setupFSM() {
+void FiniteStateMachine::setupFSM() {
 
     State *f = states[ST_FAULT];
 
@@ -135,7 +135,7 @@ FiniteStateMachine::FiniteStateMachine()
     f->setType(ST_FAULT);
 }
 
- void FiniteStateMachine::resetTransitions() {
+void FiniteStateMachine::resetTransitions() {
 
     State *ready_state = states[ST_READY];
     State *fault_state = states[ST_FAULT];
@@ -151,7 +151,7 @@ FiniteStateMachine::FiniteStateMachine()
     ready_state->resetTransitionMap();
 }
 
- void FiniteStateMachine::printStates() {
+void FiniteStateMachine::printStates() {
     for (const auto &pair : states) {
         State *state = pair.second;
         state->printState();
@@ -159,7 +159,7 @@ FiniteStateMachine::FiniteStateMachine()
     }
 }
 
- void FiniteStateMachine::runFSM() {
+void FiniteStateMachine::runFSM() {
     server_handler.start_listening();
     while (currentState != nullptr) {
         currentState->executeState();
@@ -169,7 +169,7 @@ FiniteStateMachine::FiniteStateMachine()
 
 /* * * * * * * * Static State definitions * * * * * * * */
 
- void FiniteStateMachine::st_BEGIN() {
+void FiniteStateMachine::st_BEGIN() {
     std::cout << "FSM:: BEGIN state" << std::endl;
     trigger_detector.reset_segment_size();
     llrs.setup(
@@ -191,11 +191,11 @@ FiniteStateMachine::FiniteStateMachine()
     trigger_detector.stream();
 }
 
- void FiniteStateMachine::st_IDLE() {
+void FiniteStateMachine::st_IDLE() {
     std::cout << "FSM:: IDLE state" << std::endl;
 }
 
- void FiniteStateMachine::st_PROCESS_SHOT() {
+void FiniteStateMachine::st_PROCESS_SHOT() {
     std::cout << "FSM:: PROCESS_SHOT state" << std::endl;
 
     // receive hdf5 filepath from the workstation
@@ -213,12 +213,12 @@ FiniteStateMachine::FiniteStateMachine()
     server_handler.send_done();
 }
 
- void FiniteStateMachine::st_READY() {
+void FiniteStateMachine::st_READY() {
     std::cout << "FSM:: READY state" << std::endl;
     std::cout << "Awaiting Hardware Trigger..." << std::endl;
 }
 
- void FiniteStateMachine::st_TRIGGER_DONE() {
+void FiniteStateMachine::st_TRIGGER_DONE() {
     std::cout << "FSM:: TRIGGER_DONE state" << std::endl;
     ++commands_itr;
     if (commands_itr == commands.size()) {
@@ -234,7 +234,7 @@ FiniteStateMachine::FiniteStateMachine()
     }
 }
 
- void FiniteStateMachine::st_RESET() {
+void FiniteStateMachine::st_RESET() {
     std::cout << "FSM:: RESET state" << std::endl;
     llrs_problem_path = server_handler.get_llrs_config_file();
     llrs.setup(llrs_problem_path, false, 1);
@@ -255,14 +255,14 @@ FiniteStateMachine::FiniteStateMachine()
     server_handler.send_200();
 }
 
- void FiniteStateMachine::st_CLOSE_AWG() {
+void FiniteStateMachine::st_CLOSE_AWG() {
     std::cout << "FSM:: CLOSE AWG state" << std::endl;
     trigger_detector.getAWG()->stop_card();
     trigger_detector.getAWG()->close_card();
     server_handler.send_200();
 }
 
- void FiniteStateMachine::st_RESTART_AWG() {
+void FiniteStateMachine::st_RESTART_AWG() {
     trigger_detector.getAWG()->configure();
     llrs.reset_awg(false, 1);
     std::cout << "Starting AWG stream" << std::endl;
@@ -281,7 +281,7 @@ FiniteStateMachine::FiniteStateMachine()
     server_handler.send_200();
 }
 
- void FiniteStateMachine::st_CONFIG_PSF() {
+void FiniteStateMachine::st_CONFIG_PSF() {
     std::cout << "FSM:: CONFIG PSF state" << std::endl;
     std::string str = (PSF_TRANSLATOR_PATH) + " default";
     const char *psf_translator = str.c_str();
@@ -292,7 +292,7 @@ FiniteStateMachine::FiniteStateMachine()
     llrs.reset_psf(std::string("default.bin"));
     server_handler.send_200();
 }
- void FiniteStateMachine::st_CONFIG_WAVEFORM() {
+void FiniteStateMachine::st_CONFIG_WAVEFORM() {
     std::cout << "FSM:: CONFIG WAVEFORM state" << std::endl;
     llrs.reset_waveform_table();
     trigger_detector.getAWG()->stop_card();
@@ -312,7 +312,7 @@ FiniteStateMachine::FiniteStateMachine()
     server_handler.send_200();
 }
 
- void FiniteStateMachine::st_LLRS_EXEC() {
+void FiniteStateMachine::st_LLRS_EXEC() {
     std::cout << "FSM:: LLRS_EXEC state" << std::endl;
     assert(trigger_detector.getAWG()->get_current_step() == 1);
     std::cout << "Starting the LLRS" << std::endl;
@@ -322,14 +322,13 @@ FiniteStateMachine::FiniteStateMachine()
     trigger_detector.reset();
 }
 
- void FiniteStateMachine::st_FAULT() {
+void FiniteStateMachine::st_FAULT() {
     std::cout << "FSM:: FAULT state" << std::endl;
 }
 
- void FiniteStateMachine::st_EXIT() {
+void FiniteStateMachine::st_EXIT() {
     std::cout << "FSM:: EXIT state" << std::endl;
 }
-
 
 void FiniteStateMachine::saveMetadata(std::string dirPath) {
     std::string parentDir = dirPath.substr(0, dirPath.find_last_of('/'));
@@ -382,4 +381,3 @@ void FiniteStateMachine::saveMetadata(std::string dirPath) {
         outfile << json_data.dump(2);
     }
 }
-
