@@ -4,10 +4,10 @@ LLRS::LLRS(std::shared_ptr<AWG> awg, std::shared_ptr<Acquisition::ImageAcquisiti
                             std::ios::app)) {
     std::cout << "LLRS: constructor" << std::endl;
     
-    awg_sequence = awg? std::make_unique<Stream::Sequence>(awg, wf_table, Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml"))) : std::make_unique<Stream::Sequence>(wf_table, Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
-    image_acquisition = img_acq? img_acq : std::make_shared<Acquisition::ImageAcquisition>();
-    img_proc_obj = img_proc? img_proc :std::make_shared<Processing::ImageProcessor>();
-    solver = solver? solver : std::make_shared<Reconfig::Solver>();
+    this->awg_sequence = awg? std::make_unique<Stream::Sequence>(awg, wf_table, Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml"))) : std::make_unique<Stream::Sequence>(wf_table, Synthesis::read_waveform_duration(WFM_CONFIG_PATH("/config.yml")));
+    this->image_acquisition = img_acq? img_acq : std::make_shared<Acquisition::ImageAcquisition>();
+    this->img_proc_obj = img_proc? img_proc :std::make_shared<Processing::ImageProcessor>();
+    this->solver = solver? solver : std::make_shared<Reconfig::Solver>();
 }
 /**
  * @brief Sets up the LLRS
@@ -203,6 +203,10 @@ int LLRS::execute() {
             INFO << "Success: Met Target Configuration -> exit()"
                     << std::endl;
             metadata.setTargetMet();
+#ifdef LOGGING_RUNTIME
+            metadata.addRuntimeData(Util::Collector::get_instance()->get_runtime_data());
+            Util::Collector::get_instance()->clear_timers();
+#endif
             awg_sequence->clock_trigger();
             return 0;
         }
@@ -249,7 +253,7 @@ int LLRS::execute() {
         GET_EXTERNAL_TIME("IV-Translate", 0);
         awg_sequence->load_and_stream(moves_list);
 
-        solver.reset();
+        solver->reset();
         metadata.incrementNumCycles();
     }
 

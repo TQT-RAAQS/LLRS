@@ -2,9 +2,9 @@
 
 std::vector<uint16_t> Acquisition::ImageAcquisitionStored::acquire_single_image() {
     std::vector <uint16_t> current_image;
-    START_TIMER("I")
-    current_image = fgc.acquire_single_image();
-    END_TIMER("I")
+    START_TIMER("I");
+    //current_image = fgc.acquire_single_image();
+    END_TIMER("I");
 
 
     char image_file[256];

@@ -3,7 +3,6 @@
 #include "Collector.h"
 #include "activesilicon-1xcld.hpp"
 
-
 namespace Acquisition {
     
     class ImageAcquisition {
@@ -11,7 +10,7 @@ namespace Acquisition {
         ActiveSilicon1XCLD fgc;
 
       public:
-        void setup(uint32_t roi_width, uint32_t roi_height,
+        virtual void setup(uint32_t roi_width, uint32_t roi_height,
                        int acquisition_timeout, uint32_t roi_xoffset = 0,
                        uint32_t roi_yoffset = 0, uint32_t vbin = 1,
                        uint32_t hbin = 1);

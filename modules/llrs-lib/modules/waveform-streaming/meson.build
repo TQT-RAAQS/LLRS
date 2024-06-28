@@ -19,6 +19,7 @@ awg_proj =                subproject('awg')
 
 # dependencies
 llrs_lib_collector_dep = collector_proj.get_variable('llrs_lib_collector_dep')
+llrs_lib_collector_activate_dep = collector_proj.get_variable('llrs_lib_collector_activate_dep')
 llrs_lib_setup_dep = setup_proj.get_variable('llrs_lib_setup_dep')
 llrs_lib_solver_dep = solver_proj.get_variable('llrs_lib_solver_dep')
 llrs_lib_waveform_synthesis_dep = waveform_synthesis_proj.get_variable('llrs_lib_waveform_synthesis_dep')
@@ -36,6 +37,12 @@ llrs_lib_waveform_streaming_null = library('llrs-lib-waveform-streaming-null',
     cuda_args: ['-D DETECT_NULL'],
     dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
 
+llrs_lib_waveform_streaming_runtime = library('llrs-lib-waveform-streaming-runtime', 
+    llrs_lib_waveform_streaming_src,
+    include_directories: [llrs_lib_waveform_streaming_inc],
+    cuda_args: ['-D LOGGING_RUNTIME'],
+    dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
+
 
 # dependencies
 llrs_lib_waveform_streaming_dep = declare_dependency(
@@ -47,4 +54,9 @@ llrs_lib_waveform_streaming_null_dep = declare_dependency(
     include_directories: [llrs_lib_waveform_streaming_inc],
     link_with: llrs_lib_waveform_streaming_null,
     dependencies: [awg_dep, llrs_lib_collector_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
+
+llrs_lib_waveform_streaming_runtime_dep = declare_dependency(
+    include_directories: [llrs_lib_waveform_streaming_inc],
+    link_with: llrs_lib_waveform_streaming_runtime,
+    dependencies: [awg_dep, llrs_lib_collector_activate_dep, llrs_lib_solver_dep, llrs_lib_waveform_synthesis_dep, llrs_lib_setup_dep])
 
