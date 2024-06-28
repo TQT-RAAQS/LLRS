@@ -3,11 +3,13 @@
  * Author: Laurent Zheng
  * Winter 2023
  */
+
 #include "activesilicon-1xcld.hpp"
+#include <png.h>
 
 /**
  *
- *   @brief Setup for ActiveSilicon1XCLD acquisition class.
+ *   @brief Constructor for ActiveSilicon1XCLD acquisition class.
  *   @param roi_width The width of the region of interest (ROI) in pixels.
  *   @param roi_height The height of the region of interest (ROI) in pixels.
  *   @param roi_xoffset The x offset of the top-left corner of the ROI from the
@@ -15,17 +17,12 @@
  *   @param roi_yoffset The y offset of the top-left corner of the ROI from the
  * top-left corner of the camera sensor.
  */
-void ActiveSilicon1XCLD::setup(uint32_t roi_width, uint32_t roi_height,
-                               int acquisition_timeout, uint32_t roi_xoffset,
-                               uint32_t roi_yoffset, uint32_t vbin,
-                               uint32_t hbin) {
-    _roi_width = roi_width;
-    _roi_height = roi_height;
-    _roi_xoffset = roi_xoffset;
-    _roi_yoffset = roi_yoffset;
-    _vbin = vbin;
-    _hbin = hbin;
-    _acquisition_timeout = acquisition_timeout;
+Acquisition::ActiveSilicon1XCLD::ActiveSilicon1XCLD(
+    uint32_t roi_width, uint32_t roi_height, int acquisition_timeout,
+    uint32_t roi_xoffset, uint32_t roi_yoffset, uint32_t vbin, uint32_t hbin)
+    : _roi_width(roi_width), _roi_height(roi_height), _roi_xoffset(roi_xoffset),
+      _roi_yoffset(roi_yoffset), _vbin(vbin), _hbin(hbin),
+      _acquisition_timeout(acquisition_timeout) {
     /* Create handle and load default settings base on the PCF file */
     std::string NADA = "";
     std::string pcf_config_path = std::string(
@@ -70,7 +67,7 @@ void ActiveSilicon1XCLD::setup(uint32_t roi_width, uint32_t roi_height,
  * acquisition class. If CUDA is enabled, it allocates memory on the GPU and
  * creates a GPUDirect buffer, otherwise it allocates memory on the CPU.
  */
-void ActiveSilicon1XCLD::init_image_buffer() {
+void Acquisition::ActiveSilicon1XCLD::init_image_buffer() {
 #ifdef ENABLE_CUDA
     cudaMalloc((void **)&gpu_buffers_src,
                MAX_IMAGE_READ_BUFFER_SIZE * sizeof(uint16_t));
@@ -103,7 +100,7 @@ void ActiveSilicon1XCLD::init_image_buffer() {
 }
 
 std::vector<uint16_t>
-ActiveSilicon1XCLD::acquire_stored_image(const char *filename) {
+Acquisition::ActiveSilicon1XCLD::acquire_stored_image(const char *filename) {
 
     FILE *file = fopen(filename, "rb");
     if (!file) {
@@ -175,7 +172,7 @@ ActiveSilicon1XCLD::acquire_stored_image(const char *filename) {
  * acquired image. If an error occurs or the acquisition times out, an empty
  * vector is returned.
  */
-std::vector<uint16_t> ActiveSilicon1XCLD::acquire_single_image() {
+std::vector<uint16_t> Acquisition::ActiveSilicon1XCLD::acquire_single_image() {
     start_stream_read(); // begin the stream read
 
     std::vector<uint16_t> ret_image;
@@ -201,7 +198,7 @@ std::vector<uint16_t> ActiveSilicon1XCLD::acquire_single_image() {
  * to the host.
  *   @return A vector containing the acquired image data.
  */
-std::vector<uint16_t> ActiveSilicon1XCLD::get_current_buffer() {
+std::vector<uint16_t> Acquisition::ActiveSilicon1XCLD::get_current_buffer() {
     PHX_StreamRead(this->_handle, PHX_BUFFER_GET, this->_image_buffers);
 
     std::vector<uint16_t> ret_image(this->_roi_width * this->_roi_height, 0);
@@ -228,7 +225,7 @@ std::vector<uint16_t> ActiveSilicon1XCLD::get_current_buffer() {
  * occurred.
  *   @return true if an event occurred, false otherwise.
  */
-int32_t ActiveSilicon1XCLD::check_and_wait() {
+int32_t Acquisition::ActiveSilicon1XCLD::check_and_wait() {
     int32_t event = 0;
     boost::asio::io_service io_service;
     boost::asio::deadline_timer timer(
@@ -266,7 +263,7 @@ int32_t ActiveSilicon1XCLD::check_and_wait() {
  *   This function deallocates any memory or resources that were allocated
  * during the lifetime
  */
-ActiveSilicon1XCLD::~ActiveSilicon1XCLD() {
+Acquisition::ActiveSilicon1XCLD::~ActiveSilicon1XCLD() {
 #ifdef ENABLE_CUDA
     gpu_buffer.DeInit();
     gpu_buffer.CloseDevice();
@@ -285,7 +282,7 @@ ActiveSilicon1XCLD::~ActiveSilicon1XCLD() {
  *   @brief Destroys the handle for ActiveSilicon1XCLD acquisition class.
  *
  */
-bool ActiveSilicon1XCLD::destroy_handle() {
+bool Acquisition::ActiveSilicon1XCLD::destroy_handle() {
     if (this->_handle) {
         if (PHX_Destroy(&this->_handle) !=
             PHX_OK) {          // PHX_Destroy destroys the handle
@@ -298,15 +295,15 @@ bool ActiveSilicon1XCLD::destroy_handle() {
 
 // Repackaging of driver calls from the PHX library for the Active Silicon Card
 // indicated by _handle
-void ActiveSilicon1XCLD::start_stream_read() {
+void Acquisition::ActiveSilicon1XCLD::start_stream_read() {
     PHX_StreamRead(this->_handle, PHX_START, NULL);
 }
-void ActiveSilicon1XCLD::release_current_buffer() {
+void Acquisition::ActiveSilicon1XCLD::release_current_buffer() {
     PHX_StreamRead(this->_handle, PHX_BUFFER_RELEASE, NULL);
 }
-void ActiveSilicon1XCLD::stop_stream_read() {
+void Acquisition::ActiveSilicon1XCLD::stop_stream_read() {
     PHX_StreamRead(this->_handle, PHX_STOP, NULL);
 }
-void ActiveSilicon1XCLD::abort_stream_read() {
+void Acquisition::ActiveSilicon1XCLD::abort_stream_read() {
     PHX_StreamRead(this->_handle, PHX_ABORT, NULL);
 }
