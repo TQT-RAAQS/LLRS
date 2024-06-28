@@ -1,9 +1,11 @@
-project('llrs-lib-reconfiguration', 
-        'cuda', 
-        default_options: ['default_library=shared', ],
-        subproject_dir: 'algorithms')
+project(
+    'llrs-lib-reconfiguration',
+    'cuda',
+    default_options: ['default_library=shared'],
+    subproject_dir: 'algorithms',
+)
 
-add_project_arguments('-gencode arch=compute_75,code=sm_75' , language : 'cuda')
+add_project_arguments('-gencode arch=compute_75,code=sm_75' , language: 'cuda')
 
 # include directory
 llrs_lib_reconfiguration_inc = include_directories('include')
@@ -23,6 +25,6 @@ reconfiguration_provided_lib = meson.current_source_dir() / 'lib' / '*'
 
 # export dependencies
 llrs_lib_reconfiguration_dep = declare_dependency(
-  include_directories : llrs_lib_reconfiguration_inc,
-  link_args: reconfiguration_provided_lib 
+    include_directories: llrs_lib_reconfiguration_inc,
+    link_args: reconfiguration_provided_lib,
 )
