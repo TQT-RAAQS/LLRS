@@ -1,4 +1,4 @@
-activeSDK_inc = include_directories('include')
+activeSDK_inc = include_directories('/usr/local/activesilicon/include')
 activeSDK_lib = meson.current_source_dir() / 'lib' / '*'
 activeSDK_dep = declare_dependency(
     link_args: [
