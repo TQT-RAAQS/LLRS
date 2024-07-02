@@ -5,8 +5,6 @@ spcm_provided_lib = '-l:libspcm_linux.so'
 # spcm library
 
 spcm_src = [
-    'src/common/spcm_lib_card.cpp',
-    'src/common/spcm_lib_data.cpp',
     'src/common/spcm_cuda_common.cu',
     'src/common/ostools/spcm_ostools.cpp',
 ]
