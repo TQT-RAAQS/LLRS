@@ -1,10 +1,7 @@
-project(
-    'awg',
-    'cuda',
-    'cpp',
-    default_options: ['cpp_std=c++14', 'default_library=shared'],
-    subproject_dir: 'modules',
-)
+project('awg', 
+        'cuda', 'cpp',
+        default_options: ['cpp_std=c++14', 'default_library=shared'],
+        subproject_dir: 'modules')
 
 cmake = import('cmake')
 
@@ -20,19 +17,18 @@ subdir('spcm')
 awg_inc = include_directories('include')
 
 # sources
-awg_src = ['src/awg.cpp']
+awg_src = [
+    'src/awg.cpp'
+  ]
 
 # targets
-awg = library(
-    'awg',
+awg = library('awg', 
     awg_src,
     include_directories: awg_inc,
-    dependencies: [yaml_cpp_dep, spcm_dep],
-)
+    dependencies: [yaml_cpp_dep, spcm_dep])
 
 # dependencies
 awg_dep = declare_dependency(
     include_directories: awg_inc,
     link_with: awg,
-    dependencies: [yaml_cpp_dep, spcm_dep],
-)
+    dependencies: [yaml_cpp_dep, spcm_dep])
