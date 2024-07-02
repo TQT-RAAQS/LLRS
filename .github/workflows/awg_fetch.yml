@@ -25,6 +25,6 @@ jobs:
           git config --global user.email "tqtraaqs@gmail.com"
           git add -f modules/awg
           git commit -m "Add release asset from Instruments/awg"
-          git push 
+          git push -f
 
       
