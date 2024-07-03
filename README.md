@@ -302,7 +302,7 @@ Where:
 
 $$ \alpha(t) = \dfrac{\alpha_1 + \alpha_2}{2} + \dfrac{\alpha_2 - \alpha_1}{2} \text{erf}\left(\sqrt{\pi}v_{\text{max}}\left[t-\dfrac{T}{2}\right]\right) $$
 
-$$ \tilde{\phi}(t) = \dfrac{\nu_1 + \nu_2}{2}t + \dfrac{\nu_2 - \nu_1}{2\sqrt{\pi} v_{\text{max}}}\left[\sqrt{\pi}v_{\text{max}} \left(\bar{t} - \dfrac{T}{2}\right) \text{erf}\left(\sqrt{\pi} v_{\text{max}} \left(\bar{t} - \dfrac{T}{2}\right)\right) + \dfrac{\exp\left(-\left\{\sqrt{\pi}v_{\text{max}}\left(\bar{t}-\dfrac{T}{2}\right)\right\}^2\right)}{\sqrt{\pi}}\right]^{\bar{t} = t}_{\bar{t} = 0} $$
+$$ \tilde{\phi}(t) = \dfrac{\nu_1 + \nu_2}{2}t + \dfrac{\nu_2 - \nu_1}{2\sqrt{\pi} v_{\text{max}}}\left[\sqrt{\pi}v_{\text{max}} \left(\bar{t} - \dfrac{T}{2}\right) \text{erf}\left(\sqrt{\pi} v_{\text{max}} \left(\bar{t} - \dfrac{T}{2}\right)\right) + \dfrac{\exp\left(-\left\lbrace\sqrt{\pi}v_{\text{max}}\left(\bar{t}-\dfrac{T}{2}\right)\right\rbrace^2\right)}{\sqrt{\pi}}\right]^{\bar{t} = t}_{\bar{t} = 0} $$
 
 $$ \Delta \phi = \begin{cases} \delta \phi & |\delta \phi| < \pi \\ \delta \phi - \text{sgn}(\delta \phi) \cdot 2\pi & |\delta \phi| \geq \pi \end{cases} $$
 
