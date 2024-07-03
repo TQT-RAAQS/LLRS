@@ -1,0 +1,3 @@
+# Reconfiguration
+
+This module contains the implementation of the reconfiguration algorithms outlined in [Efficient algorithms to solve atom reconfiguration problems. I. Redistribution-reconfiguration algorithm](https://doi.org/10.1103/PhysRevA.108.023107) and [Efficient algorithms to solve atom reconfiguration problems. II. Assignment-rerouting-ordering algorithm](https://doi.org/10.1103/PhysRevA.108.023108).
