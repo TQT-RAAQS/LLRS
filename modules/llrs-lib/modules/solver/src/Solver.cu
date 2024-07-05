@@ -158,7 +158,6 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
                 num_atoms_target, &matching_src[0], &matching_dst[0]);
             GET_EXTERNAL_TIME("III-Matching", time);
             GET_EXTERNAL_TIME("III-Batching", 0);
-            std::cout << time << std::endl;
         }
         break;
     case REDREC_CPU_V2_2D:
@@ -190,7 +189,6 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
                    &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
             GET_EXTERNAL_TIME("III-Matching", time);
-            std::cout << time << std::endl;
         }
         break;
     case BIRD_CPU_2D:
