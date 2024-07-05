@@ -43,6 +43,8 @@ Reconfig::Algo get_algo_enum(std::string name) {
         return Reconfig::LINEAR_EXACT_1D;
     } else if (name == "LINEAR-EXACT-V2-1D") {
         return Reconfig::LINEAR_EXACT_V2_1D;
+    } else if (name == "LINEAR-EXACT-GPU-V2-1D") {
+        return Reconfig::LINEAR_EXACT_V2_GPU_1D;
     } else if (name == "REDREC-V2-2D") {
         return Reconfig::REDREC_CPU_V2_2D;
     } else if (name == "REDREC-CPU-V3-2D") {
@@ -129,19 +131,16 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
     /// desired algorithm for the problem
     switch (algo_select) {
     case LINEAR_EXACT_1D:
-
         lin_exact_block_batched_cpu(&initial[0], &target[0], initial.size(),
                                     num_atoms_initial, num_atoms_target,
                                     &src[0], &dst[0], &blk[0], &batch_ptrs[0],
                                     num_batches, sol_length);
 
         break;
-
     case LINEAR_EXACT_V2_1D:
         /// Matching
         START_TIMER("III-Matching");
-        lin_exact_cpu_v2_generate_matching // if supported algorithm is provided
-                                           // then perform matching
+        lin_exact_cpu_v2_generate_matching 
             (&initial[0], &target[0], initial.size(), num_atoms_initial,
              num_atoms_target, &matching_src[0], &matching_dst[0]);
         END_TIMER("III-Matching");
@@ -151,6 +150,16 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
             &matching_src[0], &matching_dst[0], num_atoms_target, &src[0],
             &dst[0], &blk[0], &batch_ptrs[0], num_batches, sol_length);
         END_TIMER("III-Batching");
+        break;
+    case LINEAR_EXACT_V2_GPU_1D:
+        {
+            double time = solve_gpu
+                (&initial[0], &target[0], initial.size(), num_atoms_initial,
+                num_atoms_target, &matching_src[0], &matching_dst[0]);
+            GET_EXTERNAL_TIME("III-Matching", time);
+            GET_EXTERNAL_TIME("III-Batching", 0);
+            std::cout << time << std::endl;
+        }
         break;
     case REDREC_CPU_V2_2D:
         START_TIMER("III-Matching");
@@ -176,11 +185,13 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         END_TIMER("III-Matching");
         break;
     case REDREC_GPU_V3_2D:
-        START_TIMER("III-Matching");
-        redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
+        {
+            double time = redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
                    &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
-        END_TIMER("III-Matching");
+            GET_EXTERNAL_TIME("III-Matching", time);
+            std::cout << time << std::endl;
+        }
         break;
     case BIRD_CPU_2D:
         START_TIMER("III-Matching");
@@ -215,6 +226,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list(Algo algo_select) {
     std::vector<Reconfig::Move> ret;
     switch (algo_select) {
     case LINEAR_EXACT_V2_1D:
+    case LINEAR_EXACT_V2_GPU_1D:
     case LINEAR_EXACT_1D: {
         size_t paddings_required =
             src.size() < 2 * wfm_per_segment
