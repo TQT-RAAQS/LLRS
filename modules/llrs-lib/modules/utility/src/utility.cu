@@ -44,6 +44,8 @@ Reconfig::Algo Util::get_algo_enum(std::string name) {
         return Reconfig::LINEAR_EXACT_1D;
     } else if (name == "LINEAR-EXACT-V2-1D") {
         return Reconfig::LINEAR_EXACT_V2_1D;
+    } else if (name == "LINEAR-EXACT-GPU-V2-1D") {
+        return Reconfig::LINEAR_EXACT_V2_GPU_1D;
     } else if (name == "REDREC-V2-2D") {
         return Reconfig::REDREC_CPU_V2_2D;
     } else if (name == "REDREC-CPU-V3-2D") {

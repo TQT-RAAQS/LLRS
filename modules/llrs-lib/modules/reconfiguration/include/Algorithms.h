@@ -23,10 +23,9 @@ extern "C" void lin_exact_1d_cpu_v2_block_output_generator(
     int *dst, int *blk_sizes, int *batch_indices, int *num_batches,
     int *sol_length);
 
-extern "C" float solve_gpu(int *sourceFlags, int *targetFlags, int numTraps,
+double solve_gpu(int *sourceFlags, int *targetFlags, int numTraps,
                            int numSources, int numTargets, int *OutSources_cpu,
                            int *OutTargets_cpu);
-
 extern "C" float redrec_v2(int *initial, int initial_atom_count, int Nt_x,
                            int Nt_y, int R_h, int *src, int *dst,
                            int *batch_indices, int *num_batches,
