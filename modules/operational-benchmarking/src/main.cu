@@ -91,10 +91,6 @@ int main(int argc, char *argv[]) {
     double loss_params_nu = json_file.read_problem_nu();
     double lifetime = json_file.read_problem_lifetime();
 
-    // Number of implantation or extraction moves, used for debugging the
-    // batching
-    int implantation_extraction_cnt = 0;
-
     int successes = 0;
 
     bool failure = false;
@@ -147,17 +143,6 @@ int main(int argc, char *argv[]) {
                 solver.start_solver(algo, rep_config, target_config);
                 moves_list = solver.gen_moves_list(algo);
 
-// Output the moves list and count number of extraction/implantation
-#ifdef DEBUG
-                for (auto i : moves_list) {
-                    std::cout << std::get<0>(i) << " x " << std::get<1>(i)
-                              << " y " << std::get<2>(i) << " b "
-                              << std::get<3>(i) << std::endl;
-                    if (std::get<0>(i) == 6 || std::get<0>(i) == 7) {
-                        implantation_extraction_cnt++;
-                    }
-                }
-#endif
 
                 // Performs the moves
                 if (trap_array.performMoves(moves_list) != 0) {
