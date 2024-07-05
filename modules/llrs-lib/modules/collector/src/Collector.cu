@@ -12,7 +12,7 @@ Util::Collector *Util::Collector::get_instance() {
 
 void Util::Collector::get_external_time(const std::string &module, float time) {
 
-    std::chrono::nanoseconds external_time{static_cast<int>(round(time))};
+    std::chrono::nanoseconds external_time{static_cast<int>(time* 1e6)};
     auto time_now = std::chrono::high_resolution_clock::now();
     auto time_now_plus_alg_elapse = time_now + external_time;
 
@@ -31,7 +31,7 @@ void Util::Collector::end_timer(const std::string &module) {
 
 long long Util::Collector::elapsed_time(const std::string &module) {
     if (timers.find(module) == timers.end()) {
-        return 0;
+        return -1;
     }
     auto cycle_pair = timers[module];
     return std::chrono::duration_cast<std::chrono::nanoseconds>(

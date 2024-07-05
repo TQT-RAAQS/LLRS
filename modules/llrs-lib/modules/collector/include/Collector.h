@@ -45,6 +45,9 @@ class Collector {
     void end_timer(const std::string &module);
     void get_external_time(const std::string &module, float time);
     std::vector<std::tuple<std::string, long long>> get_runtime_data();
+    long long get_module(const std::string &module) {
+        return elapsed_time(module);
+    }
     void clear_timers() {
         timers.clear();
         timers.reserve(NUM_TIMERS);
