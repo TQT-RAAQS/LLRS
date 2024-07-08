@@ -87,17 +87,16 @@ int main(int argc, char *argv[]) {
         for (auto &it : trial_config) {
             it = (loading_efficiency >= (((double)rand()) / RAND_MAX)) ? 1 : 0;
         }
-        double trial_data = 0; 
-        // Start repetition loop
-        for (int rep = 0; rep < num_reps; ++rep) {
-
-            solver.start_solver(algo, trial_config, target_config);
-            trial_data += Util::Collector::get_instance()->get_module("III-Matching");
-            Util::Collector::get_instance()->clear_timers();
-        }
-        data += (trial_data / num_reps);
         if (Util::count_num_atoms(trial_config) >= num_target) {
             ++success_trials;
+            double trial_data = 0; 
+            // Start repetition loop
+            for (int rep = 0; rep < num_reps; ++rep) {
+                solver.start_solver(algo, trial_config, target_config);
+                trial_data += Util::Collector::get_instance()->get_module("III-Matching");
+                Util::Collector::get_instance()->clear_timers();
+            }
+            data += (trial_data / num_reps);
         }
     }
     if (success_trials == 0) {
