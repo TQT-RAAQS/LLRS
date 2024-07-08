@@ -12,7 +12,7 @@ Util::Collector *Util::Collector::get_instance() {
 
 void Util::Collector::get_external_time(const std::string &module, float time) {
 
-    std::chrono::nanoseconds external_time{static_cast<int>(time* 1e6)};
+    std::chrono::nanoseconds external_time{static_cast<int>(time)};
     auto time_now = std::chrono::high_resolution_clock::now();
     auto time_now_plus_alg_elapse = time_now + external_time;
 

@@ -122,6 +122,8 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
     /// return an error if the target configuration requires more atoms than we
     /// initially have
     if (num_atoms_target > num_atoms_initial) {
+        GET_EXTERNAL_TIME("III-Matching", 0);
+        GET_EXTERNAL_TIME("III-Batching", 0);
         return LLRS_ERR;
     }
 
@@ -185,7 +187,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         break;
     case REDREC_GPU_V3_2D:
         {
-            double time = redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
+            float time = redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
                    &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
             GET_EXTERNAL_TIME("III-Matching", time);
