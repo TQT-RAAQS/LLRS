@@ -24,7 +24,7 @@ double solve_gpu(int *sourceFlags, int *targetFlags, int numTraps, int numSource
                 OutSources_gpu_d, OutTargets_gpu_d);
     cudaDeviceSynchronize();
     auto t2 = std::chrono::high_resolution_clock::now();
-    double computeTime = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
+    double computeTime = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
     // Copy data from GPU
     cudaMemcpy(OutSources_cpu, OutSources_gpu_d, numTargets * sizeof(int),
                cudaMemcpyDeviceToHost);

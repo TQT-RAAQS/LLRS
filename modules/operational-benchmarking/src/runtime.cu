@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
     Reconfig::Solver solver;
     solver.setup(Nt_x, Nt_y, 32);
     double data = 0;
+    int success_trials = 0;
     // Start trial loop
     for (int trial = 0; trial < num_trials; ++trial) {
         // Create initial atom configuration with 60% loading efficiency
@@ -86,7 +87,6 @@ int main(int argc, char *argv[]) {
         for (auto &it : trial_config) {
             it = (loading_efficiency >= (((double)rand()) / RAND_MAX)) ? 1 : 0;
         }
-
         double trial_data = 0; 
         // Start repetition loop
         for (int rep = 0; rep < num_reps; ++rep) {
@@ -96,8 +96,15 @@ int main(int argc, char *argv[]) {
             Util::Collector::get_instance()->clear_timers();
         }
         data += (trial_data / num_reps);
+        if (Util::count_num_atoms(trial_config) >= num_target) {
+            ++success_trials;
+        }
     }
-    std::cout << data / num_trials << std::endl;
+    if (success_trials == 0) {
+        std::cout << 0 << std::endl;
+    } else {
+        std::cout << data / num_trials << std::endl;
+    }
 
     
     return 0;
