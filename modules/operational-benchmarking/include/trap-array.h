@@ -20,7 +20,8 @@ class TrapArray {
     double loss_params_alpha = 0.985;
     double loss_params_nu = 0.985;
     double lifetime = 60.0;
-    int total_moves = 0;
+    size_t total_alpha_ops = 0;
+    size_t total_nu_ops = 0;
     std::vector<std::vector<Atom *>> traps; // vector of traps
   public:
     /**
@@ -95,13 +96,9 @@ class TrapArray {
      * @brief Return the total number of moves performed by the trap_array
      * @return Total number of moves
      */
-    int getTotalMoves();
-
-    /**
-     * @brief Increase the total number of moves performed by the trap array
-     * @param num_moves The number of moves to increase by (default 1)
-     */
-    void increaseTotalMoves(int num_moves = 1);
+    size_t getTotalMoves() {return total_alpha_ops + total_nu_ops;}
+    size_t getTotalAlphaMoves() {return total_alpha_ops;}
+    size_t getTotalNuMoves() {return total_nu_ops;} 
 
     /**
      * @brief Perform loss on the Trap Array based on the moves on each atom and

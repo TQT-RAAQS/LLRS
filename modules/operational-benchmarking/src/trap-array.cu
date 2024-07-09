@@ -23,8 +23,7 @@ TrapArray::TrapArray(int Nt_x, int Nt_y,
                      double loss_params_alpha, double loss_params_nu,
                      double lifetime, int total_moves)
     : Nt_x(Nt_x), Nt_y(Nt_y), loss_params_alpha(loss_params_alpha),
-      loss_params_nu(loss_params_nu), lifetime(lifetime),
-      total_moves(total_moves) {
+      loss_params_nu(loss_params_nu), lifetime(lifetime), total_alpha_ops(total_alpha_ops), total_nu_ops(total_nu_ops) {
     traps.resize(Nt_y, std::vector<Atom *>(Nt_x));
     // Add Atom objects to traps where an atom exists
     for (auto &i : traps) {
@@ -139,7 +138,7 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size,
                 auto tmp = this->traps[i][low_Nt_y];
                 this->traps[i][low_Nt_y] = this->traps[i + 1][low_Nt_y];
                 this->traps[i + 1][low_Nt_y] = tmp;
-                increaseTotalMoves(1);
+                ++total_nu_ops;
             }
         }
 
@@ -159,7 +158,7 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size,
                 auto tmp = this->traps[i][low_Nt_y];
                 this->traps[i][low_Nt_y] = this->traps[i - 1][low_Nt_y];
                 this->traps[i - 1][low_Nt_y] = tmp;
-                increaseTotalMoves(1);
+                ++total_nu_ops;
             }
         }
 
@@ -178,7 +177,7 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size,
             auto tmp = this->traps[low_Nt_x][low_Nt_y];
             this->traps[low_Nt_x][low_Nt_y] = this->traps[low_Nt_x][new_Nt_y];
             this->traps[low_Nt_x][new_Nt_y] = tmp;
-            increaseTotalMoves(1);
+            ++total_nu_ops;
         }
 
     } break;
@@ -196,7 +195,7 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size,
             this->traps[low_Nt_x][low_Nt_y] =
                 this->traps[low_Nt_x][low_Nt_y + 1];
             this->traps[low_Nt_x][low_Nt_y + 1] = tmp;
-            increaseTotalMoves(1);
+            ++total_nu_ops;
         }
 
     } break;
@@ -209,6 +208,8 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size,
  * @param moves_list The list of moves to perform
  */
 int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
+    total_alpha_ops = 0;
+    total_nu_ops = 0;
     for (const auto &move : moves_list) {
 
         Synthesis::WfMoveType move_type = std::get<0>(move);
@@ -222,7 +223,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                 if (this->traps[i][col] == NO_ATOM) {
                     continue;
                 }
-                increaseTotalMoves(1);
+                ++total_alpha_ops; 
                 this->traps[i][col]->transfer();
                 this->traps[i][col]->setState(EXTRACTED);
             }
@@ -233,7 +234,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                 if (this->traps[i][col] == NO_ATOM) {
                     continue;
                 }
-                increaseTotalMoves(1);
+                ++total_alpha_ops; 
                 this->traps[i][col]->transfer();
                 this->traps[i][col]->setState(IMPLANTED);
             }
@@ -244,7 +245,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                 if (this->traps[i][col] == NO_ATOM) {
                     continue;
                 }
-                increaseTotalMoves(1);
+                ++total_alpha_ops; 
                 this->traps[i][col]->transfer();
                 this->traps[i][col]->setState(EXTRACTED);
             }
@@ -256,7 +257,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                 if (this->traps[i][col] == NO_ATOM) {
                     continue;
                 }
-                increaseTotalMoves(1);
+                ++total_alpha_ops;
                 this->traps[i][col]->transfer();
                 this->traps[i][col]->setState(IMPLANTED);
             }
@@ -290,22 +291,6 @@ int TrapArray::getRelaventMoves() {
     return x;
 }
 
-/**
- * @brief Return the total number of moves performed
- */
-
-int TrapArray::getTotalMoves() { return total_moves; }
-
-/**
- *
- * @brief Increase the total number of moves performed by the trap array
- * @param num_moves The number of moves to increase by (default 1)
- */
-
-void TrapArray::increaseTotalMoves(int num_moves) {
-    this->total_moves += num_moves;
-    return;
-}
 
 /**
  * @brief Perform loss on the Trap Array based on the moves on each atom and
@@ -343,8 +328,6 @@ void TrapArray::performLoss() {
             }
         }
     }
-    this->total_moves = 0;
-    return;
 }
 
 /**

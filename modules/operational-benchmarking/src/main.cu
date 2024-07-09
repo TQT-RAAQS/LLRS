@@ -56,9 +56,9 @@ void create_rectangular_target(std::vector<int32_t> &target_config,
  * @return int
  */
 int main(int argc, char *argv[]) {
-    if (argc != 4) {
+    if (argc != 5) {
         std::cout << "Usage is operational_benchmarking <problem_file_path> "
-                     "<num_trials> <num_repititions> "
+                     "<num_trials> <num_repititions> <batched> "
                   << std::endl;
         return 1;
     }
@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
     std::string file_path{argv[1]};
     int num_trials = std::stoi(argv[2]);
     int num_reps = std::stoi(argv[3]);
+    bool batched = std::stoi(argv[4]);
 
     // Now read file and convert to JSON object
     Util::JsonWrapper json_file(file_path);
@@ -141,8 +142,7 @@ int main(int argc, char *argv[]) {
 
                 std::vector<Reconfig::Move> moves_list;
                 solver.start_solver(algo, rep_config, target_config);
-                moves_list = solver.gen_moves_list(algo);
-
+                moves_list = solver.gen_moves_list(algo, batched);
 
                 // Performs the moves
                 if (trap_array.performMoves(moves_list) != 0) {

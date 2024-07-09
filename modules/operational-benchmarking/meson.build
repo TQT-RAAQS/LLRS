@@ -8,6 +8,7 @@ op_bench_atom_src = ['src/atom.cu']
 op_bench_trap_array_src = ['src/trap-array.cu']
 op_bench_src = ['src/main.cu']
 op_bench_runtime_src = ['src/runtime.cu']
+op_bench_operations_src = ['src/operations.cu']
 
 # submodules
 solver_proj = subproject('solver')
@@ -48,4 +49,11 @@ op_bench_runtime_exe = executable(
     op_bench_runtime_src,
     include_directories: [op_bench_inc],
     dependencies: [solver_runtime_dep, utility_dep, jsonwrapper_dep, collector_dep],
+)
+
+op_bench_operations_exe = executable(
+    'op-bench-operations',
+    op_bench_operations_src,
+    include_directories: [op_bench_inc],
+    dependencies: [solver_runtime_dep, utility_dep, jsonwrapper_dep],
 )
