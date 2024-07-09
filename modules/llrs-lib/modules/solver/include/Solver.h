@@ -93,10 +93,12 @@ class Solver {
      *   @brief Generate list of moves for reconfiguration algorithm
      *   @param algo_select An enum value specifying which reconfiguration
      * algorithm to use
+     *   @param batching A boolean value specifying whether to use batching
      *   @return A vector of Move tuples representing the primary waveform
      * keying components
      */
-    std::vector<Move> gen_moves_list(Algo algo_select);
+    std::vector<Move> gen_moves_list(Algo algo_select, bool batching = true) {
+      return batching? gen_moves_list_batched(algo_select): gen_moves_list_unbatched(algo_select);};
 
     /**
      * @brief Resets the Vectors used in the solver based on the dimensions of
@@ -128,6 +130,10 @@ class Solver {
      *
      */
     std::vector<int32_t> get_batch_ptrs() const { return batch_ptrs; };
+
+  private:
+    std::vector<Move> gen_moves_list_unbatched(Algo algo_select);
+    std::vector<Move> gen_moves_list_batched(Algo algo_select);
 };
 } // namespace Reconfig
 
