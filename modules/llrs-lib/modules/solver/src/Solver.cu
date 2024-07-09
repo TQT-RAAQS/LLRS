@@ -226,18 +226,20 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
     case BIRD_CPU_2D:
     case REDREC_GPU_V3_2D:
     case REDREC_CPU_V2_2D: 
-    case REDREC_CPU_V3_2D: {
+    case REDREC_CPU_V3_2D: 
+    case ARO_CPU_2D: {
         START_TIMER("III-Batching");
         std::vector<int> single_atom_start, single_atom_end, single_atom_dir;
         int i = 0;
         while (i < src.size()) {
             single_atom_start.push_back(src[i]);
             single_atom_dir.push_back(dst[i] - src[i]);
+            bool horizontal = abs(src[i] - dst[i]) == 1;
             while (++i < src.size()) {
                 bool batchable = dst[i - 1] == src[i];
-                bool horizontal = abs(src[i - 1] - dst[i - 1]) == 1;
+                bool horizontal_temp = abs(src[i] - dst[i]) == 1;
                 bool same_dir = src[i - 1] - dst[i - 1] == src[i] - dst[i];
-                if (!batchable || horizontal || !same_dir)
+                if (!batchable || horizontal != horizontal_temp || !same_dir)
                     break;
             }
             single_atom_end.push_back(dst[i - 1]);
@@ -247,7 +249,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
         while (i < single_atom_start.size()) {
             int min_trap = std::min(single_atom_start[i], single_atom_end[i]);
             int max_trap = std::max(single_atom_start[i], single_atom_end[i]);
-            bool horizontal = abs(single_atom_dir[i]) == 1;
+            bool horizontal = (single_atom_start[i] % Nt_x) != (single_atom_end[i] % Nt_x);
 
             int j = i + 1;
             if (!horizontal) {
@@ -271,176 +273,19 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
             Synthesis::WfMoveType displacement_page;
 
             if (horizontal) {
-                displacement_page = (single_atom_dir[i] == 1)
+                displacement_page = (single_atom_dir[i] > 0)
                                         ? Synthesis::RIGHT_2D
                                         : Synthesis::LEFT_2D;
 
                 ret.emplace_back(Synthesis::EXTRACT_2D, index,
                                  single_atom_start[i] % Nt_x, 1, 0);
-                ret.emplace_back(displacement_page, index, offset, 1, 0);
-                ret.emplace_back(Synthesis::IMPLANT_2D, index,
-                                 single_atom_end[i] % Nt_x, 1, 0);
-                ++i;
-                continue;
-            }
-
-            bool up = (single_atom_dir[i] > 0);
-            displacement_page = up ? Synthesis::UP_2D : Synthesis::DOWN_2D;
-            int extraction_extent = up ? max_trap / Nt_x + 1 : Nt_y - index;
-            int blk_size = (max_trap - min_trap) / Nt_x;
-            ret.emplace_back(Synthesis::EXTRACT_2D, min_trap / Nt_x + !up, offset,
-                             blk_size,
-                             0);
-            /// it may seem like this is turning the time complexity of the
-            /// translation into quadratic however, it's really just reordering
-            /// the moves returned by the algorithm it's quadratic w.r.t. size
-            /// of single_atom_* but still linear w.r.t. size of _src & _dst
-            while (true) {
-                int min_trap = Nt_x * Nt_y;
-                int max_trap = -1;
-                for (int k = i; k < j; ++k) {
-                    if (single_atom_start[k] != single_atom_end[k]) {
-                        min_trap = std::min(min_trap,
-                                            std::min(single_atom_start[k],
-                                                     single_atom_start[k] +
-                                                         single_atom_dir[i]));
-                        max_trap = std::max(max_trap,
-                                            std::max(single_atom_start[k],
-                                                     single_atom_start[k] +
-                                                         single_atom_dir[i]));
-                        single_atom_start[k] += single_atom_dir[i];
-                    }
-                }
-                if (max_trap == -1)
-                    break;
-                int blk_size = (max_trap - min_trap) / Nt_x;
-                ret.emplace_back(displacement_page, min_trap / Nt_x, offset,
-                                 blk_size, extraction_extent);
-            }
-            ret.emplace_back(Synthesis::IMPLANT_2D, min_trap / Nt_x + up, offset,
-                             blk_size,
-                             0);
-            i = j;
-        }
-        END_TIMER("III-Batching");
-        break;
-    }
-    case ARO_CPU_2D: {
-        START_TIMER("III-Batching");
-        std::vector<int> single_atom_start, single_atom_end, single_atom_dir;
-        int i = 0;
-        while (i < src.size()) {
-            single_atom_start.push_back(src[i]);
-            single_atom_dir.push_back(dst[i] - src[i]);
-            while (++i < src.size()) {
-                bool batchable = dst[i - 1] == src[i];
-                bool horizontal = abs(src[i - 1] - dst[i - 1]) == 1;
-                bool same_dir = src[i - 1] - dst[i - 1] == src[i] - dst[i];
-                if (!batchable || horizontal || !same_dir)
-                    break;
-            }
-            single_atom_end.push_back(dst[i - 1]);
-        }
-
-        /// creating binary array to track locations of atoms between moves
-        std::vector<int> atoms{};
-        atoms.reserve(Nt_x * Nt_y);
-        for (int idx = 0; idx < initial.size(); idx++) {
-            atoms[idx] = initial[idx];
-        }
-
-        i = 0;
-        while (i < single_atom_start.size()) {
-            int min_trap = std::min(single_atom_start[i], single_atom_end[i]);
-            int max_trap = std::max(single_atom_start[i], single_atom_end[i]);
-            bool horizontal = abs(single_atom_dir[i]) == 1;
-
-            int j = i + 1;
-            if (!horizontal) {
-                while (j < single_atom_start.size()) {
-                    bool same_dir =
-                        (single_atom_dir[j] == single_atom_dir[j - 1]);
-                    bool same_dist =
-                        ((single_atom_end[j] - single_atom_start[j]) ==
-                         (single_atom_end[j - 1] - single_atom_start[j - 1]));
-                    bool same_offset = ((single_atom_start[j] % Nt_x) ==
-                                        (single_atom_start[j - 1] % Nt_x));
-                    if (!same_dir || !same_offset)
+                while (true) {
+                    if (single_atom_start[i] == single_atom_end[i])
                         break;
-
-                    int new_min =
-                        std::min(min_trap, std::min(single_atom_start[j],
-                                                    single_atom_end[j]));
-                    int new_max =
-                        std::max(max_trap, std::max(single_atom_start[j],
-                                                    single_atom_end[j]));
-                    bool moving_extra_atom = false;
-                    if (single_atom_dir[i] > 0) { // dest > src -> downward
-                        if (new_min != min_trap || new_max != max_trap) {
-                            int lower_range = 0;
-                            int upper_range = 0;
-                            if (new_min == min_trap) {
-                                lower_range = max_trap;
-                                upper_range = new_max - Nt_x;
-                            } else if (new_max == max_trap) {
-                                lower_range = new_min + Nt_x;
-                                upper_range = min_trap;
-                            }
-                            for (int atom_idx = lower_range;
-                                 atom_idx < upper_range; atom_idx += Nt_x) {
-                                if (atoms[atom_idx] == 1) {
-                                    moving_extra_atom = true;
-                                    break;
-                                }
-                            }
-                        }
-                    } else if (single_atom_dir[i] < 0) // dest < src -> upward
-                        if (new_min != min_trap || new_max != max_trap) {
-                            int lower_range = 0;
-                            int upper_range = 0;
-                            if (new_min == min_trap) {
-                                lower_range = max_trap + Nt_x;
-                                upper_range = new_max;
-                            } else if (new_max == max_trap) {
-                                lower_range = new_min + Nt_x + Nt_x;
-                                upper_range = min_trap + Nt_x;
-                            }
-                            for (int atom_idx = lower_range;
-                                 atom_idx < upper_range; atom_idx += Nt_x) {
-                                if (atoms[atom_idx] == 1) {
-                                    moving_extra_atom = true;
-                                    break;
-                                }
-                            }
-                        }
-                    if (moving_extra_atom)
-                        break; // breka out if we are moving an extra atom
-                    min_trap = std::min(min_trap, std::min(single_atom_start[j],
-                                                           single_atom_end[j]));
-                    max_trap = std::max(max_trap, std::max(single_atom_start[j],
-                                                           single_atom_end[j]));
-                    ++j;
+                    
+                    ret.emplace_back(displacement_page, index, std::min(single_atom_start[i], single_atom_start[i] + single_atom_dir[i]) % Nt_x, 1, 0);
+                    single_atom_start[i] += single_atom_dir[i];
                 }
-            }
-
-            /// update existing locations of atoms
-            for (int k = i; k < j; k++) {
-                atoms[single_atom_start[k]] = 0;
-                atoms[single_atom_end[k]] = 1;
-            }
-
-            int offset = min_trap % Nt_x;
-            int index = min_trap / Nt_x;
-            Synthesis::WfMoveType displacement_page;
-
-            if (horizontal) {
-                displacement_page = (single_atom_dir[i] == 1)
-                                        ? Synthesis::RIGHT_2D
-                                        : Synthesis::LEFT_2D;
-
-                ret.emplace_back(Synthesis::EXTRACT_2D, index,
-                                 single_atom_start[i] % Nt_x, 1, 0);
-                ret.emplace_back(displacement_page, index, offset, 1, 0);
                 ret.emplace_back(Synthesis::IMPLANT_2D, index,
                                  single_atom_end[i] % Nt_x, 1, 0);
                 ++i;
@@ -471,12 +316,6 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
                                                      single_atom_start[k] +
                                                          single_atom_dir[i]));
                         single_atom_start[k] += single_atom_dir[i];
-                    } else {
-                        if ((min_trap == Nt_x * Nt_y) && (max_trap == -1)) {
-                            continue;
-                        } else {
-                            break;
-                        }
                     }
                 }
                 if (max_trap == -1)
@@ -485,9 +324,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
                 ret.emplace_back(displacement_page, min_trap / Nt_x, offset,
                                  blk_size, extraction_extent);
             }
-            ret.emplace_back(Synthesis::IMPLANT_2D, min_trap / Nt_x + up, offset,
-                             blk_size,
-                             0);
+            ret.emplace_back(Synthesis::IMPLANT_2D, min_trap / Nt_x + up, offset,blk_size, 0);
             i = j;
         }
         END_TIMER("III-Batching");
@@ -566,8 +403,11 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_unbatched(Reconfig:
                     k++ < src.size() &&  
                     (dst[k - 1] == src[k])) { // block adjacent moves together
                     bool is_reversed = src[k] > dst[k];
+                    bool temp = is_red_not_rec;
                     bool is_red_not_rec = abs(src[k] - dst[k]) == 1;
-                    if (is_red_not_rec) break; 
+                    if (is_red_not_rec != temp) {
+                        break;
+                    }
                     Synthesis::WfMoveType page =
                         (is_reversed) ? ((is_red_not_rec) ? Synthesis::LEFT_2D
                                                         : Synthesis::DOWN_2D)
