@@ -210,7 +210,8 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
     this->dst.resize(*sol_length);
     this->blk.resize(*sol_length);
     this->batch_ptrs.resize(*num_batches);
-
+    delete sol_length;
+    delete num_batches;
     return LLRS_OK;
 }
 
@@ -464,7 +465,7 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
 
     solver.start_solver(algo, current_config, target_config);
 
-    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo);
+    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, false);
     *sol_len = moves_list.size();
     std::cout << *sol_len << std::endl;
 
