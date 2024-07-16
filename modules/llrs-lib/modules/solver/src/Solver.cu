@@ -164,7 +164,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         break;
     case REDREC_CPU_V2_2D:
         START_TIMER("III-Matching");
-        redrec_v2 /// gets batching time internally
+        redrec_v2 
             (&initial[0], num_atoms_initial, Nt_x, Nt_y, reservoir_height,
              &src[0], &dst[0], &batch_ptrs[0], num_batches, sol_length);
         END_TIMER("III-Matching");
@@ -398,10 +398,9 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_unbatched(Reconfig:
 
                 ret.emplace_back(page, index, offset, 1,
                                 0); // make a tuple of the move block
-
-                int last_index = dst[k]/ Nt_x;
+                                
                 while (
-                    k++ < src.size() &&  
+                    ++k < src.size() &&  
                     (dst[k - 1] == src[k])) { // block adjacent moves together
                     bool is_reversed = src[k] > dst[k];
                     bool temp = is_red_not_rec;
@@ -474,6 +473,31 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
         result[i * 4 + 1] = (int)std::get<1>(moves_list[i]); /// Index
         result[i * 4 + 2] = (int)std::get<2>(moves_list[i]); /// Offset
         result[i * 4 + 3] = (int)std::get<3>(moves_list[i]); /// Block_size
+    }
+}
+
+extern "C" void solver_wrapper_extraction_extent(char *algo_s, int Nt_x, int Nt_y, int *init,
+                               int *target, int *result, int *sol_len) {
+    Reconfig::Algo algo = get_algo_enum(std::string(algo_s));
+
+    std::vector<int32_t> current_config(init, init + Nt_x * Nt_y);
+    std::vector<int32_t> target_config(target, target + Nt_x * Nt_y);
+
+    Reconfig::Solver solver;
+    solver.setup(Nt_x, Nt_y, 32);
+
+    solver.start_solver(algo, current_config, target_config);
+
+    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, false);
+    *sol_len = moves_list.size();
+    std::cout << *sol_len << std::endl;
+
+    for (int i = 0; i < moves_list.size(); ++i) {
+        result[i * 5] = (int)std::get<0>(moves_list[i]);     /// Move_type
+        result[i * 5 + 1] = (int)std::get<1>(moves_list[i]); /// Index
+        result[i * 5 + 2] = (int)std::get<2>(moves_list[i]); /// Offset
+        result[i * 5 + 3] = (int)std::get<3>(moves_list[i]); /// Block_size
+        result[i * 5 + 4] = (int)std::get<4>(moves_list[i]); /// extraction_extent
     }
 }
 

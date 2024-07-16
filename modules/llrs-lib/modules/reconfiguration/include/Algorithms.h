@@ -26,23 +26,11 @@ extern "C" void lin_exact_1d_cpu_v2_block_output_generator(
 double solve_gpu(int *sourceFlags, int *targetFlags, int numTraps,
                            int numSources, int numTargets, int *OutSources_cpu,
                            int *OutTargets_cpu);
-extern "C" float redrec_v2(int *initial, int initial_atom_count, int Nt_x,
+void redrec_v2(int *initial, int initial_atom_count, int Nt_x,
                            int Nt_y, int R_h, int *src, int *dst,
                            int *batch_indices, int *num_batches,
                            int *sol_length);
 
-extern "C" void redrec_v2_unbatched(int *initial, int H, int W, int R_h, int K,
-                                    int *src, int *dst, int *sol_length);
-
-/*
-extern "C" void redrec_cpu_v3_unbatched_moves
-(
-    int gridHeight, int width, int reservoirHeight,
-    int* sourceFlags, int* OutSources_cpu, int* OutTargets_cpu,
-    int* outputMovesSource_cpu, int* outputMovesTarget_cpu,
-    int* moves_counter
-);
-*/
 extern "C" void redrec_cpu(int gridHeight, int width, int reservoirHeight,
                            int *sourceFlags, int *OutSources_cpu,
                            int *OutTargets_cpu, int *outputMovesSource_cpu,
