@@ -65,3 +65,6 @@ builddir/
 
 # CPython
 *.pyc
+
+# Produced PDFs
+*.pdf
