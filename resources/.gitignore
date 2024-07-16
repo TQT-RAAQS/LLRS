@@ -3,6 +3,7 @@ psf/
 wfm/
 coef/
 pickled_results/
+operational-benchmarking/
 image-acquisition-characterization/
 image-processing-characterization/
 wfm-streaming-characterization/
