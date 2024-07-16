@@ -224,9 +224,87 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
     case LINEAR_EXACT_1D: {
         return gen_moves_list_unbatched(algo_select); // If 1D, there is no batching performed.
     }
+    case REDREC_CPU_V2_2D: {
+        START_TIMER("III-Batching");
+        for (auto itr = batch_ptrs.begin(); itr != batch_ptrs.end();
+            itr++) // iterate through the batchings
+        {
+            auto tail = std::next(itr);
+            size_t end = (tail != batch_ptrs.end()) ? *tail : src.size();
+            size_t k = *itr;
+            while (k < end) {
+                bool is_red_not_rec = abs(src[k] - dst[k]) ==
+                                    1; // determines if it is a redistribution
+                                        // or recombination move
+                bool is_reversed = src[k] > dst[k];
+
+                /// classify the move as an enum depending on the boolean
+                /// parameters above
+                Synthesis::WfMoveType page =
+                    (is_reversed) ? ((is_red_not_rec) ? Synthesis::LEFT_2D
+                                                    : Synthesis::DOWN_2D)
+                                : ((is_red_not_rec) ? Synthesis::RIGHT_2D
+                                                    : Synthesis::UP_2D);
+
+                /// offset and index describe the location of a trap in the
+                /// array, either _dst[k] or _src[k] depending on if the move is
+                /// reversed or not, since we store the "smaller" of the two
+                /// traps as the identifying index of the move
+                int offset = (is_reversed) ? dst[k] % Nt_x : src[k] % Nt_x;
+                int index = (is_reversed) ? dst[k] / Nt_x : src[k] / Nt_x;
+                int blk_size = 1;
+
+                if (is_red_not_rec) {
+                    ret.emplace_back( // redistribution tuple added to back of
+                                    // ret
+                        Synthesis::EXTRACT_2D, src[k] / Nt_x, src[k] % Nt_x,
+                        blk_size, 0 // extract the first _src[k] % _Nt_x traps
+                                    // of the row containing _src[k]
+                    );
+                } else { // recombination extraction
+                    if (k == *itr) {
+                        if (!ret.empty()) {
+                            if (std::get<1>(ret.back()) != offset ||
+                                std::get<3>(ret.back()) < Nt_y) {
+                                ret.emplace_back(Synthesis::EXTRACT_2D, 0,
+                                                offset, Nt_y, 0);
+                            } else {
+                                ret.pop_back();
+                            }
+                        } else {
+                            ret.emplace_back(Synthesis::EXTRACT_2D, 0, offset,
+                                            Nt_y, 0);
+                        }
+                    }
+                }
+
+                while (
+                    ++k < end &&
+                    (dst[k - 1] == src[k] ^
+                    dst[k] == src[k - 1])) { // block adjacent moves together
+                    blk_size++;
+                }
+                ret.emplace_back(page, index, offset, blk_size,
+                                Nt_y); // make a tuple of the move block
+
+                // implantation move
+                if (is_red_not_rec) {
+                    ret.emplace_back(Synthesis::IMPLANT_2D,
+                                    dst[k - blk_size] / Nt_x,
+                                    dst[k - blk_size] % Nt_x, blk_size, 0);
+                } else {
+                    if (k >= end) {
+                        ret.emplace_back(Synthesis::IMPLANT_2D, 0, offset, Nt_y,
+                                        0);
+                    }
+                }
+            }
+        }
+        END_TIMER("III-Batching");
+        return ret;
+    }
     case BIRD_CPU_2D:
     case REDREC_GPU_V3_2D:
-    case REDREC_CPU_V2_2D: 
     case REDREC_CPU_V3_2D: 
     case ARO_CPU_2D: {
         START_TIMER("III-Batching");
@@ -368,7 +446,85 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_unbatched(Reconfig:
             }
             return ret;
         }
-        case REDREC_CPU_V2_2D:
+        case REDREC_CPU_V2_2D: {
+            START_TIMER("III-Batching");
+            for (auto itr = batch_ptrs.begin(); itr != batch_ptrs.end();
+                itr++) // iterate through the batchings
+            {
+                auto tail = std::next(itr);
+                size_t end = (tail != batch_ptrs.end()) ? *tail : src.size();
+                size_t k = *itr;
+                while (k < end) {
+                    bool is_red_not_rec = abs(src[k] - dst[k]) ==
+                                        1; // determines if it is a redistribution
+                                            // or recombination move
+                    bool is_reversed = src[k] > dst[k];
+
+                    /// classify the move as an enum depending on the boolean
+                    /// parameters above
+                    Synthesis::WfMoveType page =
+                        (is_reversed) ? ((is_red_not_rec) ? Synthesis::LEFT_2D
+                                                        : Synthesis::DOWN_2D)
+                                    : ((is_red_not_rec) ? Synthesis::RIGHT_2D
+                                                        : Synthesis::UP_2D);
+
+                    /// offset and index describe the location of a trap in the
+                    /// array, either _dst[k] or _src[k] depending on if the move is
+                    /// reversed or not, since we store the "smaller" of the two
+                    /// traps as the identifying index of the move
+                    int offset = (is_reversed) ? dst[k] % Nt_x : src[k] % Nt_x;
+                    int index = (is_reversed) ? dst[k] / Nt_x : src[k] / Nt_x;
+                    int blk_size = 1;
+
+                    if (is_red_not_rec) {
+                        ret.emplace_back( // redistribution tuple added to back of
+                                        // ret
+                            Synthesis::EXTRACT_2D, src[k] / Nt_x, src[k] % Nt_x,
+                            blk_size, 0 // extract the first _src[k] % _Nt_x traps
+                                        // of the row containing _src[k]
+                        );
+                    } else { // recombination extraction
+                        if (k == *itr) {
+                            if (!ret.empty()) {
+                                if (std::get<1>(ret.back()) != offset ||
+                                    std::get<3>(ret.back()) < Nt_y) {
+                                    ret.emplace_back(Synthesis::EXTRACT_2D, 0,
+                                                    offset, Nt_y, 0);
+                                } else {
+                                    ret.pop_back();
+                                }
+                            } else {
+                                ret.emplace_back(Synthesis::EXTRACT_2D, 0, offset,
+                                                Nt_y, 0);
+                            }
+                        }
+                    }
+
+                    while (
+                        ++k < end &&
+                        (dst[k - 1] == src[k] ^
+                        dst[k] == src[k - 1])) { // block adjacent moves together
+                        blk_size++;
+                    }
+                    ret.emplace_back(page, index, offset, blk_size,
+                                    Nt_y); // make a tuple of the move block
+
+                    // implantation move
+                    if (is_red_not_rec) {
+                        ret.emplace_back(Synthesis::IMPLANT_2D,
+                                        dst[k - blk_size] / Nt_x,
+                                        dst[k - blk_size] % Nt_x, blk_size, 0);
+                    } else {
+                        if (k >= end) {
+                            ret.emplace_back(Synthesis::IMPLANT_2D, 0, offset, Nt_y,
+                                            0);
+                        }
+                    }
+                }
+            }
+            END_TIMER("III-Batching");
+            return ret;
+        }
         case REDREC_CPU_V3_2D:
         case REDREC_GPU_V3_2D:
         case ARO_CPU_2D:
@@ -464,7 +620,7 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
 
     solver.start_solver(algo, current_config, target_config);
 
-    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, false);
+    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, true);
     *sol_len = moves_list.size();
     std::cout << *sol_len << std::endl;
 
