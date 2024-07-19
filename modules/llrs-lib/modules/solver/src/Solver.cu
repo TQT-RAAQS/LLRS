@@ -264,7 +264,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
                 } else { // recombination extraction
                     if (k == *itr) {
                         if (!ret.empty()) {
-                            if (std::get<1>(ret.back()) != offset ||
+                            if (std::get<2>(ret.back()) != offset ||
                                 std::get<3>(ret.back()) < Nt_y) {
                                 ret.emplace_back(Synthesis::EXTRACT_2D, 0,
                                                 offset, Nt_y, 0);
@@ -486,7 +486,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_unbatched(Reconfig:
                     } else { // recombination extraction
                         if (k == *itr) {
                             if (!ret.empty()) {
-                                if (std::get<1>(ret.back()) != offset ||
+                                if (std::get<2>(ret.back()) != offset ||
                                     std::get<3>(ret.back()) < Nt_y) {
                                     ret.emplace_back(Synthesis::EXTRACT_2D, 0,
                                                     offset, Nt_y, 0);
@@ -622,7 +622,6 @@ extern "C" void solver_wrapper(char *algo_s, int Nt_x, int Nt_y, int *init,
 
     std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, true);
     *sol_len = moves_list.size();
-    std::cout << *sol_len << std::endl;
 
     for (int i = 0; i < moves_list.size(); ++i) {
         result[i * 4] = (int)std::get<0>(moves_list[i]);     /// Move_type
@@ -646,7 +645,6 @@ extern "C" void solver_wrapper_extraction_extent(char *algo_s, int Nt_x, int Nt_
 
     std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, false);
     *sol_len = moves_list.size();
-    std::cout << *sol_len << std::endl;
 
     for (int i = 0; i < moves_list.size(); ++i) {
         result[i * 5] = (int)std::get<0>(moves_list[i]);     /// Move_type
