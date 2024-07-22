@@ -210,8 +210,9 @@ int TrapArray::moveAtoms(int low_Nt_x, int low_Nt_y, int block_size,
 int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
     total_alpha_ops = 0;
     total_nu_ops = 0;
+    total_moves = 0;
     for (const auto &move : moves_list) {
-
+        ++total_moves;
         Synthesis::WfMoveType move_type = std::get<0>(move);
         int row = std::get<1>(move);
         int col = std::get<2>(move);    // 0 if 1D
@@ -279,15 +280,12 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
  * atoms
  */
 int TrapArray::getRelaventMoves() {
-
     int x = 0;
-
     for (int i = ((Nt_y - Nt_x) / 2); i < ((Nt_y - Nt_x) / 2) + Nt_x; i++) {
         for (auto j : traps[i]) {
             x += j->getAlpha() + j->getNu();
         }
     }
-
     return x;
 }
 
@@ -297,9 +295,9 @@ int TrapArray::getRelaventMoves() {
  * lifetime
  */
 
-void TrapArray::performLoss() {
+size_t TrapArray::performLoss() {
     double counter = 0;
-    int total = 0;
+    size_t total = 0;
 
     for (size_t i = 0; i < this->Nt_y; ++i) {
         for (size_t j = 0; j < this->Nt_x; ++j) {
@@ -307,7 +305,7 @@ void TrapArray::performLoss() {
                 continue;
             }
             double loss_value =
-                this->traps[i][j]->getLoss(this->getTotalMoves());
+                this->traps[i][j]->getLoss(total_moves);
             // Seed the random number generator
             std::random_device rd;
             std::mt19937 gen(rd());
@@ -315,7 +313,6 @@ void TrapArray::performLoss() {
 
             // Generate a random number
             double random = dis(gen);
-            total += 1;
             counter += loss_value;
 
             // If the loss value is lower than the random number, the atom is
@@ -323,11 +320,13 @@ void TrapArray::performLoss() {
             if (loss_value < random) {
                 delete this->traps[i][j];
                 this->traps[i][j] = NO_ATOM;
+                total += 1;
             } else {
                 this->traps[i][j]->clearCorruption();
             }
         }
     }
+    return total;
 }
 
 /**

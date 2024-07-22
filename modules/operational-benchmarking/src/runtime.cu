@@ -5,41 +5,20 @@
 #include <cstring>
 #include <string>
 #include <chrono>
-
-void create_center_target(std::vector<int32_t> &target_config, int num_trap,
-                          int num_target) {
-
-    int start_index = (num_trap / 2) - (num_target / 2);
-
-    for (int offset = 0; offset < num_target; ++offset) {
-        target_config[start_index + offset] = 1;
-    }
-}
-std::vector<int32_t> get_target_config(std::string target, int num_trap,
-                                       int num_target) {
-    std::vector<int32_t> target_config(num_trap, 0);
-
-    if (target == "center compact") {
-        create_center_target(target_config, num_trap, num_target);
-        return target_config;
-    } else {
-        std::cerr << "ERROR: Desired configuration not available" << std::endl;
-    }
-}
+#include <random>
 
 /**
  * @brief Creates target in the center of the trap array, filling the width of
  * the array
  */
 
-void create_rectangular_target(std::vector<int32_t> &target_config,
-                               int num_trap, int num_target, int Nt_x,
+void create_rectangular_target(std::vector<int32_t> &target_config, int num_target, int Nt_x,
                                int Nt_y) {
 
-    int target_width = num_target / Nt_x;
+    int target_height = num_target / Nt_x;
 
-    int start_row = (Nt_y - target_width) / 2;
-    int end_row = start_row + num_trap / Nt_x;
+    int start_row = (Nt_y - target_height) / 2;
+    int end_row = start_row + target_height;
 
     int start_index = start_row * Nt_x;
 
@@ -56,9 +35,9 @@ void create_rectangular_target(std::vector<int32_t> &target_config,
  * @return int
  */
 int main(int argc, char *argv[]) {
-    if (argc != 7) {
+    if (argc != 8) {
         std::cout << "Usage is operational_benchmarking <algorithm> <Nt_x> <Nt_y> <num_target> "
-                     "<num_trials> <num_repititions>"
+                     "<num_trials> <num_repititions> <batching>"
                   << std::endl;
         return 1;
     }
@@ -69,10 +48,11 @@ int main(int argc, char *argv[]) {
     int num_target = std::stoi(argv[4]);
     int num_trials = std::stoi(argv[5]);
     int num_reps = std::stoi(argv[6]);
+    bool batching = std::stoi(argv[7]);
     Reconfig::Algo algo{Util::get_algo_enum(algorithm)};
 
-    std::vector<int32_t> target_config(Nt_x * Nt_y);
-    create_rectangular_target(target_config, Nt_x * Nt_y, num_target, Nt_x,
+    std::vector<int32_t> target_config(Nt_x * Nt_y, 0);
+    create_rectangular_target(target_config, num_target, Nt_x,
                               Nt_y);
 
     Reconfig::Solver solver;
@@ -84,14 +64,21 @@ int main(int argc, char *argv[]) {
         // Create initial atom configuration with 60% loading efficiency
         std::vector<int32_t> trial_config(Nt_x * Nt_y);
         double loading_efficiency = 0.6;
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist6(0, RAND_MAX);
+
         for (auto &it : trial_config) {
-            it = (loading_efficiency >= (((double)rand()) / RAND_MAX)) ? 1 : 0;
+            it = (loading_efficiency >= (((double)dist6(rng)) / RAND_MAX)) ? 1 : 0;
         }
         if (Util::count_num_atoms(trial_config) >= num_target) {
-            // Start repetition loop
+        // Start repetition loop
             for (int rep = 0; rep < num_reps; ++rep) {
                 solver.start_solver(algo, trial_config, target_config);
-                data.push_back(Util::Collector::get_instance()->get_module("III-Matching"));
+                if (batching) {
+                    solver.gen_moves_list(algo, true);
+                }
+                data.push_back(batching ? Util::Collector::get_instance()->get_module("III-Matching") + Util::Collector::get_instance()->get_module("III-Batching"):Util::Collector::get_instance()->get_module("III-Matching"));
                 Util::Collector::get_instance()->clear_timers();
             }
         }
