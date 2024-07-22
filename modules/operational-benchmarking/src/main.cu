@@ -1,4 +1,3 @@
-#include "JsonWrapper.h"
 #include "Solver.h"
 #include "llrs-lib/Settings.h"
 #include "trap-array.h"
@@ -56,44 +55,33 @@ void create_rectangular_target(std::vector<int32_t> &target_config,
  * @return int
  */
 int main(int argc, char *argv[]) {
-    if (argc != 5) {
-        std::cout << "Usage is operational_benchmarking <problem_file_path> "
-                     "<num_trials> <num_repititions> <batched> "
+    if (argc != 12) {
+        std::cout << "Usage is operational_benchmarking "
+                     "<algorithm> <Ntx> <Nty> <num_target> <loading_efficiency> "
+                     "<alpha> <nu> <lifetime> <num_trials> <num_repititions> <batched>"
                   << std::endl;
         return 1;
     }
 
-    std::string file_path{argv[1]};
-    int num_trials = std::stoi(argv[2]);
-    int num_reps = std::stoi(argv[3]);
-    bool batched = std::stoi(argv[4]);
-
-    // Now read file and convert to JSON object
-    Util::JsonWrapper json_file(file_path);
-    std::string algorithm = json_file.read_problem_algo();
+    std::string algorithm = argv[1];
     Reconfig::Algo algo{Util::get_algo_enum(algorithm)};
+    int Nt_x = std::stoi(argv[2]);
+    int Nt_y = std::stoi(argv[3]);
+    int num_target = std::stoi(argv[4]);
+    double loading_efficiency = std::stod(argv[5]);
+    double loss_params_alpha = std::stod(argv[6]);
+    double loss_params_nu = std::stod(argv[7]);
+    double lifetime = std::stod(argv[8]);
+    int num_trials = std::stoi(argv[9]);
+    int num_reps = std::stoi(argv[10]);
+    bool batched = std::stoi(argv[11]);
 
-    // Read in initial config, target config from JSON object and problem
-    // regions
-    int Nt_x = json_file.read_problem_Nt_x();
-    int Nt_y = json_file.read_problem_Nt_y();
-    const int num_target = json_file.read_problem_num_target();
     std::vector<int32_t> target_config(Nt_x * Nt_y);
-
-    // creates a symmetrical rectangular target configuration, filling the width
-    // of the trap array
-
     create_rectangular_target(target_config, Nt_x * Nt_y, num_target, Nt_x,
                               Nt_y);
-
-    // Read configurations from JSON file
-    int required_num = Util::count_num_atoms(target_config);
-    double loss_params_alpha = json_file.read_problem_alpha();
-    double loss_params_nu = json_file.read_problem_nu();
-    double lifetime = json_file.read_problem_lifetime();
+    int required_num = num_target;
 
     int successes = 0;
-
     bool failure = false;
 
     // Start trial loop
@@ -102,7 +90,6 @@ int main(int argc, char *argv[]) {
 
         // Create initial atom configuration with 60% loading efficiency
         std::vector<int32_t> trial_config(Nt_x * Nt_y);
-        double loading_efficiency = json_file.read_loading_efficiency();
         for (auto &it : trial_config) {
             it = (loading_efficiency >= (((double)rand()) / RAND_MAX)) ? 1 : 0;
         }
@@ -124,8 +111,7 @@ int main(int argc, char *argv[]) {
                 solver.setup(Nt_x, Nt_y, 32);
 
                 // Initialize trap array object
-                TrapArray trap_array =
-                    TrapArray(Nt_x, Nt_y, rep_config, loss_params_alpha,
+                TrapArray trap_array (Nt_x, Nt_y, rep_config, loss_params_alpha,
                               loss_params_nu, lifetime);
 
                 failure = false;
