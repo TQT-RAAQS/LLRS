@@ -156,8 +156,14 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
     case LINEAR_EXACT_V2_GPU_1D:
         {
             double time = solve_gpu
-                (&initial[0], &target[0], initial.size(), num_atoms_initial,
-                num_atoms_target, &matching_src[0], &matching_dst[0]);
+                (initial.data(), target.data(), initial.size(), num_atoms_initial,
+                num_atoms_target, matching_src.data(), matching_dst.data(), src.data(), dst.data(), sol_length);
+            for (int i = 0; i < 1; i++) {
+                time = solve_gpu
+                (initial.data(), target.data(), initial.size(), num_atoms_initial,
+                num_atoms_target, matching_src.data(), matching_dst.data(), src.data(), dst.data(), sol_length);
+            }
+            
             GET_EXTERNAL_TIME("III-Matching", time);
             GET_EXTERNAL_TIME("III-Batching", 0);
         }
@@ -305,8 +311,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
     }
     case BIRD_CPU_2D:
     case REDREC_GPU_V3_2D:
-    case REDREC_CPU_V3_2D: 
-    case ARO_CPU_2D: {
+    case REDREC_CPU_V3_2D: {
         START_TIMER("III-Batching");
         std::vector<int> single_atom_start, single_atom_end, single_atom_dir;
         int i = 0;
@@ -408,6 +413,169 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
         }
         END_TIMER("III-Batching");
         break;
+    }
+    case ARO_CPU_2D: {
+        START_TIMER("III-Batching");
+        std::vector<int> single_atom_start, single_atom_end, single_atom_dir;
+        int i = 0;
+        while (i < src.size()) {
+            single_atom_start.push_back(src[i]);
+            single_atom_dir.push_back(dst[i] - src[i]);
+            while (++i < src.size()) {
+                bool batchable = dst[i - 1] == src[i];
+                bool horizontal = abs(src[i-1] - dst[i-1]) == 1;
+                bool same_dir = src[i - 1] - dst[i - 1] == src[i] - dst[i];
+                if (!batchable || horizontal || !same_dir)
+                    break;
+            }
+            single_atom_end.push_back(dst[i - 1]);
+        }
+
+        /// creating binary array to track locations of atoms between moves
+        std::vector<int> atoms{initial};
+
+        i = 0;
+        while (i < single_atom_start.size()) {
+            int min_trap = std::min(single_atom_start[i], single_atom_end[i]);
+            int max_trap = std::max(single_atom_start[i], single_atom_end[i]);
+            bool horizontal = abs(single_atom_dir[i]) == 1;
+
+            int j = i + 1;
+            if (!horizontal) {
+                while (j < single_atom_start.size()) {
+                    bool same_dir =
+                        (single_atom_dir[j] == single_atom_dir[j - 1]);
+                    bool same_dist =
+                        ((single_atom_end[j] - single_atom_start[j]) ==
+                        (single_atom_end[j - 1] - single_atom_start[j - 1]));
+                    bool same_offset = ((single_atom_start[j] % Nt_x) ==
+                                        (single_atom_start[j - 1] % Nt_x));
+                    if (!same_dir || !same_offset)
+                        break;
+
+                    int new_min =
+                        std::min(min_trap, std::min(single_atom_start[j],
+                                                    single_atom_end[j]));
+                    int new_max =
+                        std::max(max_trap, std::max(single_atom_start[j],
+                                                    single_atom_end[j]));
+                    bool moving_extra_atom = false;
+                    if (single_atom_dir[i] > 0) { // dest > src -> downward
+                        if (new_min != min_trap || new_max != max_trap) {
+                            int lower_range = 0;
+                            int upper_range = 0;
+                            if (new_min == min_trap) {
+                                lower_range = max_trap;
+                                upper_range = new_max - Nt_x;
+                            } else if (new_max == max_trap) {
+                                lower_range = new_min + Nt_x;
+                                upper_range = min_trap;
+                            }
+                            for (int atom_idx = lower_range;
+                                atom_idx < upper_range; atom_idx += Nt_x) {
+                                if (atoms[atom_idx] == 1) {
+                                    moving_extra_atom = true;
+                                    break;
+                                }
+                            }
+                        }
+                    } else if (single_atom_dir[i] < 0) // dest < src -> upward
+                        if (new_min != min_trap || new_max != max_trap) {
+                            int lower_range = 0;
+                            int upper_range = 0;
+                            if (new_min == min_trap) {
+                                lower_range = max_trap + Nt_x;
+                                upper_range = new_max;
+                            } else if (new_max == max_trap) {
+                                lower_range = new_min + Nt_x + Nt_x;
+                                upper_range = min_trap + Nt_x;
+                            }
+                            for (int atom_idx = lower_range;
+                                atom_idx < upper_range; atom_idx += Nt_x) {
+                                if (atoms[atom_idx] == 1) {
+                                    moving_extra_atom = true;
+                                    break;
+                                }
+                            }
+                        }
+                    if (moving_extra_atom)
+                        break; // breka out if we are moving an extra atom
+                    min_trap = std::min(min_trap, std::min(single_atom_start[j],
+                                                        single_atom_end[j]));
+                    max_trap = std::max(max_trap, std::max(single_atom_start[j],
+                                                        single_atom_end[j]));
+                    ++j;
+                }
+            }
+
+            /// update existing locations of atoms
+            for (int k = i; k < j; k++) {
+                atoms[single_atom_start[k]] = 0;
+                atoms[single_atom_end[k]] = 1;
+            }
+
+            int offset = min_trap % Nt_x;
+            int index = min_trap / Nt_x;
+            Synthesis::WfMoveType displacement_page;
+
+            if (horizontal) {
+                displacement_page = (single_atom_dir[i] == 1)
+                                        ? Synthesis::RIGHT_2D
+                                        : Synthesis::LEFT_2D;
+
+                ret.emplace_back(Synthesis::EXTRACT_2D, index,
+                                single_atom_start[i] % Nt_x, 1, 0);
+                ret.emplace_back(displacement_page, index, offset, 1, 0);
+                ret.emplace_back(Synthesis::IMPLANT_2D, index,
+                                single_atom_end[i] % Nt_x, 1, 0);
+                ++i;
+                continue;
+            }
+            bool up = (single_atom_dir[i] > 0);
+            displacement_page = up ? Synthesis::UP_2D : Synthesis::DOWN_2D;
+            int extraction_extent = up ? max_trap / Nt_x + 1 : Nt_y - index;
+            ret.emplace_back(Synthesis::EXTRACT_2D, up ? 0 : index, offset,
+                            extraction_extent,
+                            0); // block_size == extraction extent here
+            /// it may seem like this is turning the time complexity of the
+            /// translation into quadratic however, it's really just reordering
+            /// the moves returned by the algorithm it's quadratic w.r.t. size
+            /// of single_atom_* but still linear w.r.t. size of _src & _dst
+            while (true) {
+                min_trap = Nt_x * Nt_y;
+                max_trap = -1;
+                for (int k = i; k < j; ++k) {
+                    if (single_atom_start[k] != single_atom_end[k]) {
+                        min_trap = std::min(min_trap,
+                                            std::min(single_atom_start[k],
+                                                    single_atom_start[k] +
+                                                        single_atom_dir[i]));
+                        max_trap = std::max(max_trap,
+                                            std::max(single_atom_start[k],
+                                                    single_atom_start[k] +
+                                                        single_atom_dir[i]));
+                        single_atom_start[k] += single_atom_dir[i];
+                    } else {
+                        if ((min_trap == Nt_x * Nt_y) && (max_trap == -1)) {
+                            continue;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                if (max_trap == -1)
+                    break;
+                int blk_size = (max_trap - min_trap) / Nt_x;
+                ret.emplace_back(displacement_page, min_trap / Nt_x, offset,
+                                blk_size, extraction_extent);
+            }
+            ret.emplace_back(Synthesis::IMPLANT_2D, up ? 0 : index, offset,
+                            extraction_extent,
+                            0); // block_size == extraction_extent here
+            i = j;
+        }
+        END_TIMER("III-Batching");
+        return ret;
     }
     default:
         throw std::invalid_argument("Algorithm not supported (gen_moves_list)");
@@ -527,8 +695,8 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_unbatched(Reconfig:
         }
         case REDREC_CPU_V3_2D:
         case REDREC_GPU_V3_2D:
-        case ARO_CPU_2D:
-        case BIRD_CPU_2D:{
+        case BIRD_CPU_2D:
+        case ARO_CPU_2D: {
             for (size_t k = 0; k < src.size();) {
                 bool is_red_not_rec = abs(src[k] - dst[k]) ==
                                     1; // determines if it is a redistribution
@@ -584,7 +752,6 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_unbatched(Reconfig:
         }
     }
     return ret;
-
 }
 
 /**
@@ -643,7 +810,7 @@ extern "C" void solver_wrapper_extraction_extent(char *algo_s, int Nt_x, int Nt_
 
     solver.start_solver(algo, current_config, target_config);
 
-    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, false);
+    std::vector<Reconfig::Move> moves_list = solver.gen_moves_list(algo, true);
     *sol_len = moves_list.size();
 
     for (int i = 0; i < moves_list.size(); ++i) {
