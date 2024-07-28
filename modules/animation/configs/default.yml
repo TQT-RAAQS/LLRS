@@ -1,4 +1,4 @@
-frames_per_move: 2 # note that the frames_per_moves-1st frame is the moment before the move is complete
+frames_per_move: 1 # note that the frames_per_moves-1st frame is the moment before the move is complete
 gif_duration: 0.04 # frames per second
 x_scale: 10 # x distance between the trap columns
 y_scale: 10 # distance between the trap rows
@@ -8,14 +8,16 @@ trap: # information on the trap circles in the animation
   radius: 2
   edgecolor: black # can be in any format, none, string, etc...
   facecolor: none # can be in any format, none, string, etc...
-  lw: 0.5
+  target_edgecolor: '#2E8B57' 
+  target_facecolor:  '#AFE1AF'
+  lw: 0.2
 atom_static: # information on the atom circles in the static traps
-  radius: 2
+  radius: 1
   edgecolor: '#000000' # must be in hex with 6 digits
-  facecolor: '#1D3354' # must be in hex with 6 digits
+  facecolor: '#000000' # must be in hex with 6 digits
   lw: 0
 atom_dynamic: # information on the atom circles in the static traps
-  radius: 2
+  radius: 1
   edgecolor: '#000000' # must be in hex with 6 digits
   facecolor: '#E9CE2C' # must be in hex with 6 digits
   lw: 0 # mine width
