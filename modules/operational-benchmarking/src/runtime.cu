@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
                 }
                 data.push_back(batching ? Util::Collector::get_instance()->get_module("III-Matching") + Util::Collector::get_instance()->get_module("III-Batching"):Util::Collector::get_instance()->get_module("III-Matching"));
                 Util::Collector::get_instance()->clear_timers();
+                solver.reset();
             }
         }
     }
