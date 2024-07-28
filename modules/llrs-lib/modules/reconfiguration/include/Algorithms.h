@@ -1,3 +1,5 @@
+#ifndef ALGORITHMS_H
+#define ALGORITHMS_H
 /*
 The declarations and repackagings for the algorithms that are used in the Solver
 module
@@ -23,13 +25,12 @@ extern "C" void lin_exact_1d_cpu_v2_block_output_generator(
     int *dst, int *blk_sizes, int *batch_indices, int *num_batches,
     int *sol_length);
 
-double solve_gpu(int *sourceFlags, int *targetFlags, int numTraps,
-                           int numSources, int numTargets, int *OutSources_cpu,
-                           int *OutTargets_cpu);
-void redrec_v2(int *initial, int initial_atom_count, int Nt_x,
+float solve_gpu(int* sourceFlags, int* targetFlags, int numTraps, int numSources, int numTargets, int* outSources, int* outTargets, int* outputMovesSource, int* outputMovesTarget, int* movesCounter);
+
+inline void redrec_v2(int *initial, int initial_atom_count, int Nt_x,
                            int Nt_y, int R_h, int *src, int *dst,
                            int *batch_indices, int *num_batches,
-                           int *sol_length);
+                           int *sol_length) {}
 
 extern "C" void redrec_cpu(int gridHeight, int width, int reservoirHeight,
                            int *sourceFlags, int *OutSources_cpu,
@@ -62,3 +63,4 @@ extern "C" void hungarian_colav(
     int order_moves, int use_greedy_isolation, int use_unit_edge_weights,
     int output_hungarian_colav_parameters, int *src_batched, int *dst_batched,
     int *batchPtr_batched, int *num_batches_batched, int *sol_length_batched);
+#endif
