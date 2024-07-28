@@ -10,7 +10,7 @@ from typing import List
 from io import BytesIO
 import imageio
 from tqdm import tqdm
-from matplotlib.patches import Circle
+from matplotlib.patches import Rectangle, Circle
 
 class Animator:
 
@@ -36,9 +36,8 @@ class Animator:
         for move_iter in tqdm(range(len(moves))):
             move = moves[move_iter]
             if move_iter >= 0:
-                frames = self._get_move_frames_and_apply_move(move)
+                frames = self._get_move_frames_and_apply_move(move, address, file_name)
                 for i in range(len(frames)):
-                    imageio.imwrite(f"{address}/{file_name}.png", frames[i])
                     file_name += 1
             else:
                 self.lattice.apply_move(move)
@@ -53,33 +52,35 @@ class Animator:
 
         return frames
     
-    def _get_move_frames_and_apply_move(self, move: Move):
+    def _get_move_frames_and_apply_move(self, move: Move, address, file_name):
         frames = []
         title = "" 
-
         fixed_atoms, moving_atoms_src, moving_atoms_dst = self._apply_move_to_lattice(move)
 
         for i in range(self.frames_per_move + 1):
-            fig, ax = plt.subplots(dpi=500)
+            fig, ax = plt.subplots(dpi=1500)
 
             ax.axis("off")
 
             plt.title(title)
             plt.xlim([self.x0 - self.padding, self.x0 + self.padding + self.x_scale * (self.lattice.N_x-1)])
             plt.ylim([self.y0 - self.padding, self.y0 + self.padding + self.y_scale * (self.lattice.N_y-1)])
+            figure_width_cm = 4.3
+            figure_height_cm = 2.8
+            figure_width_in = figure_width_cm / 2.54
+            figure_height_in = figure_height_cm / 2.54
+            fig.set_size_inches((figure_height_in, figure_width_in))
+    
             ax.set_aspect('equal')
-
-            self._plot_traps(fig, ax)
+            extract = (move.move_type == MoveType.EXTRACT or move.move_type == MoveType.IMPLANT) and i != self.frames_per_move
+            self._plot_traps(fig, ax, extract)
             self._plot_atoms(fig, ax, move, fixed_atoms, moving_atoms_src, moving_atoms_dst, i)
 
             ax.invert_yaxis()
 
-            buf = BytesIO()
-            plt.savefig(buf, format = "png")
-            buf.seek(0)
-            frames += [imageio.imread(buf)]
-            buf.close()
-
+            plt.rc('pdf', fonttype=42)
+            plt.savefig(f"{address}/{file_name + i:0{4}d}.pdf", format = "pdf")
+            frames += [imageio.imread(f"{address}/{file_name + i:0{4}d}.pdf")]
             plt.close()
 
         return frames
@@ -134,11 +135,15 @@ class Animator:
         
         return f"{move_name} x={move.index_x} y={move.index_y} block={move.block_size} ee={move.extraction_extent}"
     
-    def _plot_traps(self, fig, ax):
+    def _plot_traps(self, fig, ax, extract: bool = False):
+        quarter = self.lattice.N_y / 4
         for i in range(self.lattice.N_y):
             for j in range(self.lattice.N_x):
-                circle = self._get_trap_circle(j, i)
+                circle = self._get_trap_circle(j, i, i >= quarter and i < 3 * quarter)
                 ax.add_patch(circle)
+                if self.lattice.get_trap(j, i).trap_state == AtomState.DYNAMIC_TRAP and not extract:
+                    square = self._get_dynamic_square(j,i)
+                    ax.add_patch(square)
 
     def _plot_atoms(self,
                     fig, 
@@ -153,7 +158,6 @@ class Animator:
             atom_patch = self._get_static_circle(x, y) \
                 if self.lattice.get_trap(x, y).atom_state == AtomState.STATIC_TRAP else \
                 self._get_dynamic_circle(x, y)
-            
             ax.add_patch(atom_patch)
         
         if move.move_type in [MoveType.EXTRACT, MoveType.IMPLANT]:
@@ -182,10 +186,18 @@ class Animator:
 
                 ax.add_patch(atom_patch)
 
-    def _get_trap_circle(self, x: int, y: int) -> Circle:
+    def _get_trap_circle(self, x: int, y: int, target) -> Circle:
         return Circle(self._get_coordinates_from_index(x, y),
                                 self.trap_radius,
-                                edgecolor=self.trap_edgecolor, 
+                                edgecolor= self.trap_target_edgecolor if target else self.trap_edgecolor, 
+                                facecolor= self.trap_target_facecolor if target else self.trap_facecolor, 
+                                linewidth=self.trap_lw)
+
+    def _get_dynamic_square(self, x: int, y: int) -> Circle:
+        return Rectangle([self._get_coordinates_from_index(x, y)[t] - 2.5 for t in [0,1]],
+                                5,
+                                5,
+                                edgecolor=self.atom_dynamic_facecolor, 
                                 facecolor=self.trap_facecolor, 
                                 linewidth=self.trap_lw)
 
@@ -197,11 +209,12 @@ class Animator:
                                 linewidth=self.atom_static_lw)
     
     def _get_dynamic_circle(self, x: int, y: int) -> Circle:
-            return Circle(self._get_coordinates_from_index(x, y),
-                                self.atom_dynamic_radius,
-                                edgecolor=self.atom_dynamic_edgecolor, 
+            return Rectangle([self._get_coordinates_from_index(x, y)[t] - self.atom_static_radius for t in [0,1]],
+                                self.atom_static_radius *2,
+                                self.atom_static_radius *2,
+                                edgecolor=self.atom_dynamic_facecolor, 
                                 facecolor=self.atom_dynamic_facecolor, 
-                                linewidth=self.atom_dynamic_lw)
+                                linewidth=self.trap_lw)
     
     def _get_static_to_dynamic_circle(self, x: int, y: int, t: float) -> Circle:
         static_fc = np.array([int(self.atom_static_facecolor[i:i+2], 16) / 255.0 for i in (1, 3, 5)])

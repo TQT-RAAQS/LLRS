@@ -70,6 +70,7 @@ class AtomicLattice:
 
     def _extract(self, move: Move):
         for i in range(move.block_size):
+            self.get_trap(move.index_x, move.index_y + i).switch_trap(AtomState.DYNAMIC_TRAP)
             if self.get_trap(move.index_x, move.index_y + i).is_occupied():
                 self.get_trap(move.index_x, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
 
@@ -77,15 +78,18 @@ class AtomicLattice:
 
     def _implant(self, move: Move):
         for i in range(move.block_size):
+            self.get_trap(move.index_x, move.index_y + i).switch_trap(AtomState.STATIC_TRAP)
             if self.get_trap(move.index_x, move.index_y + i).is_occupied():
                 self.get_trap(move.index_x, move.index_y + i).occupy_with_atom(AtomState.STATIC_TRAP)
-
+        for i in range (self.N_y):
+            self.get_trap(move.index_x, i).switch_trap(AtomState.STATIC_TRAP)
         return [(move.index_x, move.index_y + i) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i).is_occupied()]
 
     def _right(self, move: Move):
         for i in range(move.block_size):
             if self.get_trap(move.index_x, move.index_y + i).is_occupied:
                 self.get_trap(move.index_x, move.index_y + i).empty_trap()
+                self.get_trap(move.index_x, move.index_y + i).switch_trap(AtomState.STATIC_TRAP)
                 self.get_trap(move.index_x + 1, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
 
         return [(move.index_x, move.index_y + i) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i).is_occupied()]
@@ -94,6 +98,7 @@ class AtomicLattice:
         for i in range(move.block_size):
             if self.get_trap(move.index_x + 1, move.index_y + i).is_occupied:
                 self.get_trap(move.index_x + 1, move.index_y + i).empty_trap()
+                self.get_trap(move.index_x + 1, move.index_y + i).switch_trap(AtomState.STATIC_TRAP)
                 self.get_trap(move.index_x, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
 
         return [(move.index_x + 1, move.index_y + i) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i).is_occupied()]
@@ -103,7 +108,8 @@ class AtomicLattice:
             if self.get_trap(move.index_x, move.index_y + i + 1).is_occupied():
                 self.get_trap(move.index_x, move.index_y + i + 1).empty_trap()
                 self.get_trap(move.index_x, move.index_y + i).occupy_with_atom(AtomState.DYNAMIC_TRAP)
-
+        for i in range (move.extraction_extent):
+            self.get_trap(move.index_x, self.N_y - 1 - i).switch_trap(AtomState.DYNAMIC_TRAP)
 
         return [(move.index_x, move.index_y + i + 1) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i).is_occupied()]
 
@@ -112,6 +118,8 @@ class AtomicLattice:
             if self.get_trap(move.index_x, move.index_y + i).is_occupied():
                 self.get_trap(move.index_x, move.index_y + i).empty_trap()
                 self.get_trap(move.index_x, move.index_y + i + 1).occupy_with_atom(AtomState.DYNAMIC_TRAP)
+        for i in range (move.extraction_extent):
+            self.get_trap(move.index_x, i).switch_trap(AtomState.DYNAMIC_TRAP)
 
         return [(move.index_x, move.index_y + i) for i in range(move.block_size) if self.get_trap(move.index_x, move.index_y + i + 1).is_occupied()]
 
@@ -158,28 +166,35 @@ class AtomicLattice:
         target_not_width = max(self.N_x, self.N_y)
         offset = int((target_not_width - target_width) /2)
         target = []
-        for j in range(offset * target_width):
-            target.append(0)
-        for j in range(target_width * target_width):
-            target.append(1)
-        for j in range(offset * target_width):
-            target.append(0)
+        if (target_width == 1): 
+            for j in range(target_not_width//4):
+                target.append(0)
+            for j in range(target_not_width//2):
+                target.append(1)
+            for j in range(target_not_width//4):
+                target.append(0)
+        else:
+            for j in range(offset * target_width):
+                target.append(0)
+            for j in range(target_width * target_width):
+                target.append(1)
+            for j in range(offset * target_width):
+                target.append(0)
         targ_arr = array('i', target)
         targ_ptr = cast(targ_arr.buffer_info()[0], POINTER(c_int))
         dll = CDLL(solver_wrapper_so_file)  # Replace with the path to your SO file
 
-        op_size = 4 # type, index, offset, block_size
+        op_size = 5 # type, index, offset, block_size, extraction_extent
         result = (c_int * (op_size * self.N_x * self.N_y * self.N_x * self.N_y))()
         sol_len = c_int(0)
-        func = dll.solver_wrapper
+        func = dll.solver_wrapper_extraction_extent
         func.argtypes = [c_char_p, c_int, c_int, POINTER(c_int), POINTER(c_int), POINTER(c_int), POINTER(c_int)]
         func(algorithm.encode(), self.N_x, self.N_y, init_ptr, targ_ptr, result, byref(sol_len))
         solver_output = [result[i] for i in range(sol_len.value*op_size)]
         aod_ops = []
-        op_size = 4 
         raw_ops = [solver_output[i:i+op_size] for i in range(0, len(solver_output), op_size)]
         for raw_op in raw_ops:
-            move_type, index, offset, block_size = raw_op 
-            aod_ops.append(Move(MoveType(move_type), index_y=index, index_x=offset, block_size=block_size, extraction_extent=0)) 
+            move_type, index, offset, block_size, ee = raw_op 
+            aod_ops.append(Move(MoveType(move_type), index_y=index, index_x=offset, block_size=block_size, extraction_extent=ee)) 
         return aod_ops
 
