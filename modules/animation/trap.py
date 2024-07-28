@@ -9,10 +9,15 @@ class Trap:
 
     occupied: bool = False
     atom_state: AtomState = None
+    trap_state: AtomState = None
 
     def occupy_with_atom(self, atom_state: AtomState):
         self.occupied = True
         self.atom_state = atom_state
+        self.trap_state = atom_state
+    
+    def switch_trap(self, trap_state: AtomState):
+        self.trap_state = trap_state
 
     def empty_trap(self):
         self.occupied = False
