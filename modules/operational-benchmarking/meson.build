@@ -54,6 +54,7 @@ op_bench_operations_exe = executable(
     'op-bench-operations',
     op_bench_operations_src,
     include_directories: [op_bench_inc],
+    link_with: [op_bench_trap_array],
     dependencies: [solver_runtime_dep, utility_dep],
 )
 
