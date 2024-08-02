@@ -32,7 +32,7 @@ default_loss_atom_params  = { "p_alpha" : 0.98,
 
 default_loss_env_params = { "t_alpha" : 10e-6,
                         "t_nu" : 10e-6,
-                        "t_latency" : 0.02,}
+                        "t_latency" : 0.00,}
 
 
 '''
