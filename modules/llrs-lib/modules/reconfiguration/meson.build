@@ -5,8 +5,6 @@ project(
     subproject_dir: 'algorithms',
 )
 
-add_project_arguments('-gencode arch=compute_75,code=sm_75' , language: 'cuda')
-
 # include directory
 llrs_lib_reconfiguration_inc = include_directories('include')
 
@@ -23,5 +21,4 @@ reconfiguration_provided_lib = meson.current_source_dir() / 'lib' / '*'
 llrs_lib_reconfiguration_dep = declare_dependency(
     include_directories: llrs_lib_reconfiguration_inc,
     link_args: [reconfiguration_provided_lib],
-    dependencies: [linear_exact_gpu_dep, redrec_v2_dep]
 )

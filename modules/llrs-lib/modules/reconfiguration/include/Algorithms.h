@@ -38,7 +38,7 @@ extern "C" void redrec_cpu(int gridHeight, int width, int reservoirHeight,
                            int *outputMovesTarget_cpu, int *moves_counter,
                            int *path_system, int *path_length);
 
-extern "C" float redrec_gpu(int gridHeight, int width, int reservoirHeight,
+double redrec_gpu(int gridHeight, int width, int reservoirHeight,
                              int *sourceFlags, int *outSources, int *outTargets,
                              int *outputMovesSource, int *outputMovesTarget,
                              int *movesCounter, int *pathSystem,
