@@ -23,7 +23,7 @@ class LossParams(object):
                  p_nu=0.985,
                  t_alpha=10*1e-6,
                  t_nu=10 * 1e-6,
-                 t_latency=0.02,
+                 t_latency=0.00,
                  t_lifetime = 60):
         
         self.p_alpha = p_alpha
