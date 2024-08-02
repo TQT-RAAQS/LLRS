@@ -97,10 +97,10 @@ class TrapArray {
      * @brief Return the total number of moves performed by the trap_array
      * @return Total number of moves
      */
-    size_t getTotalOps() {return total_alpha_ops + total_nu_ops;}
-    size_t getTotalMoves() {return total_moves;}
-    size_t getTotalAlphaMoves() {return total_alpha_ops;}
-    size_t getTotalNuMoves() {return total_nu_ops;} 
+    size_t getTotalOps() { return total_alpha_ops + total_nu_ops; }
+    size_t getTotalMoves() { return total_moves; }
+    size_t getTotalAlphaMoves() { return total_alpha_ops; }
+    size_t getTotalNuMoves() { return total_nu_ops; }
 
     /**
      * @brief Perform loss on the Trap Array based on the moves on each atom and

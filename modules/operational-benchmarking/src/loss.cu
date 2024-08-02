@@ -35,10 +35,11 @@ void create_rectangular_target(std::vector<int32_t> &target_config,
  */
 int main(int argc, char *argv[]) {
     if (argc != 9) {
-        std::cout << "Usage is operational_benchmarking "
-                     "<algorithm> <Ntx> <Nty> <num_target> <loading_efficiency> "
-                     "<alpha> <nu> <num_repititions>"
-                  << std::endl;
+        std::cout
+            << "Usage is operational_benchmarking "
+               "<algorithm> <Ntx> <Nty> <num_target> <loading_efficiency> "
+               "<alpha> <nu> <num_repititions>"
+            << std::endl;
         return 1;
     }
 
@@ -68,9 +69,10 @@ int main(int argc, char *argv[]) {
         it = (loading_efficiency >= (((double)dist6(rng)) / RAND_MAX)) ? 1 : 0;
     }
     uint num_atom = Util::count_num_atoms(trial_config);
-    std::vector<uint> lifetimes {1,3,6,9,12,30,60,90,120,300,600, 900, 1200};
+    std::vector<uint> lifetimes{1,  3,   6,   9,   12,  30,  60,
+                                90, 120, 300, 600, 900, 1200};
 
-    for(auto lifetime: lifetimes) {
+    for (auto lifetime : lifetimes) {
         std::vector<uint> num_losts;
         num_losts.reserve(num_reps);
         // Start repetition loop
@@ -87,8 +89,8 @@ int main(int argc, char *argv[]) {
                 solver.setup(Nt_x, Nt_y, 32);
 
                 // Initialize trap array object
-                TrapArray trap_array (Nt_x, Nt_y, rep_config, loss_params_alpha,
-                                loss_params_nu, lifetime);
+                TrapArray trap_array(Nt_x, Nt_y, rep_config, loss_params_alpha,
+                                     loss_params_nu, lifetime);
 
                 failure = false;
                 // check if we meet the required target config
@@ -133,34 +135,40 @@ int main(int argc, char *argv[]) {
             for (size_t i = 0; i < num_reps; i++) {
                 data.push_back((double)num_losts[i] / num_atom);
             }
-            double mean = (double)std::accumulate(data.begin(), data.end(), 0.0) / data.size();
+            double mean =
+                (double)std::accumulate(data.begin(), data.end(), 0.0) /
+                data.size();
             std::vector<double> diffs;
             diffs.reserve(data.size());
             for (auto it : data) {
                 diffs.push_back(it - mean);
             }
-            double stddev = std::sqrt(
-            std::inner_product(diffs.begin(), diffs.end(), diffs.begin(), 0.0) /
-            (data.size() - 1));
+            double stddev =
+                std::sqrt(std::inner_product(diffs.begin(), diffs.end(),
+                                             diffs.begin(), 0.0) /
+                          (data.size() - 1));
             std::cout << mean << ", " << stddev;
         }
         std::cout << " - ";
         {
-            double mean = std::accumulate(num_losts.begin(), num_losts.end(), 0.0) / num_losts.size();
+            double mean =
+                std::accumulate(num_losts.begin(), num_losts.end(), 0.0) /
+                num_losts.size();
             std::vector<double> diffs;
             diffs.reserve(num_losts.size());
             for (auto it : num_losts) {
                 diffs.push_back(it - mean);
             }
-            double stddev = std::sqrt(
-            std::inner_product(diffs.begin(), diffs.end(), diffs.begin(), 0.0) /
-            (num_losts.size() - 1));
+            double stddev =
+                std::sqrt(std::inner_product(diffs.begin(), diffs.end(),
+                                             diffs.begin(), 0.0) /
+                          (num_losts.size() - 1));
             std::cout << mean << ", " << stddev;
         }
         std::cout << " | ";
     }
     std::cout << std::endl;
-    for(auto lifetime: lifetimes) {
+    for (auto lifetime : lifetimes) {
         std::vector<uint> num_losts;
         num_losts.reserve(num_reps);
         // Start repetition loop
@@ -177,8 +185,8 @@ int main(int argc, char *argv[]) {
                 solver.setup(Nt_x, Nt_y, 32);
 
                 // Initialize trap array object
-                TrapArray trap_array (Nt_x, Nt_y, rep_config, loss_params_alpha,
-                                loss_params_nu, lifetime);
+                TrapArray trap_array(Nt_x, Nt_y, rep_config, loss_params_alpha,
+                                     loss_params_nu, lifetime);
 
                 failure = false;
                 // check if we meet the required target config
@@ -223,36 +231,39 @@ int main(int argc, char *argv[]) {
             for (size_t i = 0; i < num_reps; i++) {
                 data.push_back((double)num_losts[i] / num_atom);
             }
-            double mean = (double)std::accumulate(data.begin(), data.end(), 0.0) / data.size();
+            double mean =
+                (double)std::accumulate(data.begin(), data.end(), 0.0) /
+                data.size();
             std::vector<double> diffs;
             diffs.reserve(data.size());
             for (auto it : data) {
                 diffs.push_back(it - mean);
             }
-            double stddev = std::sqrt(
-            std::inner_product(diffs.begin(), diffs.end(), diffs.begin(), 0.0) /
-            (data.size() - 1));
+            double stddev =
+                std::sqrt(std::inner_product(diffs.begin(), diffs.end(),
+                                             diffs.begin(), 0.0) /
+                          (data.size() - 1));
             std::cout << mean << ", " << stddev;
         }
         std::cout << " - ";
         {
-            double mean = std::accumulate(num_losts.begin(), num_losts.end(), 0.0) / num_losts.size();
+            double mean =
+                std::accumulate(num_losts.begin(), num_losts.end(), 0.0) /
+                num_losts.size();
             std::vector<double> diffs;
             diffs.reserve(num_losts.size());
             for (auto it : num_losts) {
                 diffs.push_back(it - mean);
             }
-            double stddev = std::sqrt(
-            std::inner_product(diffs.begin(), diffs.end(), diffs.begin(), 0.0) /
-            (num_losts.size() - 1));
+            double stddev =
+                std::sqrt(std::inner_product(diffs.begin(), diffs.end(),
+                                             diffs.begin(), 0.0) /
+                          (num_losts.size() - 1));
             std::cout << mean << ", " << stddev;
         }
         std::cout << " | ";
     }
     std::cout << std::endl;
-
-
-
 
     return 0;
 }

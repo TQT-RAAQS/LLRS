@@ -25,12 +25,14 @@ extern "C" void lin_exact_1d_cpu_v2_block_output_generator(
     int *dst, int *blk_sizes, int *batch_indices, int *num_batches,
     int *sol_length);
 
-float solve_gpu(int* sourceFlags, int* targetFlags, int numTraps, int numSources, int numTargets, int* outSources, int* outTargets, int* outputMovesSource, int* outputMovesTarget, int* movesCounter);
+float solve_gpu(int *sourceFlags, int *targetFlags, int numTraps,
+                int numSources, int numTargets, int *outSources,
+                int *outTargets, int *outputMovesSource, int *outputMovesTarget,
+                int *movesCounter);
 
-inline void redrec_v2(int *initial, int initial_atom_count, int Nt_x,
-                           int Nt_y, int R_h, int *src, int *dst,
-                           int *batch_indices, int *num_batches,
-                           int *sol_length) {}
+inline void redrec_v2(int *initial, int initial_atom_count, int Nt_x, int Nt_y,
+                      int R_h, int *src, int *dst, int *batch_indices,
+                      int *num_batches, int *sol_length) {}
 
 extern "C" void redrec_cpu(int gridHeight, int width, int reservoirHeight,
                            int *sourceFlags, int *OutSources_cpu,
@@ -39,10 +41,9 @@ extern "C" void redrec_cpu(int gridHeight, int width, int reservoirHeight,
                            int *path_system, int *path_length);
 
 double redrec_gpu(int gridHeight, int width, int reservoirHeight,
-                             int *sourceFlags, int *outSources, int *outTargets,
-                             int *outputMovesSource, int *outputMovesTarget,
-                             int *movesCounter, int *pathSystem,
-                             int *pathSystemLength);
+                  int *sourceFlags, int *outSources, int *outTargets,
+                  int *outputMovesSource, int *outputMovesTarget,
+                  int *movesCounter, int *pathSystem, int *pathSystemLength);
 
 extern "C" void bird_cpu(int gridHeight, int width, int reservoirHeight,
                          int *sourceFlags, int *outSources, int *outTargets,

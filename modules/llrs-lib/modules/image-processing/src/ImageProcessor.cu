@@ -1,6 +1,5 @@
 #include "ImageProcessor.h"
 
-
 /**
  *  @brief Write image data to a PGM file in binary format, with the filename
  * being the current epoch time in nanoseconds and saved in the
@@ -121,22 +120,24 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
     if (p_input_img->empty()) {
         throw std::runtime_error(
             "Image array not initialized to be processed."); // check image
-                          // array
-                          // initialization
+                                                             // array
+                                                             // initialization
     }
     // Initialize the return vector
     std::vector<double> running_sums(this->_psf.size(), 0);
-    uint16_t* p_input_img_ptr = p_input_img->data();
+    uint16_t *p_input_img_ptr = p_input_img->data();
     auto psf_ptr = this->_psf.data();
- 
-    // Iterate through all traps
-    #pragma omp parallel for firstprivate(p_input_img_ptr, psf_ptr) num_threads(FILTERING_NUM_THREADS) 
+
+// Iterate through all traps
+#pragma omp parallel for firstprivate(p_input_img_ptr, psf_ptr)                \
+    num_threads(FILTERING_NUM_THREADS)
     for (size_t kernel_idx = 0; kernel_idx < _psf.size(); kernel_idx++) {
         double cur_sum = 0;
-        PSF_PAIR* p_psf = (psf_ptr + kernel_idx)->data();
+        PSF_PAIR *p_psf = (psf_ptr + kernel_idx)->data();
         for (size_t i = 0; i < _psf[kernel_idx].size(); i++) {
             auto pair = *(p_psf + i);
-            cur_sum += *(p_input_img_ptr+std::get<0>(pair)) * std::get<1>(pair);
+            cur_sum +=
+                *(p_input_img_ptr + std::get<0>(pair)) * std::get<1>(pair);
         }
 #if IMAGE_INVERTED_X == true
         running_sums[this->_psf.size() - 1 - kernel_idx] = cur_sum;
