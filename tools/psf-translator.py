@@ -6,7 +6,7 @@ import sys
 import os
 from pathlib import Path
 from experiment.toolkits.configs import Addresses
-
+import math
 import pickle
 
 #
@@ -55,7 +55,7 @@ def process_args(argv):
 # Writes a binary and txt psf file to the desired file path
 # Return: 
 # 
-def generate_psf(file_path, pickle_path, params, binary=True):
+def generate_psf(file_path, pickle_path, binary=True):
 
     # psf_dict            = pickle.load(open(Addresses.traps_psf.replace("raaqs","raaqs3"), "rb"))
     
@@ -70,6 +70,7 @@ def generate_psf(file_path, pickle_path, params, binary=True):
     box_size_h          = psf_dict.get("box_size_h")
     cropping            = psf_dict.get("cropping")
     background          = psf_dict.get("background")
+    Nt                  = psf_dict.get("Nt")
 
     num_atoms = len(centers)
 
@@ -100,7 +101,8 @@ def generate_psf(file_path, pickle_path, params, binary=True):
 
                 pixel_coord = ( pixel_x, pixel_y )
 
-                flattened_pixel_coord = pixel_coord[0] + pixel_coord[1] * params["image_width"]
+                flattened_pixel_coord = pixel_coord[0] + pixel_coord[1] * math.sqrt(Nt)
+                print(flattened_pixel_coord)
 
                 output_tuples.append((atom_num, int(flattened_pixel_coord), psf_val))
 
@@ -126,15 +128,9 @@ def generate_psf(file_path, pickle_path, params, binary=True):
     return 
 
 # 'Entry point' 
-name = "1d_IT_1024_1024_21_traps"
-psf_params_dict = {
-    "name": name,
-    "image_height": 1024,
-    "image_width": 1024
-}
 home = os.path.expanduser("~")
 
 [file_path, pickle_path] = process_args(sys.argv)
-generate_psf(file_path, pickle_path, psf_params_dict, binary=True) 
+generate_psf(file_path, pickle_path, binary=True) 
 print(f"psf files saved to {file_path}")
 print("generate_psf() complete...")

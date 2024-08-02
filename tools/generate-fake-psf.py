@@ -33,7 +33,7 @@ def get_psf_pickle_dictionary(Nt, kernal):
         psfs.append(get_gaussian(kernal, kernal, kernal/2, kernal/2))
     cropping = {"is_cropping": False}
 
-    psf_data = {"centers": centers, "psfs": psfs, "cropping": cropping, "box_size_w": kernal, "box_size_h": kernal}
+    psf_data = {"centers": centers, "psfs": psfs, "cropping": cropping, "box_size_w": kernal, "box_size_h": kernal, "Nt": Nt}
     return psf_data
 
 if (len(sys.argv) < 4):
