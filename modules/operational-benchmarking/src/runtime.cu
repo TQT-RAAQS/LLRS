@@ -61,27 +61,26 @@ int main(int argc, char *argv[]) {
     data.reserve(num_trials * num_reps);
     // Start trial loop
     for (int trial = 0; trial < num_trials; ++trial) {
-        // Create initial atom configuration with 60% loading efficiency
-        std::vector<int32_t> trial_config(Nt_x * Nt_y);
-        double loading_efficiency = 0.6;
-        std::random_device dev;
-        std::mt19937 rng(dev());
-        std::uniform_int_distribution<std::mt19937::result_type> dist6(0, RAND_MAX);
-
-        for (auto &it : trial_config) {
-            it = (loading_efficiency >= (((double)dist6(rng)) / RAND_MAX)) ? 1 : 0;
+        std::vector<int32_t> trial_config(Nt_x * Nt_y, 0);
+        for (size_t i = 0; i < num_target; i++) {
+            trial_config[i] = 1;
         }
-        if (Util::count_num_atoms(trial_config) >= num_target) {
+        std::random_device rd;
+        std::mt19937 g(rd());
+
+        // Shuffle the vector
+        std::random_shuffle(trial_config.begin(), trial_config.end(), [&](int n) {
+            return g() % n;
+        }); 
         // Start repetition loop
-            for (int rep = 0; rep < num_reps; ++rep) {
-                solver.start_solver(algo, trial_config, target_config);
-                if (batching) {
-                    solver.gen_moves_list(algo, true);
-                }
-                data.push_back(batching ? Util::Collector::get_instance()->get_module("III-Matching") + Util::Collector::get_instance()->get_module("III-Batching"):Util::Collector::get_instance()->get_module("III-Matching"));
-                Util::Collector::get_instance()->clear_timers();
-                solver.reset();
+        for (int rep = 0; rep < num_reps; ++rep) {
+            solver.start_solver(algo, trial_config, target_config);
+            if (batching) {
+                solver.gen_moves_list(algo, true);
             }
+            data.push_back(batching ? Util::Collector::get_instance()->get_module("III-Matching") + Util::Collector::get_instance()->get_module("III-Batching"):Util::Collector::get_instance()->get_module("III-Matching"));
+            Util::Collector::get_instance()->clear_timers();
+            solver.reset();
         }
     }
     if (data.size() == 0) {
