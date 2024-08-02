@@ -1,28 +1,5 @@
 #include "ImageProcessor.h"
 
-/* DEPRECATED GPU image processing */
-__global__ void MWCperTrap(int32_t *result, double *_psf, short *trap_pos,
-                           short *image, double threshold, int32_t Image_R,
-                           int32_t Image_C, int32_t OpticalTrap_Number,
-                           int32_t OpticalTrap_R, int32_t OpticalTrap_C) {
-    int32_t i = blockDim.x * blockIdx.x + threadIdx.x;
-    if (i < OpticalTrap_Number) {
-        int32_t x = trap_pos[2 * i];
-        int32_t y = trap_pos[2 * i + 1];
-        int32_t pos = x * Image_C + y;
-        int32_t psf_pos = 5 * i;
-        double mwc = 0;
-        for (int32_t j = 0; j < OpticalTrap_R; j++) {
-            for (int32_t k = 0; k < OpticalTrap_C; k++) {
-                mwc = mwc + image[pos] * _psf[psf_pos];
-                pos = pos + 1;
-                psf_pos = psf_pos + 1;
-            }
-            pos = pos + Image_C - OpticalTrap_C;
-        }
-        result[i] = (int32_t)(mwc > threshold);
-    }
-}
 
 /**
  *  @brief Write image data to a PGM file in binary format, with the filename
@@ -56,7 +33,7 @@ void Processing::write_to_pgm(const std::vector<uint16_t> &image, int width,
     ofs << "P2\n" << width << " " << height << "\n" << max_value << "\n";
 
     // Write pixel data to the file
-    for (int i = 0; i < image.size(); i++) {
+    for (size_t i = 0; i < image.size(); i++) {
         ofs << image[i] << " ";
         if ((i + 1) % width == 0)
             ofs << "\n";
@@ -144,24 +121,22 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
     if (p_input_img->empty()) {
         throw std::runtime_error(
             "Image array not initialized to be processed."); // check image
-                                                             // array
-                                                             // initialization
+                          // array
+                          // initialization
     }
     // Initialize the return vector
     std::vector<double> running_sums(this->_psf.size(), 0);
-    //#pragma omp parallel for num_threads(FILTERING_NUM_THREADS) // - Code to
-    // run the Processing with multiple threads (32) in parallel
-
+    uint16_t* p_input_img_ptr = p_input_img->data();
+    auto psf_ptr = this->_psf.data();
+ 
     // Iterate through all traps
-    for (size_t kernel_idx = 0; kernel_idx < this->_psf.size(); kernel_idx++) {
+    #pragma omp parallel for firstprivate(p_input_img_ptr, psf_ptr) num_threads(FILTERING_NUM_THREADS) 
+    for (size_t kernel_idx = 0; kernel_idx < _psf.size(); kernel_idx++) {
         double cur_sum = 0;
-        // Iterate through all pixels for each trap
-        for (PSF_PAIR pair : this->_psf.at(kernel_idx)) {
-            size_t image_idx;
-            double psf_value;
-            // Get the pixel index and corresponding psf_value
-            std::tie(image_idx, psf_value) = pair;
-            cur_sum += (*p_input_img)[image_idx] * psf_value;
+        PSF_PAIR* p_psf = (psf_ptr + kernel_idx)->data();
+        for (size_t i = 0; i < _psf[kernel_idx].size(); i++) {
+            auto pair = *(p_psf + i);
+            cur_sum += *(p_input_img_ptr+std::get<0>(pair)) * std::get<1>(pair);
         }
 #if IMAGE_INVERTED_X == true
         running_sums[this->_psf.size() - 1 - kernel_idx] = cur_sum;
@@ -191,7 +166,7 @@ Processing::ImageProcessor::apply_threshold(std::vector<double> filtered_vec,
 
     START_TIMER("II-Threshold");
     std::vector<int32_t> atom_configuration(filtered_vec.size(), 0);
-    for (int trap_idx = 0; trap_idx < filtered_vec.size(); trap_idx++) {
+    for (size_t trap_idx = 0; trap_idx < filtered_vec.size(); trap_idx++) {
         if (filtered_vec[trap_idx] >
             threshold) { // check if the trap contains an atom by comparing
                          // agaisnt the threshhold

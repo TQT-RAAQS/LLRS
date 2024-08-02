@@ -9,14 +9,14 @@ project(
 
 add_global_arguments(
     '-DPROJECT_BASE_DIR="' + meson.source_root() + '"',
-    language: ['c', 'cpp', 'cuda'],
-)
-add_global_arguments(
     '-I' + meson.source_root() + '/modules/common-include',
+    '-D LOGGING_VERBOSE',
     language: ['c', 'cpp', 'cuda'],
 )
-add_global_arguments('-D LOGGING_VERBOSE', language: ['c', 'cpp', 'cuda'])
 
+add_global_arguments('-arch=sm_75', '-gencode=arch=compute_75,code=sm_75', '-Xcompiler=-fopenmp', language: 'cuda')
+
+add_global_link_arguments('-lgomp', language: 'cuda')
 # subprojects
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')
