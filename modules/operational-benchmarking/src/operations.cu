@@ -36,7 +36,7 @@ void create_rectangular_target(std::vector<int32_t> &target_config,
  * @return int
  */
 int main(int argc, char *argv[]) {
-    if (argc != 8) {
+    if (argc < 8) {
         std::cout << "Usage is operational_benchmarking <algorithm> <Nt_x> <Nt_y> <num_target> "
                      "<num_trials> <num_repititions> <batching>"
                   << std::endl;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
                 std::vector<uint> cycle_nu;
                 std::vector<uint> cycle_EDI;
                 int cycle = 0;
-                while (!Util::target_met(rep_config, target_config) && cycle < 15) {
+                while (!Util::target_met(rep_config, target_config) && cycle < 9) {
 
                     // Initialize trap array object
                     TrapArray trap_array (Nt_x, Nt_y, rep_config, 0.985, 0.985, 60);
@@ -132,12 +132,12 @@ int main(int argc, char *argv[]) {
                     // Performs loss
                     trap_array.performLoss();
                     trap_array.getArray(rep_config);
+                    solver.reset();
                     ++cycle;
                 }
                 alpha_ops.push_back(cycle_alpha);
                 nu_ops.push_back(cycle_nu);
                 EDIs.push_back(cycle_EDI);
-                solver.reset();
             }
         } else {
             --trial;
@@ -148,31 +148,31 @@ int main(int argc, char *argv[]) {
         std::cout << "Not successful." << std::endl;
     } else {
         for (auto it : alpha_ops) {
-            std::cout << std::accumulate(it.begin(), it.end(), 0.0) << ", ";
+            std::cout << it.at(0) << ", ";
         }
         std::cout << std::endl;
         for (auto it : nu_ops) {
-            std::cout << std::accumulate(it.begin(), it.end(), 0.0) << ", ";
+            std::cout << it.at(0) << ", ";
         }
         std::cout << std::endl;
         for (auto it : EDIs) {
-            std::cout << std::accumulate(it.begin(), it.end(), 0.0) << ", ";
+            std::cout << it.at(0) << ", ";
         }
         std::cout << std::endl; 
 
-        std::vector<std::vector<uint>> alpha_ops_cycled {15};
+        std::vector<std::vector<double>> alpha_ops_cycled {15};
         for (auto it: alpha_ops) {
             for (size_t i = 0; i < it.size(); ++i) {
                 alpha_ops_cycled[i].push_back(it[i]);
             }
         }
-        std::vector<std::vector<uint>> nu_ops_cycled {15};
+        std::vector<std::vector<double>> nu_ops_cycled {15};
         for (auto it: nu_ops) {
             for (size_t i = 0; i < it.size(); ++i) {
                 nu_ops_cycled[i].push_back(it[i]);
             }
         }
-        std::vector<std::vector<uint>> edis_cycled {15};
+        std::vector<std::vector<double>> edis_cycled {15};
         for (auto it: EDIs) {
             for (size_t i = 0; i < it.size(); ++i) {
                 edis_cycled[i].push_back(it[i]);
