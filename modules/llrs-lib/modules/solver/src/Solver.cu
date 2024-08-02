@@ -157,12 +157,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         {
             double time = solve_gpu
                 (initial.data(), target.data(), initial.size(), num_atoms_initial,
-                num_atoms_target, matching_src.data(), matching_dst.data(), src.data(), dst.data(), sol_length);
-            for (int i = 0; i < 1; i++) {
-                time = solve_gpu
-                (initial.data(), target.data(), initial.size(), num_atoms_initial,
-                num_atoms_target, matching_src.data(), matching_dst.data(), src.data(), dst.data(), sol_length);
-            }
+                num_atoms_target, matching_src.data(), matching_dst.data(), src.data(), dst.data(), sol_length); 
             
             GET_EXTERNAL_TIME("III-Matching", time);
             GET_EXTERNAL_TIME("III-Batching", 0);
@@ -193,7 +188,7 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
         break;
     case REDREC_GPU_V3_2D:
         {
-            float time = redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
+            double time = redrec_gpu(Nt_y, Nt_x, reservoir_height, &initial[0], &matching_src[0],
                    &matching_dst[0], &src[0], &dst[0], sol_length,
                    &path_system[0], &path_length[0]);
             GET_EXTERNAL_TIME("III-Matching", time);
@@ -379,9 +374,7 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
             displacement_page = up ? Synthesis::UP_2D : Synthesis::DOWN_2D;
             int extraction_extent = up ? max_trap / Nt_x + 1 : Nt_y - index;
             int blk_size = (max_trap - min_trap) / Nt_x;
-            ret.emplace_back(Synthesis::EXTRACT_2D, min_trap / Nt_x + !up, offset,
-                             blk_size,
-                             0);
+            ret.emplace_back(Synthesis::EXTRACT_2D, min_trap / Nt_x + !up, offset, blk_size, 0);
             /// it may seem like this is turning the time complexity of the
             /// translation into quadratic however, it's really just reordering
             /// the moves returned by the algorithm it's quadratic w.r.t. size
@@ -421,11 +414,12 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
         while (i < src.size()) {
             single_atom_start.push_back(src[i]);
             single_atom_dir.push_back(dst[i] - src[i]);
+            bool horizontal = abs(src[i] - dst[i]) == 1;
             while (++i < src.size()) {
                 bool batchable = dst[i - 1] == src[i];
-                bool horizontal = abs(src[i-1] - dst[i-1]) == 1;
+                bool horizontal_temp = abs(src[i] - dst[i]) == 1;
                 bool same_dir = src[i - 1] - dst[i - 1] == src[i] - dst[i];
-                if (!batchable || horizontal || !same_dir)
+                if (!batchable || horizontal != horizontal_temp || !same_dir)
                     break;
             }
             single_atom_end.push_back(dst[i - 1]);
@@ -525,7 +519,13 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
 
                 ret.emplace_back(Synthesis::EXTRACT_2D, index,
                                 single_atom_start[i] % Nt_x, 1, 0);
-                ret.emplace_back(displacement_page, index, offset, 1, 0);
+                while (true) {
+                    if (single_atom_start[i] == single_atom_end[i])
+                        break;
+                    
+                    ret.emplace_back(displacement_page, index, std::min(single_atom_start[i], single_atom_start[i] + single_atom_dir[i]) % Nt_x, 1, 0);
+                    single_atom_start[i] += single_atom_dir[i];
+                }
                 ret.emplace_back(Synthesis::IMPLANT_2D, index,
                                 single_atom_end[i] % Nt_x, 1, 0);
                 ++i;
@@ -534,44 +534,35 @@ std::vector<Reconfig::Move> Reconfig::Solver::gen_moves_list_batched(Algo algo_s
             bool up = (single_atom_dir[i] > 0);
             displacement_page = up ? Synthesis::UP_2D : Synthesis::DOWN_2D;
             int extraction_extent = up ? max_trap / Nt_x + 1 : Nt_y - index;
-            ret.emplace_back(Synthesis::EXTRACT_2D, up ? 0 : index, offset,
-                            extraction_extent,
-                            0); // block_size == extraction extent here
+            int blk_size = (max_trap - min_trap) / Nt_x;
+            ret.emplace_back(Synthesis::EXTRACT_2D, min_trap / Nt_x + !up, offset, blk_size, 0);
             /// it may seem like this is turning the time complexity of the
             /// translation into quadratic however, it's really just reordering
             /// the moves returned by the algorithm it's quadratic w.r.t. size
             /// of single_atom_* but still linear w.r.t. size of _src & _dst
             while (true) {
-                min_trap = Nt_x * Nt_y;
-                max_trap = -1;
+                int min_trap = Nt_x * Nt_y;
+                int max_trap = -1;
                 for (int k = i; k < j; ++k) {
                     if (single_atom_start[k] != single_atom_end[k]) {
                         min_trap = std::min(min_trap,
                                             std::min(single_atom_start[k],
-                                                    single_atom_start[k] +
-                                                        single_atom_dir[i]));
+                                                     single_atom_start[k] +
+                                                         single_atom_dir[i]));
                         max_trap = std::max(max_trap,
                                             std::max(single_atom_start[k],
-                                                    single_atom_start[k] +
-                                                        single_atom_dir[i]));
+                                                     single_atom_start[k] +
+                                                         single_atom_dir[i]));
                         single_atom_start[k] += single_atom_dir[i];
-                    } else {
-                        if ((min_trap == Nt_x * Nt_y) && (max_trap == -1)) {
-                            continue;
-                        } else {
-                            break;
-                        }
                     }
                 }
                 if (max_trap == -1)
                     break;
                 int blk_size = (max_trap - min_trap) / Nt_x;
                 ret.emplace_back(displacement_page, min_trap / Nt_x, offset,
-                                blk_size, extraction_extent);
+                                 blk_size, extraction_extent);
             }
-            ret.emplace_back(Synthesis::IMPLANT_2D, up ? 0 : index, offset,
-                            extraction_extent,
-                            0); // block_size == extraction_extent here
+            ret.emplace_back(Synthesis::IMPLANT_2D, min_trap / Nt_x + up, offset,blk_size, 0);
             i = j;
         }
         END_TIMER("III-Batching");
