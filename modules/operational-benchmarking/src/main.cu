@@ -56,10 +56,12 @@ void create_rectangular_target(std::vector<int32_t> &target_config,
  */
 int main(int argc, char *argv[]) {
     if (argc != 12) {
-        std::cout << "Usage is operational_benchmarking "
-                     "<algorithm> <Ntx> <Nty> <num_target> <loading_efficiency> "
-                     "<alpha> <nu> <lifetime> <num_trials> <num_repititions> <batched>"
-                  << std::endl;
+        std::cout
+            << "Usage is operational_benchmarking "
+               "<algorithm> <Ntx> <Nty> <num_target> <loading_efficiency> "
+               "<alpha> <nu> <lifetime> <num_trials> <num_repititions> "
+               "<batched>"
+            << std::endl;
         return 1;
     }
 
@@ -111,8 +113,8 @@ int main(int argc, char *argv[]) {
                 solver.setup(Nt_x, Nt_y, 32);
 
                 // Initialize trap array object
-                TrapArray trap_array (Nt_x, Nt_y, rep_config, loss_params_alpha,
-                              loss_params_nu, lifetime);
+                TrapArray trap_array(Nt_x, Nt_y, rep_config, loss_params_alpha,
+                                     loss_params_nu, lifetime);
 
                 failure = false;
                 // check if we meet the required target config

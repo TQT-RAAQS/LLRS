@@ -23,7 +23,8 @@ TrapArray::TrapArray(int Nt_x, int Nt_y,
                      double loss_params_alpha, double loss_params_nu,
                      double lifetime, int total_moves)
     : Nt_x(Nt_x), Nt_y(Nt_y), loss_params_alpha(loss_params_alpha),
-      loss_params_nu(loss_params_nu), lifetime(lifetime), total_alpha_ops(total_alpha_ops), total_nu_ops(total_nu_ops) {
+      loss_params_nu(loss_params_nu), lifetime(lifetime),
+      total_alpha_ops(total_alpha_ops), total_nu_ops(total_nu_ops) {
     traps.resize(Nt_y, std::vector<Atom *>(Nt_x));
     // Add Atom objects to traps where an atom exists
     for (auto &i : traps) {
@@ -224,7 +225,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                 if (this->traps[i][col] == NO_ATOM) {
                     continue;
                 }
-                ++total_alpha_ops; 
+                ++total_alpha_ops;
                 this->traps[i][col]->transfer();
                 this->traps[i][col]->setState(EXTRACTED);
             }
@@ -235,7 +236,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                 if (this->traps[i][col] == NO_ATOM) {
                     continue;
                 }
-                ++total_alpha_ops; 
+                ++total_alpha_ops;
                 this->traps[i][col]->transfer();
                 this->traps[i][col]->setState(IMPLANTED);
             }
@@ -246,7 +247,7 @@ int TrapArray::performMoves(std::vector<Reconfig::Move> &moves_list) {
                 if (this->traps[i][col] == NO_ATOM) {
                     continue;
                 }
-                ++total_alpha_ops; 
+                ++total_alpha_ops;
                 this->traps[i][col]->transfer();
                 this->traps[i][col]->setState(EXTRACTED);
             }
@@ -289,7 +290,6 @@ int TrapArray::getRelaventMoves() {
     return x;
 }
 
-
 /**
  * @brief Perform loss on the Trap Array based on the moves on each atom and
  * lifetime
@@ -304,8 +304,7 @@ size_t TrapArray::performLoss() {
             if (this->traps[i][j] == NO_ATOM) {
                 continue;
             }
-            double loss_value =
-                this->traps[i][j]->getLoss(total_moves);
+            double loss_value = this->traps[i][j]->getLoss(total_moves);
             // Seed the random number generator
             std::random_device rd;
             std::mt19937 gen(rd());

@@ -98,7 +98,9 @@ class Solver {
      * keying components
      */
     std::vector<Move> gen_moves_list(Algo algo_select, bool batching = true) {
-      return batching? gen_moves_list_batched(algo_select): gen_moves_list_unbatched(algo_select);};
+        return batching ? gen_moves_list_batched(algo_select)
+                        : gen_moves_list_unbatched(algo_select);
+    };
 
     /**
      * @brief Resets the Vectors used in the solver based on the dimensions of
