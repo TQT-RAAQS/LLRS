@@ -9,7 +9,7 @@
 #define MAX_IMAGE_READ_BUFFER_SIZE size_t(1048576) // 1024 * 1024, unit: #pixels
 
 // Image Processing
-#define FILTERING_NUM_THREADS size_t(32)
+#define FILTERING_NUM_THREADS size_t(16)
 #define IMAGE_INVERTED_X true
 
 // Number of cycles to attempt before exiting a trial
