@@ -1,1 +1,0 @@
-void redrec_v2(int* initial, int initial_atom_count, int Nt_x, int Nt_y, int R_h, int* src, int* dst, int* batch_indices, int* num_batches, int* sol_length);
