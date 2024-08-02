@@ -80,7 +80,7 @@ class Animator:
 
             plt.rc('pdf', fonttype=42)
             plt.savefig(f"{address}/{file_name + i:0{4}d}.pdf", format = "pdf")
-            frames += [imageio.imread(f"{address}/{file_name + i:0{4}d}.pdf")]
+            frames += [1]
             plt.close()
 
         return frames
