@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage{array}
+\usepackage[hyphens]{url}
+\usepackage{textcomp}
+\usepackage{geometry}
+\thispagestyle{empty}
+\geometry{right=20mm,left=15mm} % Adjust this value as needed
+
+\begin{document}
+
+\begin{table}
+    \centering
+        \begin{tabular}{|l|p{35mm}|p{35mm}|p{35mm}|} 
+            \hline
+               & \multicolumn{3}{c|}{Reconfiguration cycle time~(ms)} \\ 
+            \hline
+            & \multicolumn{1}{c|}{##1D_title##} & \multicolumn{1}{c|}{##2D_title##} & \multicolumn{1}{c|}{##2D_title##} \\ % Added another column header
+                & \multicolumn{1}{c|}{$N_a = ##1D_N_a1## \times ##1D_N_a2##$} & \multicolumn{1}{c|}{$N_a = ##2D_N_a1## \times ##2D_N_a2##$} & \multicolumn{1}{c|}{$N_a = ##2D_N_a1## \times ##2D_N_a2##$} \\ 
+                & \multicolumn{1}{c|}{$N_t = ##1D_Nt1## \times ##1D_Nt2##$} & \multicolumn{1}{c|}{$N_t = ##2D_Nt1## \times ##2D_Nt2##$} & \multicolumn{1}{c|}{$N_t = ##2D_Nt1## \times ##2D_Nt2##$} \\ 
+                & \multicolumn{1}{c|}{ROI~=~$##1D_roi_height##\times##1D_roi_width##$} & \multicolumn{1}{c|}{ROI~=~$##2D_roi_height##\times##2D_roi_width##$} & \multicolumn{1}{c|}{ROI~=~$##2D_roi_height##\times##2D_roi_width##$} \\ 
+            \hline
+            \textbf{I. Image acquisition} & $##1D_IA_total_avg##\pm##1D_IA_total_std##$ & $##2D_IA_total_avg##\pm##2D_IA_total_std##$ & $##2D_IA_total_avg2##\pm##2D_IA_total_std2##$ \\ 
+            \hline
+            \hspace{3mm} \small I.1 Exposure* &\small##1D_IA_exposure## & \small##2D_IA_exposure2## & \small##2D_IA_exposure2## \\ 
+            \hspace{3mm} \small I.2 Vertical frame transfer* ($4.33~\mu s$ / px) &\small##1D_IA_frame_transfer## &\small##2D_IA_frame_transfer## &\small##2D_IA_frame_transfer2##\\ 
+            \hspace{3mm} \small I.3 Frame readouts* (30~Mpxps) &\small##1D_IA_horz_shift##&\small##2D_IA_horz_shift##&\small##2D_IA_horz_shift2##\\ 
+            \hspace{3mm} \small I.4 DMA data transfer* &\small##1D_IA_DMA_transfer## &\small##2D_IA_DMA_transfer## &\small##2D_IA_DMA_transfer2##\\ 
+            \hline
+            \textbf{II. Image processing} & $##1D_IP_total_avg##\pm##1D_IP_total_std##$ & $##2D_IP_total_avg##\pm##2D_IP_total_std##$ & $##2D_IP_total_avg2##\pm##2D_IP_total_std2##$ \\ 
+			\hline
+            \hspace{3mm} \small II.1 Deconvolution &\small##1D_IP_deconvolution##  &\small##2D_IP_deconvolution## &\small##2D_IP_deconvolution2## \\ 
+            \hspace{3mm} \small II.2 Thresholding  &\small##1D_IP_threshold## &\small##2D_IP_threshold##&\small##2D_IP_threshold2##\\ 
+            \hline
+            \textbf{III. Problem solving} & $##1D_PS_total_avg##\pm##1D_PS_total_std## $ & $##2D_PS_total_avg##\pm##2D_PS_total_std##$ & $##2D_PS_total_avg2##\pm##2D_PS_total_std2##$ \\ 
+            \hline
+            \hspace{3mm} \small III.1 Generate matching&\small##1D_PS_matching##  &\small##2D_PS_matching## &\small##2D_PS_matching2## \\ 
+            \hspace{3mm} \small III.2 Batching &\small##1D_PS_batching## &\small##2D_PS_batching##&\small##2D_PS_batching2##\\ 
+            \hline
+            \textbf{IV. Synthesis \& Waveform loading} &$##1D_SS_total_avg##\pm##1D_SS_total_std##$ & $ ##2D_SS_total_avg##\pm##2D_SS_total_std##$ & $ ##2D_SS_total_avg2##\pm##2D_SS_total_std2##$ \\ 
+            \hline
+            \hspace{3mm} \small IV.1 Pre-lookup &\small##1D_SS_Pre-lookup## &\small##2D_SS_Pre-lookup##&\small##2D_SS_Pre-lookup2##\\ 
+            \hspace{3mm} \small IV.2 Pre-upload &\small##1D_SS_Pre-upload## &\small##2D_SS_Pre-upload##&\small##2D_SS_Pre-upload2##\\ 
+            \hspace{3mm} \small IV.3 Pre-update &\small##1D_SS_Pre-update## &\small##2D_SS_Pre-update##&\small##2D_SS_Pre-update2##\\ 
+            \hline
+            \textbf{V. Concurrent load \& stream} &$##1D_SS_Conc_Load_Stream##\pm##1D_SS_Conc_Load_Stream_std##$ & $##2D_SS_Conc_Load_Stream##\pm##2D_SS_Conc_Load_Stream_std##$ & $##2D_SS_Conc_Load_Stream2##\pm##2D_SS_Conc_Load_Stream_std2##$ \\ 
+            \hline
+            \hspace{3mm} \small Theoretical streaming time &\small$##1D_SS_Theoretical_Stream## \pm ##1D_SS_Theoretical_Stream_std##$ &\small$##2D_SS_Theoretical_Stream## \pm ##2D_SS_Theoretical_Stream_std##$&\small$##2D_SS_Theoretical_Stream2## \pm ##2D_SS_Theoretical_Stream_std2##$\\ 
+            \hspace{3mm} \small Other &\small$##1D_SS_Stream_Latency##\pm##1D_SS_Stream_Latency_std##$ &\small$##2D_SS_Stream_Latency##\pm##2D_SS_Stream_Latency_std##$&\small$##2D_SS_Stream_Latency2##\pm##2D_SS_Stream_Latency_std2##$\\ 
+            \hline
+            \textbf{Total} & $##1D_overall_avg##\pm##1D_overall_std##$ & $##2D_overall_avg##\pm##2D_overall_std##$ & $##2D_overall_avg2##\pm##2D_overall_std2##$ \\ 
+            \hline
+            \hline
+        \end{tabular}
+    \caption{Low Latency Reconfiguration System Run-time}
+\end{table}
+
+\hspace{0mm}Path 1D: \path{##1D_path##} \\
+
+\hspace{0mm}Path 2D: \path{##2D_path##}
+
+\end{document}
