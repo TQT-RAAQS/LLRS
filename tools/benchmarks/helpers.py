@@ -26,6 +26,8 @@ def mark(lst):
       ret.append("v")
     elif i == "rrcbatch":
       ret.append(">")
+    elif i == "birdbatch":
+      ret.append("D")
   return ret
 
 def pal(lst):
@@ -53,6 +55,9 @@ def pal(lst):
     elif i == "rrcbatch":
       prim.append("#FFD3AD")
       sec.append("#E06900")
+    elif i == "birdbatch":
+      prim.append("#ce575a")
+      sec.append("#c53a3c")
   ret = {'primary': prim, 'secondary': sec}
   return ret
 
