@@ -137,21 +137,14 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
                                     num_atoms_initial, num_atoms_target,
                                     &src[0], &dst[0], &blk[0], &batch_ptrs[0],
                                     num_batches, sol_length);
-
         break;
     case LINEAR_EXACT_V2_1D:
         /// Matching
         START_TIMER("III-Matching");
-        lin_exact_cpu_v2_generate_matching(
+        solve_cpu(
             &initial[0], &target[0], initial.size(), num_atoms_initial,
-            num_atoms_target, &matching_src[0], &matching_dst[0]);
+            num_atoms_target, &matching_src[0], &matching_dst[0], src.data(), dst.data(), sol_length);
         END_TIMER("III-Matching");
-        /// Batching
-        START_TIMER("III-Batching");
-        lin_exact_1d_cpu_v2_block_output_generator(
-            &matching_src[0], &matching_dst[0], num_atoms_target, &src[0],
-            &dst[0], &blk[0], &batch_ptrs[0], num_batches, sol_length);
-        END_TIMER("III-Batching");
         break;
     case LINEAR_EXACT_V2_GPU_1D: {
         double time =
