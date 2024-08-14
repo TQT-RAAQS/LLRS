@@ -36,6 +36,7 @@ class LLRS {
     std::streambuf *old_rdbuf;
     Util::JsonWrapper user_input;
     Reconfig::Algo algo;
+    std::vector<int32_t> current_config;
     std::vector<int> target_config;
     bool _2d = false;
     int num_trap;
@@ -130,7 +131,7 @@ class LLRS {
                             metadata.getNtx(), metadata.getNty());
     }
     int execute();
-    void reset(bool reset_segments);
+    void reset(bool reset_segments, bool reset_metadata);
     std::vector<int32_t> get_target_config(Target target, int num_target);
     void create_center_target(std::vector<int32_t> &target_config,
                               int num_target);
