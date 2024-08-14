@@ -14,7 +14,7 @@ class ImageProcessorReplace : public ImageProcessor {
         configs = replacement;
         cycleCount = 0;
     }
-    std::vector<int32_t> apply_threshold(std::vector<double> filtered_vec,
+    void apply_threshold(std::vector<int32_t> &current_config,
                                          double threshold) override;
 };
 } // namespace Processing

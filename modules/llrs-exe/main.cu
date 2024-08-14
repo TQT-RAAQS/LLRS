@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
                 awg->seqmem_update(llrs_idle_step, llrs_idle_seg, 1,
                                    llrs_idle_step, SPCSEQ_ENDLOOPALWAYS);
 
-                l.reset(true);
+                l.reset(true, true);
             }
         }
         if (flag) {
