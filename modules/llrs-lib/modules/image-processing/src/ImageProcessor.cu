@@ -107,47 +107,46 @@ void Processing::ImageProcessor::setup(std::string psf_path, size_t num_traps) {
  * image by averaging several images and finding the centroid. Derive a
  * numerical signal from the image, such as the weighted sum over pixels within
  * the PSF area, where the weights are obtained from the pixel values of the
- *       averaged PSF (area small enough so counts from neighboring PSFs don’t
+ *     averaged PSF (area small enough so counts from neighboring PSFs don’t
  * overlap). Iterate through the psf size (the number of traps), for each trap
  * we get the weighted sum of it's pizels and add that to our current running
  * value. This step is known as "Deconvolution"
  */
-std::vector<double>
-Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
+void 
+Processing::ImageProcessor::apply_filter(std::vector<uint16_t> &p_input_img, std::vector<int32_t> &current_config) {
 
-    START_TIMER("II-Deconvolution");
     // Throw an error is we have an empty input image
-    if (p_input_img->empty()) {
+    if (p_input_img.empty()) {
         throw std::runtime_error(
             "Image array not initialized to be processed."); // check image
                                                              // array
                                                              // initialization
     }
     // Initialize the return vector
-    std::vector<double> running_sums(this->_psf.size(), 0);
-    uint16_t *p_input_img_ptr = p_input_img->data();
+    START_TIMER("II-Deconvolution");
+    uint16_t *p_input_img_ptr = p_input_img.data();
     auto psf_ptr = this->_psf.data();
-
+    size_t psf_size = this->_psf.size();
+    auto running_sums_ptr = current_config.data();
 // Iterate through all traps
-#pragma omp parallel for firstprivate(p_input_img_ptr, psf_ptr)                \
-    num_threads(FILTERING_NUM_THREADS)
-    for (size_t kernel_idx = 0; kernel_idx < _psf.size(); kernel_idx++) {
+#pragma omp parallel for firstprivate(p_input_img_ptr, psf_ptr, psf_size, running_sums_ptr)        \
+    num_threads(16) 
+    for (size_t kernel_idx = 0; kernel_idx < psf_size; ++kernel_idx) {
         double cur_sum = 0;
         PSF_PAIR *p_psf = (psf_ptr + kernel_idx)->data();
-        for (size_t i = 0; i < _psf[kernel_idx].size(); i++) {
+        for (size_t i = 0; i < (psf_ptr + kernel_idx)->size(); ++i) {
             auto pair = *(p_psf + i);
             cur_sum +=
                 *(p_input_img_ptr + std::get<0>(pair)) * std::get<1>(pair);
         }
 #if IMAGE_INVERTED_X == true
-        running_sums[this->_psf.size() - 1 - kernel_idx] = cur_sum;
+        *(running_sums_ptr + psf_size - 1 - kernel_idx) = static_cast<int32_t>(cur_sum);
 #else
-        running_sums[kernel_idx] = cur_sum;
+        *(running_sums_ptr + kernel_idx) = static_cast<int32_t>(cur_sum);
 #endif
     }
     END_TIMER("II-Deconvolution");
 
-    return std::move(running_sums);
 }
 
 /**
@@ -161,20 +160,18 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> *p_input_img) {
  * Thresholding.
  */
 
-std::vector<int32_t>
-Processing::ImageProcessor::apply_threshold(std::vector<double> filtered_vec,
-                                            double threshold) {
+void
+Processing::ImageProcessor::apply_threshold(std::vector<int32_t> &filtered_vec, double threshold) {
 
     START_TIMER("II-Threshold");
-    std::vector<int32_t> atom_configuration(filtered_vec.size(), 0);
     for (size_t trap_idx = 0; trap_idx < filtered_vec.size(); trap_idx++) {
         if (filtered_vec[trap_idx] >
             threshold) { // check if the trap contains an atom by comparing
                          // agaisnt the threshhold
-            atom_configuration[trap_idx] = 1;
+            filtered_vec[trap_idx] = 1;
+        } else {
+            filtered_vec[trap_idx] = 0;
         }
     }
     END_TIMER("II-Threshold");
-
-    return std::move(atom_configuration);
 }
