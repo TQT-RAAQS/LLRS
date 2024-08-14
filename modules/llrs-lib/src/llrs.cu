@@ -45,6 +45,7 @@ void LLRS::setup(std::string input, bool setup_idle_segment,
     const size_t Nt_y = user_input.read_problem_Nt_y();
     metadata.setNty(Nt_y);
     num_trap = Nt_x * Nt_y;
+    current_config.resize(num_trap, 0);
 
     /* Configures the target array */
     const size_t num_target = user_input.read_problem_num_target();
@@ -154,8 +155,8 @@ void LLRS::create_center_target(std::vector<int32_t> &target_config,
 /**
  * @brief resets the LLRS and metadata between shots
  */
-void LLRS::reset(bool reset_segments) {
-    metadata.reset();
+void LLRS::reset(bool reset_segments, bool reset_metadata) {
+    if (reset_metadata) metadata.reset();
     awg_sequence->reset(reset_segments);
 }
 
@@ -165,9 +166,8 @@ void LLRS::reset(bool reset_segments) {
 int LLRS::execute() {
     std::cout << "LLRS: execute" << std::endl;
     for (cycle_num = 0; true; ++cycle_num) {
-
         auto reset_result =
-            std::async(std::launch::async, &LLRS::reset, this, false);
+            std::async(std::launch::async, &LLRS::reset, this, false, false);
 #ifdef LOGGING_VERBOSE
         INFO << "Starting cycle " << cycle_num << std::endl;
 #endif
@@ -189,16 +189,13 @@ int LLRS::execute() {
 #endif
 
         /* Step 1, apply gaussian psf kernel onto each atom position */
-        std::vector<double> filtered_output =
-            img_proc_obj->apply_filter(&current_image);
+        img_proc_obj->apply_filter(current_image, current_config);
 
         /* Step 2, apply a threshold to the filtered output to get the
          * atom configuration */
-        std::vector<int32_t> current_config =
-            img_proc_obj->apply_threshold(filtered_output, detection_threshold);
+        img_proc_obj->apply_threshold(current_config, detection_threshold);
 
 #ifdef LOGGING_VERBOSE
-        INFO << "Filtered output: " << vec_to_str(filtered_output) << std::endl;
         INFO << "Current configuration: " << vec_to_str(current_config)
              << std::endl;
 #endif
@@ -212,6 +209,7 @@ int LLRS::execute() {
                 Util::Collector::get_instance()->get_runtime_data());
             Util::Collector::get_instance()->clear_timers();
 #endif
+            metadata.incrementNumCycles();
             awg_sequence->clock_trigger();
             return 0;
         }
@@ -258,13 +256,14 @@ int LLRS::execute() {
 
         solver->reset();
         metadata.incrementNumCycles();
+#ifdef LOGGING_RUNTIME
+            metadata.addRuntimeData(
+            Util::Collector::get_instance()->get_runtime_data());
+            Util::Collector::get_instance()->clear_timers();
+#endif
     }
 
-#ifdef LOGGING_RUNTIME
-    metadata.addRuntimeData(
-        Util::Collector::get_instance()->get_runtime_data());
-    Util::Collector::get_instance()->clear_timers();
-#endif
+
 
     awg_sequence->clock_trigger();
     return 1;

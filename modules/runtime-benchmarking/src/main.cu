@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
             l.execute();
             trial_timers.push_back(l.getMetadata().getRuntimeData());
         }
-        l.reset(true);
+        l.reset(true, true);
         timers.push_back(trial_timers);
     }
 
