@@ -11,6 +11,7 @@ add_global_arguments(
     '-DPROJECT_BASE_DIR="' + meson.source_root() + '"',
     '-I' + meson.source_root() + '/modules/common-include',
     '-D LOGGING_VERBOSE',
+    '-O3',
     language: ['c', 'cpp', 'cuda'],
 )
 
