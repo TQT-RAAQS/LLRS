@@ -5,20 +5,16 @@ The declarations and repackagings for the algorithms that are used in the Solver
 module
 */
 
-extern "C" void lin_exact_cpu_v2_block_batched(
-    int *initial, int *target, int num_traps, int inital_atom_count,
-    int target_atom_count, int *src, int *dst, int *blk_sizes,
-    int *batch_indices, int *num_batches, int *sol_length);
-
 extern "C" void lin_exact_block_batched_cpu(
     int *initial, int *target, int num_traps, int inital_atom_count,
     int target_atom_count, int *src, int *dst, int *blk_sizes,
     int *batch_indices, int *num_batches, int *sol_length);
 
-extern "C" void
-lin_exact_cpu_v2_generate_matching(int *sourceFlags, int *targetFlags,
-                                   int numTraps, int numSources, int numTargets,
-                                   int *OutSources_cpu, int *OutTargets_cpu);
+void solve_cpu(int *sourceFlags, int *targetFlags,
+                        int numTraps, int numSources, int numTargets,
+                        int *OutSources_cpu, int *OutTargets_cpu,
+                        int *outputMovesSource, int *outputMovesTarget,
+                        int *movesCounter);
 
 extern "C" void lin_exact_1d_cpu_v2_block_output_generator(
     int matching_src[], int matching_dst[], int target_atom_count, int *src,
@@ -40,7 +36,7 @@ extern "C" void redrec_cpu(int gridHeight, int width, int reservoirHeight,
                            int *outputMovesTarget_cpu, int *moves_counter,
                            int *path_system, int *path_length);
 
-double redrec_gpu(int gridHeight, int width, int reservoirHeight,
+extern "C" double redrec_gpu(int gridHeight, int width, int reservoirHeight,
                   int *sourceFlags, int *outSources, int *outTargets,
                   int *outputMovesSource, int *outputMovesTarget,
                   int *movesCounter, int *pathSystem, int *pathSystemLength);
