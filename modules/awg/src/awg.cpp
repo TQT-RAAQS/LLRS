@@ -83,11 +83,9 @@ int AWG::configure() {
     status |= set_sample_rate(config.sample_rate);
     status |= set_external_clock_mode(config.external_clock_freq);
     status |= set_trigger_settings();
-    status |= set_dout_async(SPCM_X0_MODE); /// x0 - null counter
-    status |=
-        set_dout_trigger_mode(SPCM_X1_MODE,
-                              SPCM_XMODE_DIGOUTSRC_CH1); /// x1 - take image
-    status |= set_dout_async(SPCM_X2_MODE); /// x2 - done/resume clock
+    status |= set_dout_async(SPCM_X0_MODE); 
+    status |= set_dout_async(SPCM_X1_MODE); 
+    status |= set_dout_async(SPCM_X2_MODE); 
     status |= spcm_dwGetParam_i32(p_card, SPC_SEQMODE_AVAILMAXSTEPS, &max_step);
     status |= spcm_dwGetParam_i32(p_card, SPC_MIINST_BYTESPERSAMPLE, &bps);
     status |= spcm_dwGetParam_i32(p_card, SPC_CHCOUNT, &lSetChannels);
@@ -281,17 +279,10 @@ int AWG::set_dout_async(int32 line) {
  * SPMCM_XMODE_ASYNCOUT
  * @return Error code
  */
-void AWG::generate_async_output_pulse(TriggerType type) {
-    switch (type) {
-    case EMCCD:
-        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 0);
-        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, config.async_trig_amp);
-        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 0);
-    case RESUME_CLOCK:
-        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 2);
-        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, config.async_trig_amp);
-        spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 2);
-    }
+void AWG::generate_async_output_pulse(TriggerType port) {
+    spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, port);
+    spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, config.async_trig_amp);
+    spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, port);
 }
 
 /**
