@@ -156,7 +156,8 @@ void LLRS::create_center_target(std::vector<int32_t> &target_config,
  * @brief resets the LLRS and metadata between shots
  */
 void LLRS::reset(bool reset_segments, bool reset_metadata) {
-    if (reset_metadata) metadata.reset();
+    if (reset_metadata)
+        metadata.reset();
     awg_sequence->reset(reset_segments);
 }
 
@@ -257,13 +258,11 @@ int LLRS::execute() {
         solver->reset();
         metadata.incrementNumCycles();
 #ifdef LOGGING_RUNTIME
-            metadata.addRuntimeData(
+        metadata.addRuntimeData(
             Util::Collector::get_instance()->get_runtime_data());
-            Util::Collector::get_instance()->clear_timers();
+        Util::Collector::get_instance()->clear_timers();
 #endif
     }
-
-
 
     awg_sequence->clock_trigger();
     return 1;

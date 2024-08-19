@@ -141,9 +141,9 @@ bool Reconfig::Solver::start_solver(Algo algo_select,
     case LINEAR_EXACT_V2_1D:
         /// Matching
         START_TIMER("III-Matching");
-        solve_cpu(
-            &initial[0], &target[0], initial.size(), num_atoms_initial,
-            num_atoms_target, &matching_src[0], &matching_dst[0], src.data(), dst.data(), sol_length);
+        solve_cpu(&initial[0], &target[0], initial.size(), num_atoms_initial,
+                  num_atoms_target, &matching_src[0], &matching_dst[0],
+                  src.data(), dst.data(), sol_length);
         END_TIMER("III-Matching");
         break;
     case LINEAR_EXACT_V2_GPU_1D: {

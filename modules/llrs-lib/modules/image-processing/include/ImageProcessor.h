@@ -31,9 +31,10 @@ class ImageProcessor {
 
     // Applies a filter to the image using the stored PSF and returns an array
     // indicating the presence or absence of atoms in the corresponding trap.
-    void apply_filter(std::vector<uint16_t> &p_input_img, std::vector<int32_t> &current_config);
-    virtual void 
-    apply_threshold(std::vector<int32_t> &current_config, double threshold);
+    void apply_filter(std::vector<uint16_t> &p_input_img,
+                      std::vector<int32_t> &current_config);
+    virtual void apply_threshold(std::vector<int32_t> &current_config,
+                                 double threshold);
     virtual ~ImageProcessor() {}
 
   private:

@@ -10,11 +10,10 @@ extern "C" void lin_exact_block_batched_cpu(
     int target_atom_count, int *src, int *dst, int *blk_sizes,
     int *batch_indices, int *num_batches, int *sol_length);
 
-void solve_cpu(int *sourceFlags, int *targetFlags,
-                        int numTraps, int numSources, int numTargets,
-                        int *OutSources_cpu, int *OutTargets_cpu,
-                        int *outputMovesSource, int *outputMovesTarget,
-                        int *movesCounter);
+void solve_cpu(int *sourceFlags, int *targetFlags, int numTraps, int numSources,
+               int numTargets, int *OutSources_cpu, int *OutTargets_cpu,
+               int *outputMovesSource, int *outputMovesTarget,
+               int *movesCounter);
 
 extern "C" void lin_exact_1d_cpu_v2_block_output_generator(
     int matching_src[], int matching_dst[], int target_atom_count, int *src,
@@ -37,9 +36,10 @@ extern "C" void redrec_cpu(int gridHeight, int width, int reservoirHeight,
                            int *path_system, int *path_length);
 
 extern "C" double redrec_gpu(int gridHeight, int width, int reservoirHeight,
-                  int *sourceFlags, int *outSources, int *outTargets,
-                  int *outputMovesSource, int *outputMovesTarget,
-                  int *movesCounter, int *pathSystem, int *pathSystemLength);
+                             int *sourceFlags, int *outSources, int *outTargets,
+                             int *outputMovesSource, int *outputMovesTarget,
+                             int *movesCounter, int *pathSystem,
+                             int *pathSystemLength);
 
 extern "C" void bird_cpu(int gridHeight, int width, int reservoirHeight,
                          int *sourceFlags, int *outSources, int *outTargets,
