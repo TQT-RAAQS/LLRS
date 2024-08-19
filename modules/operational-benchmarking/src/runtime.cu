@@ -35,10 +35,10 @@ void create_rectangular_target(std::vector<int32_t> &target_config,
  * @return int
  */
 int main(int argc, char *argv[]) {
-    if (argc != 8) {
+    if (argc != 9) {
         std::cout << "Usage is operational_benchmarking <algorithm> <Nt_x> "
                      "<Nt_y> <num_target> "
-                     "<num_trials> <num_repititions> <batching>"
+                     "<num_trials> <num_repititions> <batching> <num_sources>"
                   << std::endl;
         return 1;
     }
@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
     int num_trials = std::stoi(argv[5]);
     int num_reps = std::stoi(argv[6]);
     bool batching = std::stoi(argv[7]);
+    int num_sources = std::stoi(argv[8]);
     Reconfig::Algo algo{Util::get_algo_enum(algorithm)};
 
     std::vector<int32_t> target_config(Nt_x * Nt_y, 0);
@@ -62,7 +63,7 @@ int main(int argc, char *argv[]) {
     // Start trial loop
     for (int trial = 0; trial < num_trials; ++trial) {
         std::vector<int32_t> trial_config(Nt_x * Nt_y, 0);
-        for (size_t i = 0; i < num_target; i++) {
+        for (size_t i = 0; i < num_sources; i++) {
             trial_config[i] = 1;
         }
         std::random_device rd;
