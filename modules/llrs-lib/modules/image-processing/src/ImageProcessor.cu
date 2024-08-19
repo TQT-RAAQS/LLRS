@@ -112,8 +112,8 @@ void Processing::ImageProcessor::setup(std::string psf_path, size_t num_traps) {
  * we get the weighted sum of it's pizels and add that to our current running
  * value. This step is known as "Deconvolution"
  */
-void 
-Processing::ImageProcessor::apply_filter(std::vector<uint16_t> &p_input_img, std::vector<int32_t> &current_config) {
+void Processing::ImageProcessor::apply_filter(
+    std::vector<uint16_t> &p_input_img, std::vector<int32_t> &current_config) {
 
     // Throw an error is we have an empty input image
     if (p_input_img.empty()) {
@@ -129,8 +129,8 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> &p_input_img, std
     size_t psf_size = this->_psf.size();
     auto running_sums_ptr = current_config.data();
 // Iterate through all traps
-#pragma omp parallel for firstprivate(p_input_img_ptr, psf_ptr, psf_size, running_sums_ptr)        \
-    num_threads(16) 
+#pragma omp parallel for firstprivate(p_input_img_ptr, psf_ptr, psf_size,      \
+                                      running_sums_ptr) num_threads(16)
     for (size_t kernel_idx = 0; kernel_idx < psf_size; ++kernel_idx) {
         double cur_sum = 0;
         PSF_PAIR *p_psf = (psf_ptr + kernel_idx)->data();
@@ -140,13 +140,13 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> &p_input_img, std
                 *(p_input_img_ptr + std::get<0>(pair)) * std::get<1>(pair);
         }
 #if IMAGE_INVERTED_X == true
-        *(running_sums_ptr + psf_size - 1 - kernel_idx) = static_cast<int32_t>(cur_sum);
+        *(running_sums_ptr + psf_size - 1 - kernel_idx) =
+            static_cast<int32_t>(cur_sum);
 #else
         *(running_sums_ptr + kernel_idx) = static_cast<int32_t>(cur_sum);
 #endif
     }
     END_TIMER("II-Deconvolution");
-
 }
 
 /**
@@ -160,8 +160,8 @@ Processing::ImageProcessor::apply_filter(std::vector<uint16_t> &p_input_img, std
  * Thresholding.
  */
 
-void
-Processing::ImageProcessor::apply_threshold(std::vector<int32_t> &filtered_vec, double threshold) {
+void Processing::ImageProcessor::apply_threshold(
+    std::vector<int32_t> &filtered_vec, double threshold) {
 
     START_TIMER("II-Threshold");
     for (size_t trap_idx = 0; trap_idx < filtered_vec.size(); trap_idx++) {

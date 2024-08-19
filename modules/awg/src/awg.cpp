@@ -83,9 +83,9 @@ int AWG::configure() {
     status |= set_sample_rate(config.sample_rate);
     status |= set_external_clock_mode(config.external_clock_freq);
     status |= set_trigger_settings();
-    status |= set_dout_async(SPCM_X0_MODE); 
-    status |= set_dout_async(SPCM_X1_MODE); 
-    status |= set_dout_async(SPCM_X2_MODE); 
+    status |= set_dout_async(SPCM_X0_MODE);
+    status |= set_dout_async(SPCM_X1_MODE);
+    status |= set_dout_async(SPCM_X2_MODE);
     status |= spcm_dwGetParam_i32(p_card, SPC_SEQMODE_AVAILMAXSTEPS, &max_step);
     status |= spcm_dwGetParam_i32(p_card, SPC_MIINST_BYTESPERSAMPLE, &bps);
     status |= spcm_dwGetParam_i32(p_card, SPC_CHCOUNT, &lSetChannels);
