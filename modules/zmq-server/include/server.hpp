@@ -10,9 +10,11 @@
 class Server {
     zmq::context_t context;
     zmq::socket_t socket;
-    int listen_timeout = 60000; // ms
+    int port_number;
+    int listen_timeout; // ms
   public:
-    Server();
+    Server(int port_number = 5555,
+           int listen_timeout = 60000);
     ~Server();
     bool send(const std::string &string);
     int listen(std::string &reqeustStr);
