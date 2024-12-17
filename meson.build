@@ -34,3 +34,4 @@ wfm_streaming_bench_proj = subproject('wfm-streaming-benchmarking')
 waveform_loader = subproject('waveform-loader')
 
 movement_generator = subproject('movement-generator')
+image_saver = subproject('image-saver')

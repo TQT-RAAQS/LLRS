@@ -11,11 +11,15 @@ void replaceStr(std::string &requestStr, std::string toReplace,
  * Initialize a zmq context and tcp socket, and bind the socket to a
  * port.
  */
-Server::Server() {
+Server::Server(int port_number, int listen_timeout) {
     // initialize the zmq context with a single IO thread
+    this->port_number = port_number;
+    this->listen_timeout = listen_timeout;
+
     context = zmq::context_t(1);
     socket = zmq::socket_t(context, zmq::socket_type::rep);
-    socket.bind("tcp://*:5555");
+    std::string socket_address = "tcp://*:" + std::to_string(this->port_number);
+    socket.bind(socket_address);
 
     socket.set(zmq::sockopt::rcvtimeo, listen_timeout);
     socket.setsockopt(ZMQ_RCVTIMEO, listen_timeout);
