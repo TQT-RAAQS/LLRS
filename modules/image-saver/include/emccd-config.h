@@ -1,3 +1,6 @@
+#ifndef EMCCD_CONFIG_
+#define EMCCD_CONFIG_
+
 #include "globals-config.h"
 
 class EmccdConfig : protected GlobalsConfig {
@@ -22,3 +25,5 @@ class EmccdConfig : protected GlobalsConfig {
     int get_hbin() const { return hbin; }
     int get_vbin() const { return vbin; }
 };
+
+#endif

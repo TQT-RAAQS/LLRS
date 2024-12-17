@@ -1,57 +1,31 @@
 #include "image-saver-server.h"
 
-ImageSaverServer::ImageSaverServer(std::string config_str) {
-    std::string config_address = IMAGE_SAVER_SERVER(config_str);
-    config = YAML::LoadFile(config_address);
+/************************************************************************************************** */
 
-    setup_server();
-    setup_fgc();
-    setup_image_capturer_thread();
+std::string ImageSaverServer::get_experiment_folder_name(std::string shot_address) {
+    boost::filesystem::path shot_path = shot_address;
+    boost::filesystem::path output = shot_path.parent_path().parent_path();
+    return output.string();
 }
 
-void ImageSaverServer::setup_server() {
-    port = config["port"].as<int>();
-    listen_timeout = config["listen_timeout"].as<int>();
-    image_folder_name = config["image_folder_name"].as<std::string>();
-    server = std::make_unique<Server>(port, listen_timeout);
+std::string ImageSaverServer::get_images_folder_name(std::string shot_address, std::string image_folder_name) {
+    boost::filesystem::path output = ImageSaverServer::get_experiment_folder_name(shot_address);
+    output = output / boost::filesystem::path(image_folder_name);
+    output = output / boost::filesystem::path(shot_address).filename();
+
+    std::string output_str = output.string();
+    return output_str.substr(0, output_str.length() - 3);
 }
 
-void ImageSaverServer::setup_fgc() {
-    std::string fgc_config_address = IMAGE_SAVER_FGC(config["fgc_config"].as<std::string>());
-    config_fgc = YAML::LoadFile(fgc_config_address);
-
-    fgc = std::make_unique<ActiveSilicon1XCLD>();
-    fgc_timeout_ms = config_fgc["timeout"].as<int>();
-    flag_thread_running.store(false);
-}
-
-void ImageSaverServer::capture_images() {
-    while (true) {
-        if (flag_thread_running.load()) {
-            std::vector<uint16_t> current_image = fgc->acquire_single_image();
-            if (current_image.size() == 0) {
-                flag_thread_running.store(false);
-            } else {
-                std::lock_guard<std::mutex> lock(cache_mutex);
-
-                std::ostringstream filename_stream;
-                filename_stream << "image_" << timestamp << "_" << image_counter << ".png";
-                std::string file_name = filename_stream.str();
-                images_cache.push_back(ImageBatch(
-                    current_image,
-                    (boost::filesystem::path(image_folder_address) / boost::filesystem::path(file_name)).string()
-                ));
-                image_counter++;
-            }
-        }
+void ImageSaverServer::create_directory(boost::filesystem::path path) {
+    boost::filesystem::path parent = path.parent_path();
+    if (!boost::filesystem::exists(parent)) {
+        ImageSaverServer::create_directory(parent);
     }
+    boost::filesystem::create_directories(path.string());
 }
 
-void ImageSaverServer::setup_image_capturer_thread() {
-    flag_thread_running.store(false);
-    std::thread image_capturer_thread(&ImageSaverServer::capture_images, this);
-    image_capturer_thread.detach();
-}
+/************************************************************************************************** */
 
 void ImageSaverServer::start_server() {
     INFO << "Image Saver Server initialized." << std::endl;
@@ -59,7 +33,7 @@ void ImageSaverServer::start_server() {
     std::string request, response;
     while (true) {
         if (server->listen(request) == 1) {
-            break; // Exception occured during listening/parsing the request, e.g. listening timeout. Error logged by zmq.
+            break; // In case exception occured when  listening/parsing the request, e.g. listening timeout. Error logged by zmq.
         }
 
         try {
@@ -105,26 +79,11 @@ std::string ImageSaverServer::handle_request(std::string request) {
     return "404";
 }
 
-std::string ImageSaverServer::get_experiment_folder_name(std::string shot_address) {
-    boost::filesystem::path shot_path = shot_address;
-    boost::filesystem::path output = shot_path.parent_path().parent_path();
-    return output.string();
-}
-
-std::string ImageSaverServer::get_images_folder_name(std::string shot_address) {
-    boost::filesystem::path output = get_experiment_folder_name(shot_address);
-    output = output / boost::filesystem::path(image_folder_name);
-    output = output / boost::filesystem::path(shot_address).filename();
-
-    std::string output_str = output.string();
-    return output_str.substr(0, output_str.length() - 3);
-}
-
 void ImageSaverServer::transition_to_buffered(std::string h5_address) {
     std::string adjusted_h5_address = adjust_address(h5_address); // Converting server address to local address on this workstation
     INFO << "Processing a new shot: " << adjusted_h5_address << std::endl;
     
-    std::string new_experiment_folder = get_experiment_folder_name(adjusted_h5_address);
+    std::string new_experiment_folder = ImageSaverServer::get_experiment_folder_name(adjusted_h5_address);
     if (experiment_folder != new_experiment_folder || !flag_thread_running.load()) {
         experiment_folder = new_experiment_folder;
         configure_fgc(adjusted_h5_address);
@@ -133,37 +92,12 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
     {
         std::lock_guard<std::mutex> lock(cache_mutex);
         
-        image_folder_address = get_images_folder_name(adjusted_h5_address);
-        timestamp = int(std::chrono::duration<double>(
+        image_folder_address = ImageSaverServer::get_images_folder_name(adjusted_h5_address, image_folder_name);
+        timestamp = long(std::chrono::duration<double>(
             std::chrono::system_clock::now().time_since_epoch()
-        ).count());
+        ).count() * 1000);
         image_counter = 0;
     }
-}
-
-void ImageSaverServer::configure_fgc(std::string h5_address) {
-    INFO << "Configuring the FGC" << std::endl;
-
-    while (flag_thread_running.load()) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-    ShotFile shot(h5_address);
-    EmccdConfig emccd_config(shot);
-
-    fgc->destroy_handle();
-    setup_fgc();
-    fgc->setup(
-        emccd_config.get_roi_w(),
-        emccd_config.get_roi_h(),
-        fgc_timeout_ms, 
-        emccd_config.get_roi_x(),
-        emccd_config.get_roi_y(), 
-        emccd_config.get_vbin(), 
-        emccd_config.get_hbin()
-    );
-
-    flag_thread_running.store(true);
 }
 
 void ImageSaverServer::transition_to_static() {
@@ -172,5 +106,142 @@ void ImageSaverServer::transition_to_static() {
     {
         std::lock_guard<std::mutex> lock(cache_mutex);
         INFO << "Total images captured in this shot: " << image_counter << std::endl;
+
+        std::string address = (boost::filesystem::path(image_folder_address) / boost::filesystem::path(".done")).string();
+        std::vector<uint16_t> empty_image;
+        images_cache.push_back(ImageBatch(empty_image, address));
+    }
+}
+
+void ImageSaverServer::configure_fgc(std::string h5_address) {
+    INFO << "Configuring the FGC" << std::endl;
+
+    // TODO: The destroy handle function breaks the FGC. Fix the bugs in FGC.
+    // while (flag_thread_running.load()) {
+    // }
+
+    // ShotFile shot(h5_address);
+    // EmccdConfig emccd_config(shot);
+
+    // fgc->destroy_handle(); # Suppoed to close connection
+    // set_fgc_roi(
+    //     emccd_config.get_roi_w(),
+    //     emccd_config.get_roi_h(),
+    //     fgc_timeout_ms, 
+    //     emccd_config.get_roi_x(),
+    //     emccd_config.get_roi_y(), 
+    //     emccd_config.get_vbin(), 
+    //     emccd_config.get_hbin()
+    // );
+
+    flag_thread_running.store(true);
+}
+
+/************************************************************************************************** */
+
+ImageSaverServer::ImageSaverServer(std::string config_str) {
+    std::string config_address = IMAGE_SAVER_SERVER(config_str);
+    config = YAML::LoadFile(config_address);
+
+    setup_server();
+    setup_fgc();
+    setup_image_capturer_thread();
+    setup_saver_worker();
+}
+
+/************************************************************************************************** */
+
+void ImageSaverServer::setup_server() {
+    port = config["port"].as<int>();
+    listen_timeout = config["listen_timeout"].as<int>();
+    image_folder_name = config["image_folder_name"].as<std::string>();
+    server = std::make_unique<Server>(port, listen_timeout);
+}
+
+void ImageSaverServer::setup_fgc() {
+    std::string fgc_config_address = IMAGE_SAVER_FGC(config["fgc_config"].as<std::string>());
+    config_fgc = YAML::LoadFile(fgc_config_address);
+
+    fgc = std::make_unique<ActiveSilicon1XCLD>();
+    fgc_timeout_ms = config_fgc["timeout"].as<int>();
+
+    set_fgc_roi(
+        config_fgc["roi_w"].as<int>(),
+        config_fgc["roi_h"].as<int>(),
+        fgc_timeout_ms,
+        config_fgc["roi_x"].as<int>(),
+        config_fgc["roi_y"].as<int>(),
+        config_fgc["vbin"].as<int>(),
+        config_fgc["hbin"].as<int>()
+    );
+}
+
+void ImageSaverServer::set_fgc_roi(int roi_w, int roi_h, int timeout_ms, int roi_x, int roi_y, int vbin, int hbin) {
+    fgc->setup(
+        roi_w,
+        roi_h,
+        timeout_ms,
+        roi_x,
+        roi_y,
+        vbin,
+        hbin
+    );
+    this->roi_w = roi_w;
+    this->roi_h = roi_h;
+}
+
+void ImageSaverServer::setup_image_capturer_thread() {
+    flag_thread_running.store(false);
+    std::thread image_capturer_thread(&ImageSaverServer::capture_images, this);
+    image_capturer_thread.detach();
+}
+
+void ImageSaverServer::setup_saver_worker() {
+    std::thread image_saver_thread(&ImageSaverServer::save_images, this);
+    image_saver_thread.detach();
+}
+
+void ImageSaverServer::capture_images() {
+    while (true) {
+        if (flag_thread_running.load()) {
+            std::vector<uint16_t> current_image = fgc->acquire_single_image();
+            if (current_image.size() == 0) {
+                flag_thread_running.store(false);
+            } else {
+                std::lock_guard<std::mutex> lock(cache_mutex);
+
+                std::ostringstream filename_stream;
+                filename_stream << "image_" << timestamp << "_" << image_counter << ".png";
+                std::string file_name = filename_stream.str();
+                images_cache.push_back(ImageBatch(
+                    current_image,
+                    (boost::filesystem::path(image_folder_address) / boost::filesystem::path(file_name)).string()
+                ));
+                image_counter++;
+            }
+        }
+    }
+}
+
+void ImageSaverServer::save_images() {
+    ImageBatch result;
+    while (true) {
+        {
+            std::lock_guard<std::mutex> lock(cache_mutex);
+            if (images_cache.size() == 0) {
+                continue;
+            }
+            result = images_cache.at(0);
+            images_cache.erase(images_cache.begin());
+        }
+
+        ImageSaverServer::create_directory(boost::filesystem::path(std::get<1>(result)).parent_path());
+        if (std::get<0>(result).size() == 0) { // Empty vector is a flag that the shot is finished, and we save a .done file to denote that.
+            std::ofstream file(std::get<1>(result));
+            file.close();
+            continue;
+        }
+        cv::Mat image(roi_h, roi_w, CV_16U, std::get<0>(result).data());
+        cv::imwrite(std::get<1>(result), image);
     }
 }

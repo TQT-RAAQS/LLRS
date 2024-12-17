@@ -20,14 +20,16 @@ hdf5 = subproject('hdf5-wrapper')
 zmq_server = subproject('zmq-server')
 yaml_cpp = cmake.subproject('yaml-cpp')
 
+
 # dependencies
 fgc_dep = fgc.get_variable('fgc_dep')
 hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
 zmq_server_dep = zmq_server.get_variable('zmq_server_dep')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 boost_dep = dependency('boost', modules: ['filesystem', 'system'])
+opencv_dep = dependency('opencv', required: true)
 
-dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep]
+dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep, opencv_dep, opencv_dep]
 
 # targets
 image_saver = executable(
