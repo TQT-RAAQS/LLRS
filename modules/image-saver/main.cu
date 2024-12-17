@@ -1,19 +1,35 @@
 #include "image-saver-server.h"
 
 int main() {
-    ImageSaverServer iss("default.yml");
-    iss.start_server();
+    // ImageSaverServer iss("default.yml");
+    // iss.start_server();
 
     // ACQUIRING IMAGES
-    // ActiveSilicon1XCLD fgc_object;
-    // ActiveSilicon1XCLD* fgc = &fgc_object;
+    ActiveSilicon1XCLD fgc_object;
+    ActiveSilicon1XCLD* fgc = &fgc_object;
 
-    // int roi_width = 1024, roi_height = 1024, roi_xoffset = 0, roi_yoffset = 0, roi_vbin = 1, roi_hbin = 1;
-    // double fgc_timeout_ms = 2000;
+    int roi_width = 1024, roi_height = 1024, roi_xoffset = 0, roi_yoffset = 0, roi_vbin = 1, roi_hbin = 1;
+    double fgc_timeout_ms = 3000;
 
-    // fgc->setup(roi_width, roi_height, fgc_timeout_ms, roi_xoffset, roi_yoffset, roi_vbin, roi_hbin);
-    // std::vector<uint16_t> current_image = fgc->acquire_single_image();
-    // std::cout << current_image.size() << std::endl;
+    fgc->setup(roi_width, roi_height, fgc_timeout_ms, roi_xoffset, roi_yoffset, roi_vbin, roi_hbin);
+    std::vector<uint16_t> current_image = fgc->acquire_single_image();
+    fgc->destroy_handle();
+    fgc = new ActiveSilicon1XCLD();
+    fgc->setup(roi_width, roi_height, fgc_timeout_ms, roi_xoffset, roi_yoffset, roi_vbin, roi_hbin);
+    current_image = fgc->acquire_single_image();
+    fgc->destroy_handle();
+    fgc = new ActiveSilicon1XCLD();
+    fgc->setup(roi_width, roi_height, fgc_timeout_ms, roi_xoffset, roi_yoffset, roi_vbin, roi_hbin);
+    current_image = fgc->acquire_single_image();
+    fgc->destroy_handle();
+    fgc = new ActiveSilicon1XCLD();
+    fgc->setup(roi_width, roi_height, fgc_timeout_ms, roi_xoffset, roi_yoffset, roi_vbin, roi_hbin);
+    current_image = fgc->acquire_single_image();
+    fgc->destroy_handle();
+    fgc = new ActiveSilicon1XCLD();
+    fgc->setup(roi_width, roi_height, fgc_timeout_ms, roi_xoffset, roi_yoffset, roi_vbin, roi_hbin);
+    current_image = fgc->acquire_single_image();
+    std::cout << current_image.size() << std::endl;
 
 
 

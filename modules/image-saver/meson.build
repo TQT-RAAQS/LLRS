@@ -25,8 +25,9 @@ fgc_dep = fgc.get_variable('fgc_dep')
 hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
 zmq_server_dep = zmq_server.get_variable('zmq_server_dep')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
+boost_dep = dependency('boost', modules: ['filesystem', 'system'])
 
-dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep]
+dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep]
 
 # targets
 image_saver = executable(
