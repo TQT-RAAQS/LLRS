@@ -211,7 +211,7 @@ void ImageSaverServer::capture_images() {
                 std::lock_guard<std::mutex> lock(cache_mutex);
 
                 std::ostringstream filename_stream;
-                filename_stream << "image_" << timestamp << "_" << image_counter << ".png";
+                filename_stream << "image-" << timestamp << "-" << image_counter << ".png";
                 std::string file_name = filename_stream.str();
                 images_cache.push_back(ImageBatch(
                     current_image,
