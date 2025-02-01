@@ -107,8 +107,9 @@ void ImageSaverServer::transition_to_static() {
         std::lock_guard<std::mutex> lock(cache_mutex);
         INFO << "Total images captured in this shot: " << image_counter << std::endl;
 
-        std::string address = (boost::filesystem::path(image_folder_address) / boost::filesystem::path(".done")).string();
+        std::string address = (boost::filesystem::path(image_folder_address) / boost::filesystem::path("emccd_iss.done")).string();
         std::vector<uint16_t> empty_image;
+        std::cout << "address: " << address << std::endl;
         images_cache.push_back(ImageBatch(empty_image, address));
     }
 }
