@@ -80,7 +80,7 @@ int Server::listen(std::string &requestStr) {
 
 void Server::setMetadataAddress(std::string &requestStr1) {
     replaceStr(requestStr1, "\\", "/");
-    replaceStr(requestStr1, "Z:", "/home/tqtraaqs1/Z");
+    replaceStr(requestStr1, "Z:", "/home/tqtraaqs/Z");
     replaceStr(requestStr1, "labscript_shot_outputs", "llrs_data");
     replaceStr(requestStr1, ".h5", "/metadata.json");
     metadata_file_path = requestStr1;
@@ -105,7 +105,7 @@ std::string adjust_address(std::string filename) {
     int start_index = 0;
     if (filename.substr(0, 3) == "Z:\\") {
         start_index = 3;
-        adjusted_filename = "/home/tqtraaqs1/Z/";
+        adjusted_filename = "/home/tqtraaqs/Z/";
     }
 
     for (int i = start_index; i < filename.length(); i++) {

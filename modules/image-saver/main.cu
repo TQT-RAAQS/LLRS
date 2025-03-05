@@ -44,7 +44,7 @@ int main() {
 
 
     // READING SHOTS
-    // std::string address = "/home/tqtraaqs1/Z/Experiments/Rydberg/2024-12-17/01_55_09-test/labscript_shot_outputs/test_2024-12-17_0000_00.h5";
+    // std::string address = "/home/tqtraaqs/Z/Experiments/Rydberg/2024-12-17/01_55_09-test/labscript_shot_outputs/test_2024-12-17_0000_00.h5";
 
     // ShotFile shot(address);
     // EmccdConfig emccd_config(shot);
