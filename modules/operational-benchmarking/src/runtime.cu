@@ -75,9 +75,9 @@ int main(int argc, char *argv[]) {
         // Start repetition loop
         for (int rep = 0; rep < num_reps; ++rep) {
             solver.start_solver(algo, trial_config, target_config);
-            if (batching) {
-                auto moves = solver.gen_moves_list(algo, true);
-                std::cerr << moves.size() << " ";
+            if (true) {
+                auto moves = solver.gen_moves_list(algo, false);
+                std::cout << moves.size() << " ";
             }
             data.push_back(
                 batching ? Util::Collector::get_instance()->get_module(

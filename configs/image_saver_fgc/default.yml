@@ -1,6 +1,6 @@
 timeout: 864000000 # ms
-roi_w: 1024
-roi_h: 1024
+roi_w: 1024 # 490 # 245 # 490
+roi_h: 1024 # 310 # 155 # 310
 roi_x: 0
 roi_y: 0
 hbin: 1
