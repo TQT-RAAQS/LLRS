@@ -158,29 +158,23 @@ class AtomicLattice:
         assert move.extraction_extent <= self.traps.shape[0] and move.extraction_extent >= 0,\
             f"Invalid extraction extent: {move.extraction_extent}"
         
-    def gen_moves_list(self, algorithm, solver_wrapper_so_file):
+    def gen_moves_list(self, algorithm, target_x, target_y, solver_wrapper_so_file):
         initial = [1 if self.traps[j][i].is_occupied() else 0 for j in range(self.N_y)  for i in range(self.N_x)]
         init_arr = array('i', initial)
         init_ptr = cast(init_arr.buffer_info()[0], POINTER(c_int))
-        target_width = min(self.N_x, self.N_y)
-        target_not_width = max(self.N_x, self.N_y)
-        offset = int((target_not_width - target_width) /2)
-        target = []
-        if (target_width == 1): 
-            for j in range(target_not_width//4):
-                target.append(0)
-            for j in range(target_not_width//2):
-                target.append(1)
-            for j in range(target_not_width//4):
-                target.append(0)
-        else:
-            for j in range(offset * target_width):
-                target.append(0)
-            for j in range(target_width * target_width):
-                target.append(1)
-            for j in range(offset * target_width):
-                target.append(0)
-        targ_arr = array('i', target)
+
+        target = np.zeros((self.N_y, self.N_x), dtype=int)
+        assert target_x * target_y == np.sum(initial), "The number of atoms must match the size of the target area."
+
+        cy, cx = self.N_y // 2, self.N_x // 2
+
+        iy0 = cy - int(np.floor(target_y / 2))
+        ix0 = cx - int(np.floor(target_x / 2))
+        iy1 = cy + int(np.ceil(target_y / 2))
+        ix1 = cx + int(np.ceil(target_x / 2))
+        target[iy0:iy1, ix0:ix1] = 1
+
+        targ_arr = array('i', list(target.ravel()))
         targ_ptr = cast(targ_arr.buffer_info()[0], POINTER(c_int))
         dll = CDLL(solver_wrapper_so_file)  # Replace with the path to your SO file
 
@@ -196,5 +190,6 @@ class AtomicLattice:
         for raw_op in raw_ops:
             move_type, index, offset, block_size, ee = raw_op 
             aod_ops.append(Move(MoveType(move_type), index_y=index, index_x=offset, block_size=block_size, extraction_extent=ee)) 
+ 
         return aod_ops
 
