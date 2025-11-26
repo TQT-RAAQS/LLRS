@@ -19,7 +19,7 @@ atom_static: # information on the atom circles in the static traps
 atom_dynamic: # information on the atom circles in the static traps
   radius: 1
   edgecolor: '#000000' # must be in hex with 6 digits
-  facecolor: '#E9CE2C' # must be in hex with 6 digits
+  facecolor: '#F67011' # must be in hex with 6 digits
   lw: 0 # mine width
 padding: 5 # number of pixels between the plot borders and the center of the corner traps
 transition_function: x1 + (x2 - x1) * t # x1 is start, x2 is end, t is normalized time in [0,1]
