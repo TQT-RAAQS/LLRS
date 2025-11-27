@@ -18,7 +18,7 @@ class AtomicLattice:
         self.N_x = N_x
         self.N_y = N_y
 
-        self.traps = np.full((N_y, N_x) ,np.nan, dtype = Trap)
+        self.traps = np.full((N_y, N_x), np.nan, dtype = Trap)
         for i in range(N_x):
             for j in range(N_y):
                 self.traps[j, i] = Trap()
@@ -168,10 +168,10 @@ class AtomicLattice:
 
         cy, cx = self.N_y // 2, self.N_x // 2
 
-        iy0 = cy - int(np.floor(target_y / 2))
-        ix0 = cx - int(np.floor(target_x / 2))
-        iy1 = cy + int(np.ceil(target_y / 2))
-        ix1 = cx + int(np.ceil(target_x / 2))
+        iy0 = cy - target_y // 2
+        ix0 = cx - target_x // 2
+        iy1 = iy0 + target_y
+        ix1 = ix0 + target_x
         target[iy0:iy1, ix0:ix1] = 1
 
         targ_arr = array('i', list(target.ravel()))
@@ -191,5 +191,5 @@ class AtomicLattice:
             move_type, index, offset, block_size, ee = raw_op 
             aod_ops.append(Move(MoveType(move_type), index_y=index, index_x=offset, block_size=block_size, extraction_extent=ee)) 
  
-        return aod_ops
+        return aod_ops, target
 

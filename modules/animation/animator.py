@@ -16,8 +16,9 @@ class Animator:
 
     lattice: AtomicLattice
 
-    def __init__(self, lattice: AtomicLattice, config = "default", config_override: dict = {}):
+    def __init__(self, lattice: AtomicLattice, target: np.ndarray, config = "default", config_override: dict = {}):
         self.lattice = lattice
+        self.target = target
         self._setup_configs(config, config_override)
 
     def animate(self, moves: List[Move], address: str):
@@ -32,13 +33,11 @@ class Animator:
         self._save_frames(moves, address)
         
     def _save_frames(self, moves: List[Move], address: str):
-        file_name = 0 
+        frame_number = 0 
         for move_iter in tqdm(range(len(moves))):
             move = moves[move_iter]
             if move_iter >= 0:
-                frames = self._get_move_frames_and_apply_move(move, address, file_name)
-                for i in range(len(frames)):
-                    file_name += 1
+                frame_number += self._get_move_frames_and_apply_move(move, address, frame_number)
             else:
                 self.lattice.apply_move(move)
 
@@ -53,11 +52,12 @@ class Animator:
         return frames
     
     def _get_move_frames_and_apply_move(self, move: Move, address, file_name):
-        frames = []
+        frame_count = 0
         title = "" 
         fixed_atoms, moving_atoms_src, moving_atoms_dst = self._apply_move_to_lattice(move)
-
+        
         for i in range(self.frames_per_move + 1):
+            frame_count += 1
             fig, ax = plt.subplots(dpi=1500)
 
             ax.axis("off")
@@ -80,10 +80,9 @@ class Animator:
 
             plt.rc('pdf', fonttype=42)
             plt.savefig(f"{address}/{file_name + i:0{4}d}.pdf", format = "pdf")
-            frames += [1]
             plt.close()
 
-        return frames
+        return frame_count
     
     def _apply_move_to_lattice(self, move: Move):
         fixed_atoms = []
@@ -139,7 +138,7 @@ class Animator:
         quarter = self.lattice.N_y / 4
         for i in range(self.lattice.N_y):
             for j in range(self.lattice.N_x):
-                circle = self._get_trap_circle(j, i, i >= quarter and i < 3 * quarter)
+                circle = self._get_trap_circle(j, i, self.target[i, j])
                 ax.add_patch(circle)
                 if self.lattice.get_trap(j, i).trap_state == AtomState.DYNAMIC_TRAP and not extract:
                     square = self._get_dynamic_square(j,i)
