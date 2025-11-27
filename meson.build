@@ -35,3 +35,5 @@ waveform_loader = subproject('waveform-loader')
 
 movement_generator = subproject('movement-generator')
 image_saver = subproject('image-saver')
+
+shared_memory_handler = subproject('shared-memory-handler')
