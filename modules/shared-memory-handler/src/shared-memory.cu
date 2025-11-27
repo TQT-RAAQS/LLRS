@@ -35,7 +35,7 @@ int SharedMemory::get_subscription_count() {
     return output;
 }
 
-int SharedMemory::increment_subscription_count(pid_t pid) {
+int SharedMemory::increase_subscription_count(pid_t pid) {
     this->mtx_lock();
     
     if (this->subscription_count == MAX_SUBSCRIPTION_COUNT) {

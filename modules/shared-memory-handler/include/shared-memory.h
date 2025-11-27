@@ -51,7 +51,7 @@ public:
     void initialize(size_t image_width, size_t image_height);
 
     int get_subscription_count();
-    int increment_subscription_count(pid_t pid);
+    int increase_subscription_count(pid_t pid);
     int decrease_subscription_count(pid_t pid);
 
     bool are_subscribers_done();
