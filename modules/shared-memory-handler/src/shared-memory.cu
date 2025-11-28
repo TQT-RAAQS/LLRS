@@ -87,7 +87,10 @@ bool SharedMemory::are_subscribers_done() {
 }
 
 void SharedMemory::mtx_lock() {
-    pthread_mutex_lock(&this->mtx);
+    int rc = pthread_mutex_lock(&this->mtx);
+    if (rc == EOWNERDEAD) {
+        pthread_mutex_consistent(&this->mtx);
+    }
 }
 
 void SharedMemory::mtx_unlock() {

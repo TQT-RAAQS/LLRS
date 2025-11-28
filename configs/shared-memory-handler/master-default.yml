@@ -1,0 +1,3 @@
+shared_memory_name: "/rydberg-low-latency"
+read_pause_us: 50
+kill_subscribers: true # Kill subscrierse to the shared memory upon closing connection.

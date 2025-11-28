@@ -6,9 +6,7 @@ SharedMemoryHandler::SharedMemoryHandler(std::string config_file_name) {
 }
 
 SharedMemoryHandler::~SharedMemoryHandler() {
-    if (this->flag_is_connected) {
-        this->close_connection();
-    }
+    this->close_connection();
 }
 
 void SharedMemoryHandler::read_configs(std::string config_file_name) {
@@ -25,7 +23,8 @@ bool SharedMemoryHandler::is_connected() {
 void SharedMemoryHandler::open_connection() {
     this->shm_fd = shm_open(shared_memory_name.c_str(), O_RDWR, 0666);
     if (shm_fd == -1)
-        throw std::runtime_error("Shared memory does not exist: " + shared_memory_name);
+        throw std::runtime_error("Shared memory does not exist: " + shared_memory_name + 
+        ". Please open the shared memory handler.");
 
     this->shared_memory_void = mmap(nullptr, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     this->shared_memory = reinterpret_cast<SharedMemory*>(shared_memory_void);
@@ -34,7 +33,9 @@ void SharedMemoryHandler::open_connection() {
 }
 
 void SharedMemoryHandler::close_connection() {
-    if (!flag_is_connected) return;
+    if (!this->is_connected()) {
+        return;
+    }
 
     shared_memory->decrease_subscription_count(pid);
 

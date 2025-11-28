@@ -1,2 +1,0 @@
-shared_memory_name: "/rydberg-low-latency"
-read_pause_us: 50

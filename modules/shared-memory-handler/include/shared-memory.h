@@ -21,7 +21,7 @@
 
 class MasterSharedMemoryHandler;
 
-class alignas(8) SharedMemory {
+class alignas(alignof(pthread_mutex_t)) SharedMemory {
     pthread_mutex_t mtx;
 
     size_t shot_name_length;
@@ -45,9 +45,6 @@ class alignas(8) SharedMemory {
     friend class MasterSharedMemoryHandler;
 
 public:
-    std::atomic<int> a;
-    std::atomic<int> b;
-
     void initialize(size_t image_width, size_t image_height);
 
     int get_subscription_count();

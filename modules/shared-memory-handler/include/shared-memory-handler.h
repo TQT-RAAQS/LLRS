@@ -5,10 +5,10 @@
 
 class SharedMemoryHandler {
     
-    YAML::Node configs;
     void read_configs(std::string config_file_name);
     
 protected:
+    YAML::Node configs;
     std::string shared_memory_name;
     int shm_fd;
     void* shared_memory_void = nullptr;
@@ -19,7 +19,7 @@ protected:
     
 public:
     SharedMemoryHandler(std::string config_file_name);
-    ~SharedMemoryHandler();
+    virtual ~SharedMemoryHandler();
 
     bool is_connected();
     

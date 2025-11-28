@@ -6,6 +6,8 @@
 
 class MasterSharedMemoryHandler : public SharedMemoryHandler {
 
+    bool flag_kill_subscribers;
+    
     void kill_subscribers();
     int clear_memory(); // returns 0 if successful, and -1 if unsuccessful. The -1 code could also be returned if the shared memory space has been already cleared.
     // NOTE: This function is automatically called by close connection if no processes are subscribed to the shared memory environment. However, you can call it directly as well. Be aware that
@@ -13,7 +15,10 @@ class MasterSharedMemoryHandler : public SharedMemoryHandler {
     // we are plagued by zombie processes (processes that could not close connection before the process was terminated.)
 
 public:
-    MasterSharedMemoryHandler(std::string config_file_name) : SharedMemoryHandler(config_file_name) {}
+    MasterSharedMemoryHandler(std::string config_file_name) : SharedMemoryHandler(config_file_name) {
+        this->flag_kill_subscribers = this->configs["kill_subscribers"].as<bool>();
+    }
+    ~MasterSharedMemoryHandler();
 
     void open_connection() override;
     void close_connection() override;

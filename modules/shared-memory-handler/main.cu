@@ -1,12 +1,12 @@
 #include "master-shared-memory-handler.h"
 
 int main() {
-    auto smh = MasterSharedMemoryHandler("default.yml");
+    auto smh = MasterSharedMemoryHandler("master-default.yml");
     smh.open_connection();
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    // std::this_thread::sleep_for(std::chrono::seconds(8));
 
-    smh.close_connection();
+    // smh.close_connection();
 
     return 0;
 }
