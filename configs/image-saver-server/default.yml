@@ -1,4 +1,4 @@
-port: 5557 # 5556 # TODO: RESTORE BACK TO 5556
+port: 5556
 host: emccd-workstation
 listen_timeout: -1 # In ms; -1 corresponds to an infinite timeout.
 fgc_config: default.yml
