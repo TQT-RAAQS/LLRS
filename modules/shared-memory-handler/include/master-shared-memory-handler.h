@@ -7,7 +7,11 @@
 class MasterSharedMemoryHandler : public SharedMemoryHandler {
 
     bool flag_kill_subscribers;
+    int cleanup_pause_ms;
+    std::thread cleanup_thread;
     
+    void clear_broken_subscribers();
+    void setup_cleanup_thread();
     void kill_subscribers();
     int clear_memory(); // returns 0 if successful, and -1 if unsuccessful. The -1 code could also be returned if the shared memory space has been already cleared.
     // NOTE: This function is automatically called by close connection if no processes are subscribed to the shared memory environment. However, you can call it directly as well. Be aware that
@@ -15,13 +19,18 @@ class MasterSharedMemoryHandler : public SharedMemoryHandler {
     // we are plagued by zombie processes (processes that could not close connection before the process was terminated.)
 
 public:
-    MasterSharedMemoryHandler(std::string config_file_name) : SharedMemoryHandler(config_file_name) {
-        this->flag_kill_subscribers = this->configs["kill_subscribers"].as<bool>();
-    }
+    MasterSharedMemoryHandler(std::string config_file_name);
     ~MasterSharedMemoryHandler();
+
+    // Deleting copy constructors explicitly; cannot copy this object because of unmovable objcets like threads.
+    MasterSharedMemoryHandler(const MasterSharedMemoryHandler&) = delete;
+    MasterSharedMemoryHandler& operator=(const MasterSharedMemoryHandler&) = delete;
 
     void open_connection() override;
     void close_connection() override;
+
+    std::vector<pid_t> get_all_subscribers();
+    std::vector<bool> get_all_subscriber_finished_flags();
 };
 
 #endif

@@ -16,7 +16,8 @@ shared_memory_handler_main2 = ['main2.cu']
 shared_memory_handler_sources = [
     'src/shared-memory-handler.cu', 
     'src/master-shared-memory-handler.cu', 
-    'src/shared-memory.cu'
+    'src/shared-memory.cu',
+    'src/master-shared-memory-handler-server.cu',
 ]
 
 # submodules
@@ -30,9 +31,9 @@ yaml_cpp = cmake.subproject('yaml-cpp')
 hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 boost_dep = dependency('boost', modules: ['filesystem', 'system'])
-opencv_dep = dependency('opencv', required: true)
+zmq_server_dep = zmq_server.get_variable('zmq_server_dep')
 
-dependencies = [hdf5_dep, yaml_cpp_dep, boost_dep, opencv_dep]
+dependencies = [hdf5_dep, yaml_cpp_dep, boost_dep, zmq_server_dep]
 
 # targets
 shared_memory_handler = executable(
@@ -58,6 +59,7 @@ shared_memory_handler_lib = library(
     include_directories: shared_memory_handler_include_dir,
     dependencies: dependencies,
 )
+
 shared_memory_handler_dep = declare_dependency(
     include_directories: shared_memory_handler_include_dir,
     link_with: shared_memory_handler_lib,

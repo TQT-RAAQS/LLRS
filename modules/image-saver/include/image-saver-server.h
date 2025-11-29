@@ -59,7 +59,7 @@ class ImageSaverServer {
 
 protected:
 
-    void setup_server();
+    void setup_zmq_client();
     void setup_fgc();
     void setup_image_capturer_thread();
     void setup_saver_worker();

@@ -17,7 +17,7 @@ class Server {
            int listen_timeout = 60000);
     ~Server();
     bool send(const std::string &string);
-    int listen(std::string &reqeustStr);
+    int listen(std::string &reqeustStr, bool verbose = true);
     void set_listen_timeout(int timeout);
     
     

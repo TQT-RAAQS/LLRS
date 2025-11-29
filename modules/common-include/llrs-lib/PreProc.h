@@ -19,7 +19,7 @@ const char kPathSeparator1 = '/';
 #endif
 
 #ifndef PROJECT_BASE_DIR
-#error "PROJECT_BASE_DIR is not defined. This should be done by meson. This should not happen, make sure the meson files are correct."
+#define PROJECT_BASE_DIR "" // Should be set by meson, this is just a place holder.
 #endif
 
 namespace fs = std::experimental::filesystem;
@@ -70,9 +70,12 @@ namespace fs = std::experimental::filesystem;
 #define IMAGE_SAVER_FGC(id)                                                    \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
      kPathSeparator1 + "image-saver-fgc" + kPathSeparator1 + (id))
-#define SHARED_MEMORY_HANDLER(id)                                                \
+#define SHARED_MEMORY_HANDLER(id)                                              \
      (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +       \
       kPathSeparator1 + "shared-memory-handler" + kPathSeparator1 + (id))
+#define MASTER_SHARED_MEMORY_HANDLER_SERVER(id)                                \
+      (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +      \
+       kPathSeparator1 + "master-shared-memory-handler-server" + kPathSeparator1 + (id))
 
 #define TRIAL_NAME(num) ("trial_" + std::to_string(num))
 #define REP_NAME(num) ("repetition_" + std::to_string(num))
