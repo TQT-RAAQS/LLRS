@@ -10,15 +10,21 @@ class MasterSharedMemoryHandlerServer {
 
     YAML::Node configs;
     std::unique_ptr<MasterSharedMemoryHandler> handler;
-    std::thread server_thread;
     std::unique_ptr<Server> zmq_client; // TODO: Server is a bad name; this is actually a zmq_client, and thus the variable name.
     std::atomic<bool> stop_flag;
+
+    std::thread server_thread;
+    std::thread memory_manager_thread;
+
+    std::string previous_shot_name;
+    size_t previous_image_count;
     
     void read_configs(std::string config_name);
     void setup_handler();
     void setup_zmq_client();
 
     void server_worker();
+    void memory_manager_worker();
     std::string handle_request(std::string request);
 
 public:

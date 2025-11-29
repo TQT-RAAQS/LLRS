@@ -18,7 +18,7 @@ MasterSharedMemoryHandler::~MasterSharedMemoryHandler() {
 }
 
 void MasterSharedMemoryHandler::open_connection() {
-    INFO << "Opening master shared memory connection: " << shared_memory_name;
+    INFO << "Opening master shared memory connection: " << shared_memory_name << "\n";
 
     // Try to open existing memory
     shm_fd = shm_open(shared_memory_name.c_str(), O_RDWR, 0666);
@@ -39,13 +39,17 @@ void MasterSharedMemoryHandler::open_connection() {
         ERROR << "Failed to create shared memory: " << shared_memory_name << "\n";
         throw std::runtime_error("Failed to create shared memory");
     }
-    ftruncate(shm_fd, sizeof(SharedMemory));
+    auto ftruncate_result = ftruncate(shm_fd, sizeof(SharedMemory));
+    if (ftruncate_result != 0) {
+        ERROR << "Failed to set the size of the shared memory to " << sizeof(SharedMemory) << "\n";
+        throw std::runtime_error("Failed to set the size of the shared memory.");
+    }
+
     shared_memory_void = mmap(nullptr, sizeof(SharedMemory),
                               PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     shared_memory = reinterpret_cast<SharedMemory*>(shared_memory_void);
 
-    shared_memory->initialize();
-    shared_memory->add_subscriber(pid);
+    shared_memory->initialize(this->pid);
     flag_is_connected = true;
     INFO << "Shared memory created and subscriber added for PID " << pid << "\n";
 
@@ -69,6 +73,8 @@ void MasterSharedMemoryHandler::close_connection() {
         INFO << "Killing subscribers as flag_kill_subscribers is true" << "\n";
         this->kill_subscribers();
     }
+
+    this->shared_memory->destroy_semaphores();
     
     flag_is_connected = false;
     if (this->cleanup_thread.joinable()) {
@@ -93,9 +99,9 @@ void MasterSharedMemoryHandler::kill_subscribers() {
     INFO << "Killing all other subscribers" << "\n";
     this->shared_memory->mtx_lock();
     
-    for (int i = 0; i < shared_memory->subscription_count; ++i) {
+    for (size_t i = 0; i < shared_memory->subscription_count; ++i) {
         pid_t p = shared_memory->subscriber_pids[i];
-        if (p != this->pid && kill(p, 0) == 0) { // only if alive
+        if (p != this->pid && p != PID_EMPTY && kill(p, 0) == 0) { // only if alive
             INFO << "Killing subscriber PID " << p << "\n";
             kill(p, SIGKILL);
         }
@@ -108,7 +114,7 @@ void MasterSharedMemoryHandler::kill_subscribers() {
 void MasterSharedMemoryHandler::clear_broken_subscribers() {
     INFO << "Cleanup thread running for broken subscribers" << "\n";
     while (this->is_connected()) {
-        int count;
+        size_t count;
         std::vector<pid_t> pid_list;
         std::tie(count, pid_list) = this->shared_memory->get_all_subscribers();
 
@@ -137,15 +143,30 @@ std::vector<pid_t> MasterSharedMemoryHandler::get_all_subscribers() {
     return pid_list;
 }
 
-std::vector<bool> MasterSharedMemoryHandler::get_all_subscriber_finished_flags() {
-    int count;
-    std::vector<bool> flags;
-    std::tie(count, flags) = this->shared_memory->get_all_subscriber_finished_flags();
-    INFO << "Retrieved finished flags for " << count << " subscribers" << "\n";
-    return flags;
-}
-
 int MasterSharedMemoryHandler::clear_memory() {
     INFO << "Clearing shared memory: " << shared_memory_name << "\n";
     return shm_unlink(this->shared_memory_name.c_str());
+}
+
+void MasterSharedMemoryHandler::signal_image_saver() {
+    this->shared_memory->master_signal_image_saver(this->pid);
+}
+
+void MasterSharedMemoryHandler::signal_processes() {
+    this->shared_memory->master_signal_others(this->pid);
+}
+
+void MasterSharedMemoryHandler::wait_for_image_saver() {
+    this->shared_memory->master_wait_for_image_saver(this->pid);
+}
+
+void MasterSharedMemoryHandler::wait_for_processes() {
+    this->shared_memory->master_wait_for_others(this->pid);
+}
+
+void MasterSharedMemoryHandler::clear_master_wait_semaphores() {
+    for (size_t i = 0; i < 2 * MAX_SUBSCRIPTION_COUNT; ++i) {
+        sem_post(&this->shared_memory->sem_master_wait_image_saver);
+        sem_post(&this->shared_memory->sem_master_wait_others);
+    }
 }

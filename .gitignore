@@ -68,3 +68,6 @@ builddir/
 
 # Produced PDFs
 *.pdf
+
+.cache
+.cache/*

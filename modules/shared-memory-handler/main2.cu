@@ -10,8 +10,8 @@ int main() {
     smh.open_connection();
     
     smh.register_as_image_saver();
-    
     smh.save_trap_array_information(tw, th, f, a);
+    smh.signal_done();
 
     smh.close_connection();
 

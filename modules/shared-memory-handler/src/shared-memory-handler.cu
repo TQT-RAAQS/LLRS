@@ -53,6 +53,14 @@ void SharedMemoryHandler::register_as_image_saver() {
     INFO << "PID " << pid << " successfully registered as image saver" << "\n";
 }
 
+std::string SharedMemoryHandler::get_shot_name() {
+    return this->shared_memory->get_shot_name();
+}
+
+bool SharedMemoryHandler::set_shot_name(std::string new_shot_name) {
+    return this->shared_memory->set_shot_name(this->pid, new_shot_name);
+}
+
 size_t SharedMemoryHandler::get_trap_width(size_t image_index) {
     size_t width = this->shared_memory->get_trap_width(image_index);
     INFO << "Trap width for image " << image_index << ": " << width << "\n";
@@ -75,23 +83,13 @@ std::vector<uint8_t> SharedMemoryHandler::get_trap_occupancy(size_t image_index)
     return this->shared_memory->get_trap_occupancy(image_index);
 }
 
-void SharedMemoryHandler::set_finished_flag(bool flag) {
-    INFO << "Setting finished flag for PID " << pid << " to " << flag << "\n";
-    auto success = this->shared_memory->set_subscriber_finished_flag(this->pid, flag);
-    if (!success) {
-        ERROR << "Failed to set finished flag for PID " << pid;
-        throw std::runtime_error("Failed to change the success flag. This could be because this process has not subscribed to the shared memory environment.");
-    }
-    INFO << "Finished flag set successfully for PID " << pid << "\n";
-}
-
 void SharedMemoryHandler::open_connection() {
     INFO << "Opening connection to shared memory: " << shared_memory_name << "\n";
     this->shm_fd = shm_open(shared_memory_name.c_str(), O_RDWR, 0666);
     if (shm_fd == -1) {
-        ERROR << "Shared memory does not exist: " << shared_memory_name;
+        ERROR << "Shared memory does not exist: " << shared_memory_name << "\n";
         throw std::runtime_error("Shared memory does not exist: " + shared_memory_name + 
-                                 ". Please open the shared memory handler.");
+                                 ". Please open the master shared memory handler.");
     }
 
     this->shared_memory_void = mmap(nullptr, sizeof(SharedMemory), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
@@ -114,4 +112,12 @@ void SharedMemoryHandler::close_connection() {
     close(shm_fd);
     flag_is_connected = false;
     INFO << "Connection closed successfully for PID " << pid << "\n";
+}
+
+void SharedMemoryHandler::signal_done() {
+    this->shared_memory->submit_done_signal(this->pid);
+}
+
+void SharedMemoryHandler::wait_for_update() {
+    this->shared_memory->submit_wait(this->pid);
 }

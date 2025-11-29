@@ -21,9 +21,14 @@ void MasterSharedMemoryHandlerServer::start() {
         ERROR << "Cannot start server; server thread is already running" << "\n";
         throw std::runtime_error("Cannot start the server; the server seems to be already running.");
     }
-    INFO << "Starting server thread" << "\n";
+
     this->stop_flag.store(false);
+    
+    INFO << "Starting server thread" << "\n";
     this->server_thread = std::thread(&MasterSharedMemoryHandlerServer::server_worker, this);
+
+    INFO << "Starting memory manager thread" << "\n";
+    this->memory_manager_thread = std::thread(&MasterSharedMemoryHandlerServer::memory_manager_worker, this);
 }
 
 void MasterSharedMemoryHandlerServer::stop() {
@@ -31,8 +36,18 @@ void MasterSharedMemoryHandlerServer::stop() {
     if (this->server_thread.joinable()) {
         this->stop_flag.store(true);
         this->server_thread.join();
-        INFO << "Server thread joined" << "\n";
     }
+    INFO << "Server thread joined" << "\n";
+
+    INFO << "Stopping memory manager" << "\n";
+    if (this->memory_manager_thread.joinable()) {
+        this->stop_flag.store(true);
+        this->handler->clear_master_wait_semaphores();
+        this->memory_manager_thread.join();
+    }
+    INFO << "Memory manager joind" << "\n";
+
+    INFO << "Closing handler connection" << "\n";
     this->handler->close_connection();
     INFO << "Handler connection closed" << "\n";
 }
@@ -79,6 +94,23 @@ void MasterSharedMemoryHandlerServer::server_worker() {
     INFO << "Server worker exiting" << "\n";
 }
 
+void MasterSharedMemoryHandlerServer::memory_manager_worker() {
+    // this->previous_shot_name = this->handle_request->shot
+    while (!this->stop_flag.load()) {
+        this->handler->wait_for_image_saver(); // Wait until image saver is done making its changes
+        if (this->stop_flag.load()) break;
+
+        // DO STUFF, RESET IMAGE COUNT OR NOT, ETC
+
+        this->handler->signal_processes(); // Tell the processes to start processing the data.
+        if (this->stop_flag.load()) break;
+        this->handler->wait_for_processes(); // Wait for processes to finish processing the data
+        if (this->stop_flag.load()) break;
+        this->handler->signal_image_saver(); // Signal image saver that we are done.
+        if (this->stop_flag.load()) break;
+    }
+}
+
 std::string MasterSharedMemoryHandlerServer::handle_request(std::string request) {
     if (request == "hello") {
         INFO << "Received hello request" << "\n";
@@ -101,20 +133,6 @@ std::string MasterSharedMemoryHandlerServer::handle_request(std::string request)
             response += SERVER_DELIMITER + std::to_string(pid);
         }
         INFO << "Responding with subscriber PIDs: " << response << "\n";
-        return response;
-    } 
-    else if (request == "get_subscriber_finished_flags") {
-        auto finished_flags = this->handler->get_all_subscriber_finished_flags();
-        if (finished_flags.empty()) {
-            INFO << "No finished flags found" << "\n";
-            return "204";
-        }
-
-        std::string response = "200";
-        for (auto flag : finished_flags) {
-            response += SERVER_DELIMITER + std::to_string(flag);
-        }
-        INFO << "Responding with subscriber finished flags: " << response << "\n";
         return response;
     } 
     else {

@@ -2,4 +2,5 @@ host: emccd-workstation
 port: 9317
 handler_config: master-default.yml
 listen_timeout_ms: 1000 # This means every listen_timeout seconds, the server waits for the trigger 
+semaphore_timeout_ms: 1000
 client_timeout_ms: 1000

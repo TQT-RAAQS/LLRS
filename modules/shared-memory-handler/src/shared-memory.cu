@@ -1,8 +1,16 @@
 #include "shared-memory-handler.h"
 
-void SharedMemory::initialize() {
+void SharedMemory::initialize(pid_t pid) {
     this->initialize_mutex();
     this->initialize_buffer();
+    this->initialize_semaphores();
+
+    this->register_master(pid);
+    this->add_subscriber(pid);
+}
+
+void SharedMemory::register_master(pid_t pid) {
+    this->pid_master = pid;
 }
 
 void SharedMemory::initialize_buffer() {
@@ -12,7 +20,6 @@ void SharedMemory::initialize_buffer() {
     this->subscription_count = 0;
     this->image_count = 0;
 
-    subscriber_finished_flags.fill(false);
     subscriber_pids.fill(PID_EMPTY);
     trap_array_widths.fill(0);
     trap_array_heights.fill(0);
@@ -26,6 +33,138 @@ void SharedMemory::initialize_buffer() {
     }
 
     this->mtx_unlock();
+}
+
+void SharedMemory::initialize_semaphores() {
+    sem_init(&this->sem_master_wait_image_saver, 1, 0);
+    sem_init(&this->sem_image_saver_wait_master, 1, 0);
+    sem_init(&this->sem_others_wait_master, 1, 0);
+    sem_init(&this->sem_master_wait_others, 1, 0);
+}
+
+void SharedMemory::destroy_semaphores() {
+    sem_destroy(&this->sem_master_wait_image_saver);
+    sem_destroy(&this->sem_image_saver_wait_master);
+    sem_destroy(&this->sem_others_wait_master);
+    sem_destroy(&this->sem_master_wait_others);
+}
+
+void SharedMemory::master_signal_image_saver(pid_t pid) {
+    if (!this->is_master(pid)) { // Intentionally not locked
+        throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
+    }
+
+    this->mtx_lock();
+    auto flag_image_saver_exists = this->pid_image_saver != PID_EMPTY;
+    this->mtx_unlock();
+
+    if (!flag_image_saver_exists) {
+        throw std::runtime_error("The image saver is not registered. This is not expected.");
+    }
+
+    sem_post(&this->sem_image_saver_wait_master);
+}
+
+void SharedMemory::master_wait_for_image_saver(pid_t pid) {
+    if (!this->is_master(pid)) { // Intentionally not locked
+        throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
+    }
+
+    sem_wait(&this->sem_master_wait_image_saver);
+}
+
+void SharedMemory::master_signal_others(pid_t pid) {
+    if (!this->is_master(pid)) { // Intentionally not locked
+        throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
+    }
+
+    this->mtx_lock();
+    auto processor_count = this->subscription_count - 1 - (this->pid_image_saver != PID_EMPTY);
+    this->mtx_unlock();
+
+    for (size_t i = 0; i < processor_count; ++i) {
+        sem_post(&this->sem_others_wait_master);
+    }
+}
+
+void SharedMemory::master_wait_for_others(pid_t pid) {
+    if (!this->is_master(pid)) { // Intentionally not locked
+        throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
+    }
+
+    this->mtx_lock();
+    auto processor_count = this->subscription_count - 1 - (this->pid_image_saver != PID_EMPTY);
+    this->mtx_unlock();
+
+    for (size_t i = 0; i < processor_count; ++i) {
+        sem_wait(&this->sem_master_wait_others);
+    }
+}
+
+void SharedMemory::submit_done_signal(pid_t pid) {
+    if (this->is_valid_regular_process_pid(pid)) {
+        sem_post(&this->sem_master_wait_others);
+    } else if (this->is_image_saver(pid)) {
+        sem_post(&this->sem_master_wait_image_saver);
+    } else {
+        throw std::runtime_error("The provided PID is not a valid subscribed shared memory. This operation is invalid.");
+    }
+}
+
+void SharedMemory::submit_wait(pid_t pid) {
+    if (this->is_valid_regular_process_pid(pid)) {
+        sem_wait(&this->sem_others_wait_master);
+    } else if (this->is_image_saver(pid)) {
+        sem_wait(&this->sem_image_saver_wait_master);
+    } else {
+        throw std::runtime_error("The provided PID is not the image saver for the shared memory. This operation is invalid.");
+    }
+}
+
+bool SharedMemory::is_valid_regular_process_pid(pid_t pid) {
+    if (pid == PID_EMPTY || this->is_master(pid) || this->is_image_saver(pid)) {
+        return false;
+    }
+
+    this->mtx_lock();
+    for (size_t i = 0; i < this->subscription_count; ++i) {
+        if (this->subscriber_pids.at(i) == pid) {
+            this->mtx_unlock();
+            return true;
+        }
+    }
+    this->mtx_unlock();
+
+    return false;
+}
+
+bool SharedMemory::is_image_saver(pid_t pid) {
+    if (pid == PID_EMPTY) {
+        return false;
+    }
+
+    this->mtx_lock();
+    auto flag = this->pid_image_saver == pid;
+    this->mtx_unlock();
+
+    return flag;
+}
+
+bool SharedMemory::is_master(pid_t pid) {
+    if (pid == PID_EMPTY) {
+        return false;
+    }
+
+    auto flag = this->pid_master == pid; // No mutex on purpose
+
+    return flag;
+}
+
+void SharedMemory::reset_semaphore(sem_t* sem) {
+    int sval;
+    while (sem_getvalue(sem, &sval) == 0 && sval > 0) {
+        sem_trywait(sem);
+    }
 }
 
 size_t SharedMemory::get_subscription_count() {
@@ -48,19 +187,6 @@ std::tuple<int, std::vector<pid_t>> SharedMemory::get_all_subscribers() {
     return std::make_tuple(count, pid_list);
 }
 
-std::tuple<int, std::vector<bool>> SharedMemory::get_all_subscriber_finished_flags() {
-    this->mtx_lock();
-    size_t count = this->subscription_count;
-    std::vector<bool> flags(count);
-    for (size_t i = 0; i < count; ++i) {
-        flags.at(i) = this->subscriber_finished_flags.at(i);
-    }
-
-    this->mtx_unlock();
-
-    return std::make_tuple(count, flags);
-}
-
 size_t SharedMemory::add_subscriber(pid_t pid) {
     this->mtx_lock();
     
@@ -70,7 +196,6 @@ size_t SharedMemory::add_subscriber(pid_t pid) {
     auto output = ++this->subscription_count;
 
     this->subscriber_pids.at(output - 1) = pid;
-    this->subscriber_finished_flags.at(output - 1) = false;
     
     this->mtx_unlock();
     
@@ -96,7 +221,6 @@ size_t SharedMemory::delete_subscriber(pid_t pid) {
     for (i = 0; i < output; ++i) {
         if (this->subscriber_pids.at(i) == pid) {
             this->subscriber_pids.at(i) = this->subscriber_pids.at(output);
-            this->subscriber_finished_flags.at(i) = this->subscriber_finished_flags.at(output);
             break;
         }
     }
@@ -123,26 +247,6 @@ bool SharedMemory::register_image_saver(pid_t pid) {
     this->mtx_unlock();
 
     return !pid_set;
-}
-
-bool SharedMemory::set_subscriber_finished_flag(pid_t pid, bool flag) {
-    this->mtx_lock();
-    
-    size_t i;
-    for (i = 0; i < this->subscription_count; ++i) {
-        if (this->subscriber_pids.at(i) == pid) {
-            break;
-        }
-    }
-
-    bool found = i < this->subscription_count;
-    if (found) {
-        this->subscriber_finished_flags.at(i) = flag;
-    }
-
-    this->mtx_unlock();
-
-    return found;
 }
 
 bool SharedMemory::save_trap_array_information(pid_t pid, 
@@ -227,7 +331,7 @@ size_t SharedMemory::get_trap_width(size_t  image_index) {
     return this->trap_array_widths.at(image_index);
 }
 
-size_t SharedMemory::get_trap_height(size_t  image_index) {
+size_t SharedMemory::get_trap_height(size_t image_index) {
     auto image_count = this->get_image_count();
 
     if (image_index >= image_count) {
@@ -237,17 +341,29 @@ size_t SharedMemory::get_trap_height(size_t  image_index) {
     return this->trap_array_heights.at(image_index);
 }
 
-bool SharedMemory::are_subscribers_done() {
+std::string SharedMemory::get_shot_name() {
     this->mtx_lock();
+    std::string output(this->shot_name, this->shot_name_length);
+    this->mtx_unlock();
 
-    for (size_t i = 0; i < this->subscription_count; ++i) {
-        if (!this->subscriber_finished_flags.at(i)) {
-            this->mtx_unlock();
-            return false;
-        }
+    return output;
+}
+
+bool SharedMemory::set_shot_name(pid_t pid, std::string new_shot_name) {
+    if (!this->is_image_saver(pid) && !this->is_master(pid)) {
+        ERROR << "The pid " << std::to_string(pid) << " is not the image saver, and thus cannot set the shot name.\n";
+        return false;
+    }
+    if (new_shot_name.length() > SHOT_NAME_MAX_SIZE) {
+        ERROR << "The provided shot name is longer than the maximum shot name allowed: " << std::to_string(new_shot_name.length()) << " > " << std::to_string(SHOT_NAME_MAX_SIZE) << "\n";
+        return false;
     }
 
+    this->mtx_lock();
+    this->shot_name_length = new_shot_name.length();
+    std::copy(new_shot_name.begin(), new_shot_name.end(), this->shot_name);
     this->mtx_unlock();
+
     return true;
 }
 

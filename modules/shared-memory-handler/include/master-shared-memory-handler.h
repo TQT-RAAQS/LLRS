@@ -30,7 +30,14 @@ public:
     void close_connection() override;
 
     std::vector<pid_t> get_all_subscribers();
-    std::vector<bool> get_all_subscriber_finished_flags();
+    
+    void signal_image_saver();
+    void signal_processes();
+
+    void wait_for_image_saver();
+    void wait_for_processes();
+
+    void clear_master_wait_semaphores();
 };
 
 #endif
