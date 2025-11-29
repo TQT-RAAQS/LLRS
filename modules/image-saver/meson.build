@@ -29,7 +29,7 @@ yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 boost_dep = dependency('boost', modules: ['filesystem', 'system'])
 opencv_dep = dependency('opencv', required: true)
 
-dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep, opencv_dep, opencv_dep]
+dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep, opencv_dep]
 
 # targets
 image_saver = executable(

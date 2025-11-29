@@ -38,12 +38,13 @@ void ImageSaverServer::start_server() {
 
         try {
             INFO << "Handling request: " << request << std::endl;
-            response = handle_request(request);
-            server->send(response);
-
             if (request == "exit") {
+                server->send("200");
                 break;
             }
+
+            response = handle_request(request);
+            server->send(response);
         } catch (const std::exception &e) {
             std::cerr << "Error when handling the request: " << request << "; " << e.what() << std::endl;
         }
@@ -144,7 +145,7 @@ ImageSaverServer::ImageSaverServer(std::string config_str) {
     std::string config_address = IMAGE_SAVER_SERVER(config_str);
     config = YAML::LoadFile(config_address);
 
-    setup_server();
+    setup_zmq_client();
     setup_fgc();
     setup_image_capturer_thread();
     setup_saver_worker();
@@ -152,7 +153,7 @@ ImageSaverServer::ImageSaverServer(std::string config_str) {
 
 /************************************************************************************************** */
 
-void ImageSaverServer::setup_server() {
+void ImageSaverServer::setup_zmq_client() {
     port = config["port"].as<int>();
     listen_timeout = config["listen_timeout"].as<int>();
     image_folder_name = config["image_folder_name"].as<std::string>();
