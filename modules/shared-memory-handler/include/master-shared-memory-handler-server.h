@@ -16,9 +16,6 @@ class MasterSharedMemoryHandlerServer {
     std::thread server_thread;
     std::thread memory_manager_thread;
 
-    std::string previous_shot_name;
-    size_t previous_image_count;
-    
     void read_configs(std::string config_name);
     void setup_handler();
     void setup_zmq_client();

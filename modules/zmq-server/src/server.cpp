@@ -55,7 +55,7 @@ bool Server::send(const std::string &string) {
  * payload and the server reacts accordingly. All requests are met with
  * some sort of reply.
  */
-int Server::listen(std::string &requestStr, bool verbose) {
+int Server::listen(std::string &requestStr) {
     zmq::message_t request;
     zmq::recv_result_t result;
 
@@ -64,20 +64,16 @@ int Server::listen(std::string &requestStr, bool verbose) {
         
         if (!result) {
             if (zmq_errno() == EAGAIN) {
-                if (verbose) std::cerr << "Receive timed out" << std::endl;
+                std::cerr << "Receive timed out" << std::endl;
                 return 1; // Receive timed out.
             }
-            if (verbose) {
-                std::cerr << "Receive failed." << std::endl;
-            }
+            std::cerr << "Receive failed." << std::endl;
             return 2; // Receive failed for unknown reason.
         }
         requestStr =
             std::string(static_cast<char *>(request.data()), request.size());
     } catch (const zmq::error_t &e) {
-        if (verbose) {
-            std::cerr << "Error: " << e.what() << std::endl;
-        }
+        std::cerr << "Error: " << e.what() << std::endl;
         return 3; // Unknown error
     }
     return 0; // Success

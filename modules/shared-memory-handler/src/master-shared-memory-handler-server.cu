@@ -64,7 +64,7 @@ void MasterSharedMemoryHandlerServer::server_worker() {
     INFO << "Server worker started" << "\n";
     std::string request, response;
     while (!this->stop_flag.load()) {
-        auto listen_output = this->zmq_client->listen(request, false);
+        auto listen_output = this->zmq_client->listen(request);
 
         if (listen_output == 1) { // timed out
             continue; // just retry listening
@@ -95,17 +95,18 @@ void MasterSharedMemoryHandlerServer::server_worker() {
 }
 
 void MasterSharedMemoryHandlerServer::memory_manager_worker() {
-    // this->previous_shot_name = this->handle_request->shot
     while (!this->stop_flag.load()) {
-        this->handler->wait_for_image_saver(); // Wait until image saver is done making its changes
+        this->handler->wait_for_image_saver(); // Wait until image saver is done making its changes.
         if (this->stop_flag.load()) break;
 
         // DO STUFF, RESET IMAGE COUNT OR NOT, ETC
 
         this->handler->signal_processes(); // Tell the processes to start processing the data.
         if (this->stop_flag.load()) break;
+
         this->handler->wait_for_processes(); // Wait for processes to finish processing the data
         if (this->stop_flag.load()) break;
+
         this->handler->signal_image_saver(); // Signal image saver that we are done.
         if (this->stop_flag.load()) break;
     }

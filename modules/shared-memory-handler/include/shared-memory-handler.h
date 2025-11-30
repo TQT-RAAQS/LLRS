@@ -25,7 +25,7 @@ public:
     void register_as_image_saver();
 
     bool register_image_saver();
-    bool set_shot_name(std::string new_shot_name);
+    bool change_shot(std::string new_shot_name);
 
     bool save_trap_array_information(
         int trap_width, 

@@ -57,8 +57,8 @@ std::string SharedMemoryHandler::get_shot_name() {
     return this->shared_memory->get_shot_name();
 }
 
-bool SharedMemoryHandler::set_shot_name(std::string new_shot_name) {
-    return this->shared_memory->set_shot_name(this->pid, new_shot_name);
+bool SharedMemoryHandler::change_shot(std::string new_shot_name) {
+    return this->shared_memory->change_shot(this->pid, new_shot_name);
 }
 
 size_t SharedMemoryHandler::get_trap_width(size_t image_index) {

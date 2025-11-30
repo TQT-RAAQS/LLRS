@@ -79,7 +79,7 @@ public:
 
     bool register_image_saver(pid_t pid);
     
-    bool set_shot_name(pid_t pid, std::string new_shot_name);
+    bool change_shot(pid_t pid, std::string new_shot_name);
     bool save_trap_array_information(pid_t pid, 
                                      int trap_width, 
                                      int trap_height, 

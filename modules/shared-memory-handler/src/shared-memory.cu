@@ -349,9 +349,9 @@ std::string SharedMemory::get_shot_name() {
     return output;
 }
 
-bool SharedMemory::set_shot_name(pid_t pid, std::string new_shot_name) {
+bool SharedMemory::change_shot(pid_t pid, std::string new_shot_name) {
     if (!this->is_image_saver(pid) && !this->is_master(pid)) {
-        ERROR << "The pid " << std::to_string(pid) << " is not the image saver, and thus cannot set the shot name.\n";
+        ERROR << "The pid " << std::to_string(pid) << " is not the image saver or the master, and thus cannot set the shot name.\n";
         return false;
     }
     if (new_shot_name.length() > SHOT_NAME_MAX_SIZE) {
@@ -362,6 +362,7 @@ bool SharedMemory::set_shot_name(pid_t pid, std::string new_shot_name) {
     this->mtx_lock();
     this->shot_name_length = new_shot_name.length();
     std::copy(new_shot_name.begin(), new_shot_name.end(), this->shot_name);
+    this->image_count = 0;
     this->mtx_unlock();
 
     return true;
