@@ -26,15 +26,14 @@ bool SharedMemoryHandler::is_connected() {
     return this->flag_is_connected;
 }
 
-bool SharedMemoryHandler::save_trap_array_information(int trap_width, 
-                                                      int trap_height, 
-                                                      std::vector<double_t>& trap_fluorescence, 
-                                                      std::vector<uint8_t>& trap_occupied) {
+bool SharedMemoryHandler::save_trap_array_information(size_t trap_array_size,
+                                                      const std::vector<double_t>& trap_fluorescence, 
+                                                      const std::vector<uint8_t>& trap_occupied) {
     INFO << "Saving trap array information: " 
-         << "width=" << trap_width << ", height=" << trap_height 
+         << "trap array size=" << trap_array_size
          << ", fluorescence size=" << trap_fluorescence.size()
          << ", occupancy size=" << trap_occupied.size() << "\n";
-    return this->shared_memory->save_trap_array_information(this->pid, trap_width, trap_height, trap_fluorescence, trap_occupied);
+    return this->shared_memory->save_trap_array_information(this->pid, trap_array_size, trap_fluorescence, trap_occupied);
 }
 
 size_t SharedMemoryHandler::get_image_count() {
@@ -57,20 +56,19 @@ std::string SharedMemoryHandler::get_shot_address() {
     return this->shared_memory->get_shot_address();
 }
 
-bool SharedMemoryHandler::change_shot_address(std::string new_shot_address) {
-    return this->shared_memory->change_shot_address(this->pid, new_shot_address);
+void SharedMemoryHandler::change_shot_address(std::string new_shot_address) {
+    this->shared_memory->change_shot_address(this->pid, new_shot_address);
 }
 
-size_t SharedMemoryHandler::get_trap_width(size_t image_index) {
-    size_t width = this->shared_memory->get_trap_width(image_index);
-    INFO << "Trap width for image " << image_index << ": " << width << "\n";
+void SharedMemoryHandler::reset_image_count() {
+    INFO << "Resetting the number of images in the shared memory to 0\n";
+    this->shared_memory->reset_image_count(this->pid);
+}
+
+size_t SharedMemoryHandler::get_trap_array_size(size_t image_index) {
+    size_t width = this->shared_memory->get_trap_array_size(image_index);
+    INFO << "Trap array size for image " << image_index << ": " << width << "\n";
     return width;
-}
-
-size_t SharedMemoryHandler::get_trap_height(size_t image_index) {
-    size_t height = this->shared_memory->get_trap_height(image_index);
-    INFO << "Trap height for image " << image_index << ": " << height << "\n";
-    return height;
 }
 
 std::vector<double_t> SharedMemoryHandler::get_trap_fluorescence(size_t image_index) {

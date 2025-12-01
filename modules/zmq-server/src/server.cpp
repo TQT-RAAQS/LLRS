@@ -64,7 +64,6 @@ int Server::listen(std::string &requestStr) {
         
         if (!result) {
             if (zmq_errno() == EAGAIN) {
-                std::cerr << "Receive timed out" << std::endl;
                 return 1; // Receive timed out.
             }
             std::cerr << "Receive failed." << std::endl;

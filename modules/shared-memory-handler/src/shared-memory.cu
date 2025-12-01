@@ -21,8 +21,7 @@ void SharedMemory::initialize_buffer() {
     this->image_count = 0;
 
     subscriber_pids.fill(PID_EMPTY);
-    trap_array_widths.fill(0);
-    trap_array_heights.fill(0);
+    trap_array_sizes.fill(0);
 
     for (auto &arr : traps_fluorescence_count) {
         arr.fill(0);
@@ -38,16 +37,23 @@ void SharedMemory::initialize_buffer() {
 void SharedMemory::initialize_semaphores() {
     sem_init(&this->sem_master_wait_image_saver, 1, 0);
     sem_init(&this->sem_image_saver_wait_master, 1, 0);
-    sem_init(&this->sem_others_wait_master, 1, 0);
-    sem_init(&this->sem_master_wait_others, 1, 0);
+
+    for (size_t i = 0; i < MAX_SUBSCRIPTION_COUNT; ++i) {
+        sem_init(&this->sem_worker_wait_master[i], 1, 0);
+        sem_init(&this->sem_master_wait_worker[i], 1, 0);
+    }
 }
 
 void SharedMemory::destroy_semaphores() {
     sem_destroy(&this->sem_master_wait_image_saver);
     sem_destroy(&this->sem_image_saver_wait_master);
-    sem_destroy(&this->sem_others_wait_master);
-    sem_destroy(&this->sem_master_wait_others);
+
+    for (size_t i = 0; i < MAX_SUBSCRIPTION_COUNT; ++i) {
+        sem_destroy(&this->sem_worker_wait_master[i]);
+        sem_destroy(&this->sem_master_wait_worker[i]);
+    }
 }
+
 
 void SharedMemory::master_signal_image_saver(pid_t pid) {
     if (!this->is_master(pid)) { // Intentionally not locked
@@ -78,12 +84,15 @@ void SharedMemory::master_signal_others(pid_t pid) {
         throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
     }
 
-    this->mtx_lock();
-    auto processor_count = this->subscription_count - 1 - (this->pid_image_saver != PID_EMPTY);
-    this->mtx_unlock();
-
-    for (size_t i = 0; i < processor_count; ++i) {
-        sem_post(&this->sem_others_wait_master);
+    // No mutex intentionally
+    auto& pis = this->pid_image_saver;
+    auto& pm = this->pid_master;
+    auto& sc = this->subscription_count;
+    
+    for (size_t i = 0; i < sc; ++i) {
+        if (this->subscriber_pids[i] != pis && this->subscriber_pids[i] != pm) {
+            sem_post(&this->sem_worker_wait_master[i]); // signal each worker individually
+        }
     }
 }
 
@@ -92,18 +101,23 @@ void SharedMemory::master_wait_for_others(pid_t pid) {
         throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
     }
 
-    this->mtx_lock();
-    auto processor_count = this->subscription_count - 1 - (this->pid_image_saver != PID_EMPTY);
-    this->mtx_unlock();
-
-    for (size_t i = 0; i < processor_count; ++i) {
-        sem_wait(&this->sem_master_wait_others);
+    // No mutex intentionally
+    auto& pis = this->pid_image_saver;
+    auto& pm = this->pid_master;
+    auto& sc = this->subscription_count;
+    
+    for (size_t i = 0; i < sc; ++i) {
+        if (this->subscriber_pids[i] != pis && this->subscriber_pids[i] != pm) {
+            sem_wait(&this->sem_master_wait_worker[i]); // signal each worker individually
+        }
     }
 }
 
 void SharedMemory::submit_done_signal(pid_t pid) {
-    if (this->is_valid_regular_process_pid(pid)) {
-        sem_post(&this->sem_master_wait_others);
+    int worker_index = this->is_valid_regular_process_pid(pid);
+
+    if (worker_index != -1) { // regular worker
+        sem_post(&this->sem_master_wait_worker[worker_index]);
     } else if (this->is_image_saver(pid)) {
         sem_post(&this->sem_master_wait_image_saver);
     } else {
@@ -111,9 +125,12 @@ void SharedMemory::submit_done_signal(pid_t pid) {
     }
 }
 
+
 void SharedMemory::submit_wait(pid_t pid) {
-    if (this->is_valid_regular_process_pid(pid)) {
-        sem_wait(&this->sem_others_wait_master);
+    int worker_index = this->is_valid_regular_process_pid(pid);
+
+    if (worker_index != -1) { // regular worker
+        sem_wait(&this->sem_worker_wait_master[worker_index]);
     } else if (this->is_image_saver(pid)) {
         sem_wait(&this->sem_image_saver_wait_master);
     } else {
@@ -121,21 +138,21 @@ void SharedMemory::submit_wait(pid_t pid) {
     }
 }
 
-bool SharedMemory::is_valid_regular_process_pid(pid_t pid) {
+int8_t SharedMemory::is_valid_regular_process_pid(pid_t pid) {
     if (pid == PID_EMPTY || this->is_master(pid) || this->is_image_saver(pid)) {
-        return false;
+        return -1;
     }
 
     this->mtx_lock();
     for (size_t i = 0; i < this->subscription_count; ++i) {
         if (this->subscriber_pids.at(i) == pid) {
             this->mtx_unlock();
-            return true;
+            return i;
         }
     }
     this->mtx_unlock();
 
-    return false;
+    return -1;
 }
 
 bool SharedMemory::is_image_saver(pid_t pid) {
@@ -250,10 +267,9 @@ bool SharedMemory::register_image_saver(pid_t pid) {
 }
 
 bool SharedMemory::save_trap_array_information(pid_t pid, 
-                                               int trap_width,
-                                               int trap_height,
-                                               std::vector<double_t>& trap_fluorescence, 
-                                               std::vector<uint8_t>& traps_occupancy) {
+                                               size_t trap_array_size,
+                                               const std::vector<double_t>& trap_fluorescence, 
+                                               const std::vector<uint8_t>& traps_occupancy) {
     auto image_count = this->get_image_count();
 
     // NOTE: WE INTENTIONALLY AVOID LOCKING THE MUTEX.
@@ -263,13 +279,12 @@ bool SharedMemory::save_trap_array_information(pid_t pid,
     if (image_count == MAX_IMAGE_COUNT) {
         throw std::runtime_error("The maximum number of images reached.");
     }
-    if (trap_width > MAX_ARRAY_WIDTH || trap_height > MAX_ARRAY_HEIGHT) {
+    if (trap_array_size > MAX_TRAP_ARRAY_SIZE) {
         throw std::runtime_error("The provided trap array information is larger than the maximum allowed.");
     }
 
-    int N = trap_width * trap_height;
-    this->trap_array_widths[image_count] = trap_width;
-    this->trap_array_heights[image_count] = trap_height;
+    auto& N = trap_array_size;
+    this->trap_array_sizes[image_count] = trap_array_size;
 
     std::copy(trap_fluorescence.begin(), trap_fluorescence.begin() + N, this->traps_fluorescence_count[image_count].begin());
     std::copy(traps_occupancy.begin(), traps_occupancy.begin() + N, this->traps_occupancy[image_count].begin());
@@ -296,9 +311,7 @@ std::vector<double_t> SharedMemory::get_trap_fluorescence(size_t image_index) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
 
-    auto trap_width = this->trap_array_widths.at(image_index);
-    auto trap_height = this->trap_array_heights.at(image_index);
-    auto N = trap_width * trap_height;
+    auto& N = this->trap_array_sizes.at(image_index);
     
     std::vector<double_t> trap_fluorescence(N);
     std::copy_n(this->traps_fluorescence_count.at(image_index).begin(), N, trap_fluorescence.begin());
@@ -312,33 +325,21 @@ std::vector<uint8_t> SharedMemory::get_trap_occupancy(size_t  image_index) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
 
-    auto trap_width = this->trap_array_widths.at(image_index);
-    auto trap_height = this->trap_array_heights.at(image_index);
-    auto N = trap_width * trap_height;
+    auto& N = this->trap_array_sizes.at(image_index);
     
     std::vector<uint8_t> traps_occupancy(N);
     std::copy_n(this->traps_occupancy.at(image_index).begin(), N, traps_occupancy.begin());
     return traps_occupancy;
 }
 
-size_t SharedMemory::get_trap_width(size_t  image_index) {
+size_t SharedMemory::get_trap_array_size(size_t  image_index) {
     auto image_count = this->get_image_count();
 
     if (image_index >= image_count) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
 
-    return this->trap_array_widths.at(image_index);
-}
-
-size_t SharedMemory::get_trap_height(size_t image_index) {
-    auto image_count = this->get_image_count();
-
-    if (image_index >= image_count) {
-        throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
-    }
-    
-    return this->trap_array_heights.at(image_index);
+    return this->trap_array_sizes.at(image_index);
 }
 
 std::string SharedMemory::get_shot_address() {
@@ -362,6 +363,19 @@ bool SharedMemory::change_shot_address(pid_t pid, std::string new_shot_address) 
     this->mtx_lock();
     this->shot_address_length = new_shot_address.length();
     std::copy(new_shot_address.begin(), new_shot_address.end(), this->shot_address);
+    this->image_count = 0;
+    this->mtx_unlock();
+
+    return true;
+}
+
+bool SharedMemory::reset_image_count(pid_t pid) {
+    if (!this->is_image_saver(pid) && !this->is_master(pid)) {
+        ERROR << "The pid " << std::to_string(pid) << " is not the image saver or the master, and thus cannot set the shot name.\n";
+        return false;
+    }
+
+    this->mtx_lock();
     this->image_count = 0;
     this->mtx_unlock();
 

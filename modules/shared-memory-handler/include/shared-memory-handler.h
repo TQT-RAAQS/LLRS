@@ -24,17 +24,15 @@ public:
     bool is_connected();
     void register_as_image_saver();
 
-    bool register_image_saver();
-    bool change_shot_address(std::string new_shot_address);
+    void change_shot_address(std::string new_shot_address);
+    void reset_image_count();
 
     bool save_trap_array_information(
-        int trap_width, 
-        int trap_height, 
-        std::vector<double_t>& trap_fluorescence, 
-        std::vector<uint8_t>& trap_occupied);
+        size_t trap_array_size,
+        const std::vector<double_t>& trap_fluorescence, 
+        const std::vector<uint8_t>& trap_occupied);
     size_t get_image_count();
-    size_t get_trap_width(size_t image_index);
-    size_t get_trap_height(size_t  image_index);
+    size_t get_trap_array_size(size_t image_index);
     std::string get_shot_address();
     std::vector<double_t> get_trap_fluorescence(size_t  image_index);
     std::vector<uint8_t> get_trap_occupancy(size_t  image_index);

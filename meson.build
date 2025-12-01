@@ -37,6 +37,7 @@ llrs_lib_proj = subproject('llrs-lib')
 hdf_wrapper = subproject('hdf5-wrapper')
 llcs_proj = subproject('llcs')
 llrs_exe_proj = subproject('llrs-exe')
+trap_result_saver_proj = subproject('trap-result-saver')
 
 operational_benchmarking_proj = subproject('operational-benchmarking')
 runtime_benchmarking_proj = subproject('runtime-benchmarking')

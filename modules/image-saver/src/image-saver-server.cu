@@ -75,6 +75,11 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
         configure_fgc(adjusted_h5_address);
         this->reload_psf_data();
     }
+    
+    this->shared_memory_handler->change_shot_address(adjusted_h5_address); // Update the shot address
+    this->shared_memory_handler->signal_done(); // Tell master that a new shot is about to start.
+
+    this->shared_memory_handler->wait_for_update(); // Wait until master confims all the worker processes are done.
 
     {
         std::lock_guard<std::mutex> lock(cache_mutex);
@@ -91,6 +96,10 @@ void ImageSaverServer::transition_to_static() {
     INFO << "Transitioning to static" << std::endl;
 
     {
+        this->shared_memory_handler->signal_done(); // Signal master that the shot is over.
+        this->shared_memory_handler->wait_for_update(); // Wait for master until it confirms processing of the shot is done.
+        this->shared_memory_handler->reset_image_count(); // Resetting the number of images to 0 on the shared memory.
+        
         std::lock_guard<std::mutex> lock(cache_mutex);
         INFO << "Total images captured in this shot: " << image_counter << std::endl;
 
@@ -207,17 +216,47 @@ void ImageSaverServer::setup_saver_worker() {
 }
 
 void ImageSaverServer::capture_images() {
+    std::vector<double_t> fls_counts;
+    std::vector<uint8_t> occupancy;
+
+    fls_counts.reserve(MAX_TRAP_ARRAY_SIZE);
+    occupancy.reserve(MAX_TRAP_ARRAY_SIZE);
+
     while (!this->flag_thread_killed.load()) {
         if (flag_thread_running.load()) {
             std::vector<uint16_t> current_image = fgc->acquire_single_image();
             if (current_image.size() == 0) {
                 flag_thread_running.store(false);
             } else {
-                std::lock_guard<std::mutex> lock(cache_mutex);
+                // Image processing
+                auto trap_count = this->image_processor.get_trap_count();
+                fls_counts.resize(trap_count);
+                occupancy.resize(trap_count);
+                this->image_processor.process(
+                    roi_w,
+                    image_counter,
+                    current_image,
+                    fls_counts,
+                    occupancy
+                );
 
+                // Adding the processed data to the shared memory
+                this->shared_memory_handler->save_trap_array_information(
+                    trap_count,
+                    fls_counts,
+                    occupancy
+                );
+
+                // Signalling the master that a new image has been added
+                this->shared_memory_handler->signal_done();
+
+                // Add to save queue
+                std::lock_guard<std::mutex> lock(cache_mutex);
+                
                 std::ostringstream filename_stream;
                 filename_stream << "image-" << timestamp << "-" << image_counter << ".png";
                 std::string file_name = filename_stream.str();
+                
                 images_cache.push_back(ImageBatch(
                     current_image,
                     (boost::filesystem::path(image_folder_address) / boost::filesystem::path(file_name)).string()

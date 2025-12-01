@@ -165,8 +165,11 @@ void MasterSharedMemoryHandler::wait_for_processes() {
 }
 
 void MasterSharedMemoryHandler::clear_master_wait_semaphores() {
-    for (size_t i = 0; i < 2 * MAX_SUBSCRIPTION_COUNT; ++i) {
-        sem_post(&this->shared_memory->sem_master_wait_image_saver);
-        sem_post(&this->shared_memory->sem_master_wait_others);
+    // Clear the image saver semaphore
+    sem_post(&this->shared_memory->sem_master_wait_image_saver);
+
+    // Clear each worker semaphore individually
+    for (size_t i = 0; i < MAX_SUBSCRIPTION_COUNT; ++i) {
+        sem_post(&this->shared_memory->sem_master_wait_worker[i]);
     }
 }
