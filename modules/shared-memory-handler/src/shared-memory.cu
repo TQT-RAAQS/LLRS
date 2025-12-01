@@ -21,8 +21,7 @@ void SharedMemory::initialize_buffer() {
     this->image_count = 0;
 
     subscriber_pids.fill(PID_EMPTY);
-    trap_array_widths.fill(0);
-    trap_array_heights.fill(0);
+    trap_array_sizes.fill(0);
 
     for (auto &arr : traps_fluorescence_count) {
         arr.fill(0);
@@ -262,10 +261,9 @@ bool SharedMemory::register_image_saver(pid_t pid) {
 }
 
 bool SharedMemory::save_trap_array_information(pid_t pid, 
-                                               int trap_width,
-                                               int trap_height,
-                                               std::vector<double_t>& trap_fluorescence, 
-                                               std::vector<uint8_t>& traps_occupancy) {
+                                               size_t trap_array_size,
+                                               const std::vector<double_t>& trap_fluorescence, 
+                                               const std::vector<uint8_t>& traps_occupancy) {
     auto image_count = this->get_image_count();
 
     // NOTE: WE INTENTIONALLY AVOID LOCKING THE MUTEX.
@@ -275,13 +273,12 @@ bool SharedMemory::save_trap_array_information(pid_t pid,
     if (image_count == MAX_IMAGE_COUNT) {
         throw std::runtime_error("The maximum number of images reached.");
     }
-    if (trap_width > MAX_ARRAY_WIDTH || trap_height > MAX_ARRAY_HEIGHT) {
+    if (trap_array_size > MAX_TRAP_ARRAY_SIZE) {
         throw std::runtime_error("The provided trap array information is larger than the maximum allowed.");
     }
 
-    int N = trap_width * trap_height;
-    this->trap_array_widths[image_count] = trap_width;
-    this->trap_array_heights[image_count] = trap_height;
+    auto& N = trap_array_size;
+    this->trap_array_sizes[image_count] = trap_array_size;
 
     std::copy(trap_fluorescence.begin(), trap_fluorescence.begin() + N, this->traps_fluorescence_count[image_count].begin());
     std::copy(traps_occupancy.begin(), traps_occupancy.begin() + N, this->traps_occupancy[image_count].begin());
@@ -308,9 +305,7 @@ std::vector<double_t> SharedMemory::get_trap_fluorescence(size_t image_index) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
 
-    auto trap_width = this->trap_array_widths.at(image_index);
-    auto trap_height = this->trap_array_heights.at(image_index);
-    auto N = trap_width * trap_height;
+    auto& N = this->trap_array_sizes.at(image_index);
     
     std::vector<double_t> trap_fluorescence(N);
     std::copy_n(this->traps_fluorescence_count.at(image_index).begin(), N, trap_fluorescence.begin());
@@ -324,33 +319,21 @@ std::vector<uint8_t> SharedMemory::get_trap_occupancy(size_t  image_index) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
 
-    auto trap_width = this->trap_array_widths.at(image_index);
-    auto trap_height = this->trap_array_heights.at(image_index);
-    auto N = trap_width * trap_height;
+    auto& N = this->trap_array_sizes.at(image_index);
     
     std::vector<uint8_t> traps_occupancy(N);
     std::copy_n(this->traps_occupancy.at(image_index).begin(), N, traps_occupancy.begin());
     return traps_occupancy;
 }
 
-size_t SharedMemory::get_trap_width(size_t  image_index) {
+size_t SharedMemory::get_trap_array_size(size_t  image_index) {
     auto image_count = this->get_image_count();
 
     if (image_index >= image_count) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
 
-    return this->trap_array_widths.at(image_index);
-}
-
-size_t SharedMemory::get_trap_height(size_t image_index) {
-    auto image_count = this->get_image_count();
-
-    if (image_index >= image_count) {
-        throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
-    }
-    
-    return this->trap_array_heights.at(image_index);
+    return this->trap_array_sizes.at(image_index);
 }
 
 std::string SharedMemory::get_shot_address() {
