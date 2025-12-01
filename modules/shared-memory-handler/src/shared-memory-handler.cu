@@ -56,8 +56,13 @@ std::string SharedMemoryHandler::get_shot_address() {
     return this->shared_memory->get_shot_address();
 }
 
-bool SharedMemoryHandler::change_shot_address(std::string new_shot_address) {
-    return this->shared_memory->change_shot_address(this->pid, new_shot_address);
+void SharedMemoryHandler::change_shot_address(std::string new_shot_address) {
+    this->shared_memory->change_shot_address(this->pid, new_shot_address);
+}
+
+void SharedMemoryHandler::reset_image_count() {
+    INFO << "Resetting the number of images in the shared memory to 0\n";
+    this->shared_memory->reset_image_count(this->pid);
 }
 
 size_t SharedMemoryHandler::get_trap_array_size(size_t image_index) {

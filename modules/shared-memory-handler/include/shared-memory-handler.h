@@ -24,7 +24,8 @@ public:
     bool is_connected();
     void register_as_image_saver();
 
-    bool change_shot_address(std::string new_shot_address);
+    void change_shot_address(std::string new_shot_address);
+    void reset_image_count();
 
     bool save_trap_array_information(
         size_t trap_array_size,

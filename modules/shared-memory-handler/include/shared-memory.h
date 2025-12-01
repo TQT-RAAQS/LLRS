@@ -79,6 +79,7 @@ public:
     bool register_image_saver(pid_t pid);
     
     bool change_shot_address(pid_t pid, std::string new_shot_address);
+    bool reset_image_count(pid_t pid);
     bool save_trap_array_information(pid_t pid, 
                                      size_t trap_array_size, 
                                      const std::vector<double_t>& trap_fluorescence, 

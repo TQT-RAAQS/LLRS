@@ -101,15 +101,21 @@ void MasterSharedMemoryHandlerServer::memory_manager_worker() {
     if (current_image_count != 0) {
         throw std::runtime_error("The initial image count is not 0. This is not expected.");
     }
-    uint16_t images_processed_count = SHOT_NOT_BEGUN_YET; // Flag that no shot has run yet.
+    int16_t images_processed_count = SHOT_NOT_BEGUN_YET; // Flag that no shot has run yet.
 
     while (!this->stop_flag.load()) {
         this->handler->wait_for_image_saver(); // Wait until image saver sends a trigger.
+        if (this->stop_flag.load()) break;
 
         current_image_count = this->handler->get_image_count();
+        INFO << "Current image count is: " << std::to_string(current_image_count) << std::endl;
+        INFO << "Number of processed images is: " << std::to_string(images_processed_count) << std::endl;
         if (current_image_count == 0 && images_processed_count == SHOT_NOT_BEGUN_YET) { // Transition to buffer; the shot has begun.
             this->handler->signal_processes(); // Tell the processes to initialize.
+            
             this->handler->wait_for_processes(); // Wait for them to be initialized.
+            if (this->stop_flag.load()) break;
+            
             this->handler->signal_image_saver(); // Tell the image saver that the processes are ready and that it can proceed.
 
             images_processed_count = 0;
@@ -121,14 +127,17 @@ void MasterSharedMemoryHandlerServer::memory_manager_worker() {
 
         } else if (current_image_count == images_processed_count) { // The shot is done.
             this->handler->signal_processes(); // Inform the processes that the experiment is over.
+            
             this->handler->wait_for_processes(); // Wait for the processes to acknowledge completion.
+            if (this->stop_flag.load()) break;
+
             this->handler->signal_image_saver(); // Signal the image saver that all processes are done.
 
             images_processed_count = SHOT_NOT_BEGUN_YET; // Flag that the current shot is over.
 
         } else {
             throw std::runtime_error("Unexpected case in the memory manager of the master shared memory handler. This is most likely a bug. Current image count: " + \
-                std::to_string(current_image_count) + ", previous image count: " + std::to_string(images_processed_count) + ".");
+                std::to_string(current_image_count) + ", processed image count: " + std::to_string(images_processed_count) + ".");
         }
     }
 }

@@ -84,12 +84,15 @@ void SharedMemory::master_signal_others(pid_t pid) {
         throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
     }
 
-    this->mtx_lock();
-    auto processor_count = this->subscription_count - 1 - (this->pid_image_saver != PID_EMPTY);
-    this->mtx_unlock();
-
-    for (size_t i = 0; i < processor_count; ++i) {
-        sem_post(&this->sem_worker_wait_master[i]); // signal each worker individually
+    // No mutex intentionally
+    auto& pis = this->pid_image_saver;
+    auto& pm = this->pid_master;
+    auto& sc = this->subscription_count;
+    
+    for (size_t i = 0; i < sc; ++i) {
+        if (this->subscriber_pids[i] != pis && this->subscriber_pids[i] != pm) {
+            sem_post(&this->sem_worker_wait_master[i]); // signal each worker individually
+        }
     }
 }
 
@@ -98,12 +101,15 @@ void SharedMemory::master_wait_for_others(pid_t pid) {
         throw std::runtime_error("This is not the master process, and is not allowed to call this function.");
     }
 
-    this->mtx_lock();
-    auto processor_count = this->subscription_count - 1 - (this->pid_image_saver != PID_EMPTY);
-    this->mtx_unlock();
-
-    for (size_t i = 0; i < processor_count; ++i) {
-        sem_wait(&this->sem_master_wait_worker[i]); // wait for worker[i] to signal
+    // No mutex intentionally
+    auto& pis = this->pid_image_saver;
+    auto& pm = this->pid_master;
+    auto& sc = this->subscription_count;
+    
+    for (size_t i = 0; i < sc; ++i) {
+        if (this->subscriber_pids[i] != pis && this->subscriber_pids[i] != pm) {
+            sem_wait(&this->sem_master_wait_worker[i]); // signal each worker individually
+        }
     }
 }
 
@@ -357,6 +363,19 @@ bool SharedMemory::change_shot_address(pid_t pid, std::string new_shot_address) 
     this->mtx_lock();
     this->shot_address_length = new_shot_address.length();
     std::copy(new_shot_address.begin(), new_shot_address.end(), this->shot_address);
+    this->image_count = 0;
+    this->mtx_unlock();
+
+    return true;
+}
+
+bool SharedMemory::reset_image_count(pid_t pid) {
+    if (!this->is_image_saver(pid) && !this->is_master(pid)) {
+        ERROR << "The pid " << std::to_string(pid) << " is not the image saver or the master, and thus cannot set the shot name.\n";
+        return false;
+    }
+
+    this->mtx_lock();
     this->image_count = 0;
     this->mtx_unlock();
 

@@ -74,11 +74,12 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
         experiment_folder = new_experiment_folder;
         configure_fgc(adjusted_h5_address);
         this->reload_psf_data();
-        
-        this->shared_memory_handler->change_shot_address(adjusted_h5_address); // Update the shot address
-        this->shared_memory_handler->signal_done(); // Tell master that a new shot is about to start.
-        this->shared_memory_handler->wait_for_update(); // Wait until master confims all the worker processes are done.
     }
+    
+    this->shared_memory_handler->change_shot_address(adjusted_h5_address); // Update the shot address
+    this->shared_memory_handler->signal_done(); // Tell master that a new shot is about to start.
+
+    this->shared_memory_handler->wait_for_update(); // Wait until master confims all the worker processes are done.
 
     {
         std::lock_guard<std::mutex> lock(cache_mutex);
@@ -97,6 +98,7 @@ void ImageSaverServer::transition_to_static() {
     {
         this->shared_memory_handler->signal_done(); // Signal master that the shot is over.
         this->shared_memory_handler->wait_for_update(); // Wait for master until it confirms processing of the shot is done.
+        this->shared_memory_handler->reset_image_count(); // Resetting the number of images to 0 on the shared memory.
         
         std::lock_guard<std::mutex> lock(cache_mutex);
         INFO << "Total images captured in this shot: " << image_counter << std::endl;
