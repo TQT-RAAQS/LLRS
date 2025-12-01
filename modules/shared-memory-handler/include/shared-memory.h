@@ -46,10 +46,11 @@ class alignas(alignof(pthread_mutex_t)) SharedMemory {
 
     sem_t sem_master_wait_image_saver;
     sem_t sem_image_saver_wait_master;
-    sem_t sem_others_wait_master;
-    sem_t sem_master_wait_others;
 
-    bool is_valid_regular_process_pid(pid_t pid);
+    std::array<sem_t, MAX_SUBSCRIPTION_COUNT> sem_worker_wait_master;
+    std::array<sem_t, MAX_SUBSCRIPTION_COUNT> sem_master_wait_worker;
+
+    int8_t is_valid_regular_process_pid(pid_t pid); // Returns -1 if not valid, and returns the index if valid.
     bool is_image_saver(pid_t pid);
     bool is_master(pid_t pid);
 

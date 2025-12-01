@@ -38,16 +38,23 @@ void SharedMemory::initialize_buffer() {
 void SharedMemory::initialize_semaphores() {
     sem_init(&this->sem_master_wait_image_saver, 1, 0);
     sem_init(&this->sem_image_saver_wait_master, 1, 0);
-    sem_init(&this->sem_others_wait_master, 1, 0);
-    sem_init(&this->sem_master_wait_others, 1, 0);
+
+    for (size_t i = 0; i < MAX_SUBSCRIPTION_COUNT; ++i) {
+        sem_init(&this->sem_worker_wait_master[i], 1, 0);
+        sem_init(&this->sem_master_wait_worker[i], 1, 0);
+    }
 }
 
 void SharedMemory::destroy_semaphores() {
     sem_destroy(&this->sem_master_wait_image_saver);
     sem_destroy(&this->sem_image_saver_wait_master);
-    sem_destroy(&this->sem_others_wait_master);
-    sem_destroy(&this->sem_master_wait_others);
+
+    for (size_t i = 0; i < MAX_SUBSCRIPTION_COUNT; ++i) {
+        sem_destroy(&this->sem_worker_wait_master[i]);
+        sem_destroy(&this->sem_master_wait_worker[i]);
+    }
 }
+
 
 void SharedMemory::master_signal_image_saver(pid_t pid) {
     if (!this->is_master(pid)) { // Intentionally not locked
@@ -83,7 +90,7 @@ void SharedMemory::master_signal_others(pid_t pid) {
     this->mtx_unlock();
 
     for (size_t i = 0; i < processor_count; ++i) {
-        sem_post(&this->sem_others_wait_master);
+        sem_post(&this->sem_worker_wait_master[i]); // signal each worker individually
     }
 }
 
@@ -97,13 +104,15 @@ void SharedMemory::master_wait_for_others(pid_t pid) {
     this->mtx_unlock();
 
     for (size_t i = 0; i < processor_count; ++i) {
-        sem_wait(&this->sem_master_wait_others);
+        sem_wait(&this->sem_master_wait_worker[i]); // wait for worker[i] to signal
     }
 }
 
 void SharedMemory::submit_done_signal(pid_t pid) {
-    if (this->is_valid_regular_process_pid(pid)) {
-        sem_post(&this->sem_master_wait_others);
+    int worker_index = this->is_valid_regular_process_pid(pid);
+
+    if (worker_index != -1) { // regular worker
+        sem_post(&this->sem_master_wait_worker[worker_index]);
     } else if (this->is_image_saver(pid)) {
         sem_post(&this->sem_master_wait_image_saver);
     } else {
@@ -111,9 +120,12 @@ void SharedMemory::submit_done_signal(pid_t pid) {
     }
 }
 
+
 void SharedMemory::submit_wait(pid_t pid) {
-    if (this->is_valid_regular_process_pid(pid)) {
-        sem_wait(&this->sem_others_wait_master);
+    int worker_index = this->is_valid_regular_process_pid(pid);
+
+    if (worker_index != -1) { // regular worker
+        sem_wait(&this->sem_worker_wait_master[worker_index]);
     } else if (this->is_image_saver(pid)) {
         sem_wait(&this->sem_image_saver_wait_master);
     } else {
@@ -121,21 +133,21 @@ void SharedMemory::submit_wait(pid_t pid) {
     }
 }
 
-bool SharedMemory::is_valid_regular_process_pid(pid_t pid) {
+int8_t SharedMemory::is_valid_regular_process_pid(pid_t pid) {
     if (pid == PID_EMPTY || this->is_master(pid) || this->is_image_saver(pid)) {
-        return false;
+        return -1;
     }
 
     this->mtx_lock();
     for (size_t i = 0; i < this->subscription_count; ++i) {
         if (this->subscriber_pids.at(i) == pid) {
             this->mtx_unlock();
-            return true;
+            return i;
         }
     }
     this->mtx_unlock();
 
-    return false;
+    return -1;
 }
 
 bool SharedMemory::is_image_saver(pid_t pid) {
