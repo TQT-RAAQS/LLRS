@@ -175,3 +175,90 @@ void Processing::ImageProcessor::apply_threshold(
     }
     END_TIMER("II-Threshold");
 }
+
+Processing::ImageProcessor::ImageProcessor() {
+    this->reload();
+}
+
+size_t Processing::ImageProcessor::get_trap_count() {
+    return this->psfs.size();
+}
+
+void Processing::ImageProcessor::process(
+             size_t image_width,
+             size_t image_index,
+             const std::vector<uint16_t>& image,
+             std::vector<double_t>& fls_counts,
+             std::vector<uint8_t>& occupancy) {
+    auto image_data = image.data();
+    auto fls_data = fls_counts.data();
+    auto occupancy_data = occupancy.data();
+    auto psfs_data = this->psfs.data();
+    auto thresholds_data = image_index >= this->thresholds.size() ? this->thresholds.back().data() : this->thresholds[image_index].data();
+
+    auto trap_count = this->psfs.size();
+    auto box_size = this->psfs[0].size();
+
+    #pragma omp parallel for num_threads(16)
+    for (size_t i = 0; i < trap_count; ++i) {
+        double sum = 0;
+        for (size_t j = 0; j < box_size; ++j) {
+            auto& psf_tpl = *( ( *(psfs_data + i) ).data() + j );
+            
+            auto y = std::get<0>(psf_tpl);
+            auto x = std::get<1>(psf_tpl);
+            auto weight = std::get<2>(psf_tpl);
+
+            sum += weight * *(image_data + (y*image_width) + x);
+        }
+        *(fls_data + i) = sum;
+        *(occupancy_data + i) = (sum >= *(thresholds_data + i));
+    }
+}
+
+void Processing::ImageProcessor::reload() {
+    std::ifstream infile(PSF_TRANSLATION_FILE);
+    this->parse_file(infile);
+    infile.close();
+}
+
+void Processing::ImageProcessor::parse_file(std::ifstream& infile) {
+    this->psfs.clear();
+    this->thresholds.clear();
+
+    // Read header
+    int64_t trap_count, box_size_w, box_size_h, image_count;
+    infile.read(reinterpret_cast<char*>(&trap_count), sizeof(trap_count));
+    infile.read(reinterpret_cast<char*>(&box_size_w), sizeof(box_size_w));
+    infile.read(reinterpret_cast<char*>(&box_size_h), sizeof(box_size_h));
+    infile.read(reinterpret_cast<char*>(&image_count), sizeof(image_count));
+
+    this->psfs.resize(trap_count);
+    for (int64_t i = 0; i < trap_count; ++i) {
+        int64_t yc, xc;
+        infile.read(reinterpret_cast<char*>(&yc), sizeof(yc));
+        infile.read(reinterpret_cast<char*>(&xc), sizeof(xc));
+
+        auto& psf_vec = this->psfs[i];
+        psf_vec.reserve(box_size_w * box_size_h);
+
+        std::vector<double> psf_data(box_size_w * box_size_h);
+        infile.read(reinterpret_cast<char*>(psf_data.data()), sizeof(double) * psf_data.size());
+
+        for (int64_t j = 0; j < box_size_w; ++j) {
+            for (int64_t k = 0; k < box_size_h; ++k) {
+                int64_t y = yc - (box_size_w / 2) + k;
+                int64_t x = xc - (box_size_h / 2) + j;
+                double p = psf_data[j * box_size_h + k];
+                psf_vec.emplace_back(y, x, p);
+            }
+        }
+    }
+
+    this->thresholds.resize(image_count);
+    for (int64_t i = 0; i < image_count; ++i) {
+        auto& thresholds_vec = this->thresholds[i];
+        thresholds_vec.resize(trap_count);
+        infile.read(reinterpret_cast<char*>(thresholds_vec.data()), sizeof(double) * trap_count);
+    }
+}

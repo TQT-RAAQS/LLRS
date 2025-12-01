@@ -19,6 +19,10 @@ fgc = subproject('fgc')
 hdf5 = subproject('hdf5-wrapper')
 zmq_server = subproject('zmq-server')
 yaml_cpp = cmake.subproject('yaml-cpp')
+shared_memory = subproject('shared-memory-handler')
+image_processing = subproject('image-processing')
+configs_translator_proj = subproject('configs-translator')
+
 
 
 # dependencies
@@ -28,13 +32,24 @@ zmq_server_dep = zmq_server.get_variable('zmq_server_dep')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 boost_dep = dependency('boost', modules: ['filesystem', 'system'])
 opencv_dep = dependency('opencv', required: true)
+shared_memory_dep = shared_memory.get_variable('shared_memory_handler_dep')
+image_processing_dep = image_processing.get_variable('llrs_lib_image_processing_dep')
+configs_translator_dep = configs_translator_proj.get_variable('configs_translator_dep')
 
-dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep, opencv_dep]
+dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep, shared_memory_dep, image_processing_dep, opencv_dep, configs_translator_dep]
 
 # targets
 image_saver = executable(
     'image-saver',
     image_saver_main + image_saver_sources,
+    link_args: '-lstdc++fs',
+    dependencies: dependencies,
+    include_directories: image_saver_include_dir
+)
+
+image_saver_2 = executable(
+    'test_image_analysis',
+    ['image-saver-test.cu'] + image_saver_sources,
     link_args: '-lstdc++fs',
     dependencies: dependencies,
     include_directories: image_saver_include_dir

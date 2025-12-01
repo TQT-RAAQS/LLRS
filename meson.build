@@ -7,9 +7,19 @@ project(
     subproject_dir: 'modules',
 )
 
+fs = import('fs')
+root = meson.project_source_root()
+
+root_parts = root.split('/')
+shared_root = join_paths(root_parts[1], root_parts[2], 'Z')
+
+experiment_root = join_paths(fs.parent(root), 'Experiment')
+
 add_global_arguments(
-    '-DPROJECT_BASE_DIR="' + meson.source_root() + '"',
-    '-I' + meson.source_root() + '/modules/common-include',
+    '-DPROJECT_BASE_DIR="' + root + '"',
+    '-DSHARED_DRIVE_DIR="' + shared_root + '"',
+    '-DEXPERIMENT_DIR="' + experiment_root + '"',
+    '-I' + meson.project_source_root() + '/modules/common-include',
     '-D LOGGING_VERBOSE',
     '-O3',
     language: ['c', 'cpp', 'cuda'],
@@ -19,6 +29,7 @@ add_global_arguments('-arch=sm_75', '-gencode=arch=compute_75,code=sm_75', '-Xco
 
 add_global_link_arguments('-lgomp', language: 'cuda')
 # subprojects
+configs_translator_proj = subproject('configs-translator')
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')
 llrs_lib_proj = subproject('llrs-lib')

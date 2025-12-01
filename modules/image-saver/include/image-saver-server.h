@@ -34,11 +34,16 @@ class ImageSaverServer {
     int listen_timeout;
     std::string image_folder_name;
 
+    std::string previous_experiment_folder = "";
     std::string experiment_folder = "";
 
     std::atomic<bool> flag_thread_running;
+    std::atomic<bool> flag_thread_killed;
+
+    std::thread image_saver_thread;
+    std::thread image_capturer_thread;
     
-    std::mutex cache_mutex; 
+    std::mutex cache_mutex;
     int image_counter = 0;
     std::string image_folder_address = "";
     long timestamp = 0;

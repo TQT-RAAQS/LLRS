@@ -49,15 +49,15 @@ void ImageSaverServer::start_server() {
             std::cerr << "Error when handling the request: " << request << "; " << e.what() << std::endl;
         }
     }
+
+    this->flag_thread_killed.store(true);
+    if (this->image_capturer_thread.joinable()) this->image_capturer_thread.join();
+    if (this->image_saver_thread.joinable()) this->image_saver_thread.join();
 }
 
 std::string ImageSaverServer::handle_request(std::string request) {
     if (request == "hello") {
         return "hello";
-    }
-    if (request == "exit") {
-        std::cout << images_cache.size() << std::endl;
-        return "200";
     }
     if (request == "abort") {
         return "done";
@@ -144,6 +144,7 @@ void ImageSaverServer::configure_fgc(std::string h5_address) {
 ImageSaverServer::ImageSaverServer(std::string config_str) {
     std::string config_address = IMAGE_SAVER_SERVER(config_str);
     config = YAML::LoadFile(config_address);
+    this->flag_thread_killed.store(false);
 
     setup_zmq_client();
     setup_fgc();
@@ -194,17 +195,16 @@ void ImageSaverServer::set_fgc_roi(int roi_w, int roi_h, int timeout_ms, int roi
 
 void ImageSaverServer::setup_image_capturer_thread() {
     flag_thread_running.store(false);
-    std::thread image_capturer_thread(&ImageSaverServer::capture_images, this);
+    this->image_capturer_thread = std::thread(&ImageSaverServer::capture_images, this);
     image_capturer_thread.detach();
 }
 
 void ImageSaverServer::setup_saver_worker() {
-    std::thread image_saver_thread(&ImageSaverServer::save_images, this);
-    image_saver_thread.detach();
+    this->image_saver_thread = std::thread(&ImageSaverServer::save_images, this);
 }
 
 void ImageSaverServer::capture_images() {
-    while (true) {
+    while (!this->flag_thread_killed.load()) {
         if (flag_thread_running.load()) {
             std::vector<uint16_t> current_image = fgc->acquire_single_image();
             if (current_image.size() == 0) {
@@ -227,7 +227,7 @@ void ImageSaverServer::capture_images() {
 
 void ImageSaverServer::save_images() {
     ImageBatch result;
-    while (true) {
+    while (!this->flag_thread_killed.load()) {
         {
             std::lock_guard<std::mutex> lock(cache_mutex);
             if (images_cache.size() == 0) {
