@@ -95,20 +95,39 @@ void MasterSharedMemoryHandlerServer::server_worker() {
 }
 
 void MasterSharedMemoryHandlerServer::memory_manager_worker() {
+    uint16_t current_image_count = this->handler->get_image_count();
+    if (current_image_count != 0) {
+        throw std::runtime_error("The initial image count is not 0. This is not expected.");
+    }
+    uint16_t images_processed_count = -1; // Flag that no shot has run yet.
+
     while (!this->stop_flag.load()) {
-        this->handler->wait_for_image_saver(); // Wait until image saver is done making its changes.
-        if (this->stop_flag.load()) break;
+        this->handler->wait_for_image_saver(); // Wait until image saver sends a trigger.
 
-        // DO STUFF, RESET IMAGE COUNT OR NOT, ETC
+        current_image_count = this->handler->get_image_count();
+        if (current_image_count == 0 && images_processed_count == -1) { // Transition to buffer; the processes must initialize.
+            this->handler->signal_processes(); // Tell the processes to initialize.
+            this->handler->wait_for_processes(); // Wait for them to be initialized.
+            this->handler->signal_image_saver(); // Tell the image saver that the processes are ready and that it can proceed.
 
-        this->handler->signal_processes(); // Tell the processes to start processing the data.
-        if (this->stop_flag.load()) break;
+            images_processed_count = 0;
+        
+        }  else if (current_image_count > 0 && current_image_count > images_processed_count && images_processed_count != -1) { // New image from the shot has arrived
+            this->handler->signal_processes(); // Inform the processes that a new image has been taken.
 
-        this->handler->wait_for_processes(); // Wait for processes to finish processing the data
-        if (this->stop_flag.load()) break;
+            images_processed_count++; // Even if current_image_count has increased by more than 1, we increment the previous image count one by one.
 
-        this->handler->signal_image_saver(); // Signal image saver that we are done.
-        if (this->stop_flag.load()) break;
+        } else if (current_image_count == images_processed_count) { // The shot is done.
+            this->handler->signal_processes(); // Inform the processes that the experiment is over.
+            this->handler->wait_for_processes(); // Wait for the processes to acknowledge completion.
+            this->handler->signal_image_saver(); // Signal the image saver that all processes are done.
+
+            images_processed_count = -1; // Flag that the current shot is over.
+
+        } else {
+            throw std::runtime_error("Unexpected case in the memory manager of the master shared memory handler. This is most likely a bug. Current image count: " + \
+                std::to_string(current_image_count) + ", previous image count: " + std::to_string(images_processed_count) + ".");
+        }
     }
 }
 

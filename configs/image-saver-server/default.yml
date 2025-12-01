@@ -1,5 +1,6 @@
 port: 5556
 host: emccd-workstation
 listen_timeout: -1 # In ms; -1 corresponds to an infinite timeout.
-fgc_config: default.yml
+fgc_config: default.yml # Frame grabber card config
+smh_config: default.yml # Shared memory handler config
 image_folder_name: raw_data

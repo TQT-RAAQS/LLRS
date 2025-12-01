@@ -16,7 +16,7 @@ void SharedMemory::register_master(pid_t pid) {
 void SharedMemory::initialize_buffer() {
     this->mtx_lock();
 
-    this->shot_name_length = 0;
+    this->shot_address_length = 0;
     this->subscription_count = 0;
     this->image_count = 0;
 
@@ -341,27 +341,27 @@ size_t SharedMemory::get_trap_height(size_t image_index) {
     return this->trap_array_heights.at(image_index);
 }
 
-std::string SharedMemory::get_shot_name() {
+std::string SharedMemory::get_shot_address() {
     this->mtx_lock();
-    std::string output(this->shot_name, this->shot_name_length);
+    std::string output(this->shot_address, this->shot_address_length);
     this->mtx_unlock();
 
     return output;
 }
 
-bool SharedMemory::change_shot(pid_t pid, std::string new_shot_name) {
+bool SharedMemory::change_shot_address(pid_t pid, std::string new_shot_address) {
     if (!this->is_image_saver(pid) && !this->is_master(pid)) {
         ERROR << "The pid " << std::to_string(pid) << " is not the image saver or the master, and thus cannot set the shot name.\n";
         return false;
     }
-    if (new_shot_name.length() > SHOT_NAME_MAX_SIZE) {
-        ERROR << "The provided shot name is longer than the maximum shot name allowed: " << std::to_string(new_shot_name.length()) << " > " << std::to_string(SHOT_NAME_MAX_SIZE) << "\n";
+    if (new_shot_address.length() > SHOT_ADDRESS_MAX_SIZE) {
+        ERROR << "The provided shot name is longer than the maximum shot name allowed: " << std::to_string(new_shot_address.length()) << " > " << std::to_string(SHOT_ADDRESS_MAX_SIZE) << "\n";
         return false;
     }
 
     this->mtx_lock();
-    this->shot_name_length = new_shot_name.length();
-    std::copy(new_shot_name.begin(), new_shot_name.end(), this->shot_name);
+    this->shot_address_length = new_shot_address.length();
+    std::copy(new_shot_address.begin(), new_shot_address.end(), this->shot_address);
     this->image_count = 0;
     this->mtx_unlock();
 

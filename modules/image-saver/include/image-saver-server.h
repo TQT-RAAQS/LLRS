@@ -13,16 +13,24 @@
 #include <thread>
 #include "server.hpp"
 #include <yaml-cpp/yaml.h>
+#include "labscript-address-utils.h"
 #include "llrs-lib/PreProc.h"
 #include "emccd-config.h"
 #include "shot-file.h"
 #include "activesilicon-1xcld.hpp"
+#include "configs-translator.h"
+#include "ImageProcessor.h"
+#include "shared-memory-handler.h"
 
 using ImageBatch = std::tuple<std::vector<uint16_t>, std::string>; // Image, file address
 
 class ImageSaverServer {
 
     YAML::Node config;
+
+    ConfigsTranslator configs_translator = ConfigsTranslator::instance();
+    Processing::ImageProcessor image_processor;
+    std::unique_ptr<SharedMemoryHandler> shared_memory_handler;
     
     std::unique_ptr<ActiveSilicon1XCLD> fgc;
     YAML::Node config_fgc;
@@ -34,7 +42,6 @@ class ImageSaverServer {
     int listen_timeout;
     std::string image_folder_name;
 
-    std::string previous_experiment_folder = "";
     std::string experiment_folder = "";
 
     std::atomic<bool> flag_thread_running;
@@ -50,16 +57,18 @@ class ImageSaverServer {
     std::vector<ImageBatch> images_cache;
 
     std::string handle_request(std::string request);
+    
+    void reload_psf_data();
+    void setup_shared_memory_handler();
+
     void transition_to_buffered(std::string h5_address);
     void transition_to_static();
-    void configure_fgc(std::string shot_address);
+    void configure_fgc(std::string shot_address_length);
     void set_fgc_roi(int roi_w, int roi_h, int timeout_ms, int roi_x, int roi_y, int vbin, int hbin);
 
     void capture_images();
     void save_images();
     
-    static std::string get_images_folder_name(std::string shot_address, std::string image_folder_name);
-    static std::string get_experiment_folder_name(std::string shot_address);
     static void create_directory(boost::filesystem::path path);
 
 protected:
@@ -72,6 +81,7 @@ protected:
 public:
 
     ImageSaverServer(std::string config_str);
+    ~ImageSaverServer();
     void start_server();
 
 };

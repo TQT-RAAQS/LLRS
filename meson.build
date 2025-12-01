@@ -29,6 +29,7 @@ add_global_arguments('-arch=sm_75', '-gencode=arch=compute_75,code=sm_75', '-Xco
 
 add_global_link_arguments('-lgomp', language: 'cuda')
 # subprojects
+labscript_address_utils_proj = subproject('labscript-address-utils')
 configs_translator_proj = subproject('configs-translator')
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')

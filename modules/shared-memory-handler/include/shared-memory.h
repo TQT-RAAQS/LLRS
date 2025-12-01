@@ -21,7 +21,7 @@
 #define MAX_IMAGE_COUNT 200
 #define MAX_ARRAY_WIDTH 100
 #define MAX_ARRAY_HEIGHT 100
-#define SHOT_NAME_MAX_SIZE 1000
+#define SHOT_ADDRESS_MAX_SIZE 1000
 #define PID_EMPTY 0
 
 class MasterSharedMemoryHandler;
@@ -31,8 +31,8 @@ class alignas(alignof(pthread_mutex_t)) SharedMemory {
 
     pthread_mutex_t mtx;
 
-    size_t shot_name_length;
-    char shot_name[SHOT_NAME_MAX_SIZE];
+    size_t shot_address_length;
+    char shot_address[SHOT_ADDRESS_MAX_SIZE];
     size_t subscription_count;
     size_t image_count;
     pid_t pid_master = PID_EMPTY;
@@ -79,7 +79,7 @@ public:
 
     bool register_image_saver(pid_t pid);
     
-    bool change_shot(pid_t pid, std::string new_shot_name);
+    bool change_shot_address(pid_t pid, std::string new_shot_address);
     bool save_trap_array_information(pid_t pid, 
                                      int trap_width, 
                                      int trap_height, 
@@ -88,7 +88,7 @@ public:
     size_t get_image_count();
     size_t get_trap_width(size_t  image_index);
     size_t get_trap_height(size_t  image_index);
-    std::string get_shot_name();
+    std::string get_shot_address();
     std::vector<double_t> get_trap_fluorescence(size_t image_index);
     std::vector<uint8_t> get_trap_occupancy(size_t image_index);
     size_t get_subscription_count();

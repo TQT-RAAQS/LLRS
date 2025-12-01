@@ -15,17 +15,19 @@ image_saver_main = ['main.cu']
 image_saver_sources = ['src/image-saver-server.cu']
 
 # submodules
+labscript_address_utils = subproject('labscript-address-utils')
 fgc = subproject('fgc')
 hdf5 = subproject('hdf5-wrapper')
 zmq_server = subproject('zmq-server')
 yaml_cpp = cmake.subproject('yaml-cpp')
 shared_memory = subproject('shared-memory-handler')
 image_processing = subproject('image-processing')
-configs_translator_proj = subproject('configs-translator')
+configs_translator = subproject('configs-translator')
 
 
 
 # dependencies
+labscript_address_utils_dep = labscript_address_utils.get_variable('labscript_address_utils_dep')
 fgc_dep = fgc.get_variable('fgc_dep')
 hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
 zmq_server_dep = zmq_server.get_variable('zmq_server_dep')
@@ -34,9 +36,9 @@ boost_dep = dependency('boost', modules: ['filesystem', 'system'])
 opencv_dep = dependency('opencv', required: true)
 shared_memory_dep = shared_memory.get_variable('shared_memory_handler_dep')
 image_processing_dep = image_processing.get_variable('llrs_lib_image_processing_dep')
-configs_translator_dep = configs_translator_proj.get_variable('configs_translator_dep')
+configs_translator_dep = configs_translator.get_variable('configs_translator_dep')
 
-dependencies = [fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep, shared_memory_dep, image_processing_dep, opencv_dep, configs_translator_dep]
+dependencies = [labscript_address_utils_dep, fgc_dep, hdf5_dep, zmq_server_dep, yaml_cpp_dep, boost_dep, shared_memory_dep, image_processing_dep, opencv_dep, configs_translator_dep]
 
 # targets
 image_saver = executable(
