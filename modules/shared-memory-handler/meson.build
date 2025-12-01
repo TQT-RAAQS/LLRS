@@ -21,32 +21,21 @@ shared_memory_handler_sources = [
 ]
 
 # submodules
-fgc = subproject('fgc')
-hdf5 = subproject('hdf5-wrapper')
 zmq_server = subproject('zmq-server')
 yaml_cpp = cmake.subproject('yaml-cpp')
 
 
 # dependencies
-hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 boost_dep = dependency('boost', modules: ['filesystem', 'system'])
 zmq_server_dep = zmq_server.get_variable('zmq_server_dep')
 
-dependencies = [hdf5_dep, yaml_cpp_dep, boost_dep, zmq_server_dep]
+dependencies = [yaml_cpp_dep, boost_dep, zmq_server_dep]
 
 # targets
 shared_memory_handler = executable(
     'shared-memory-handler',
     shared_memory_handler_main + shared_memory_handler_sources,
-    link_args: '-lstdc++fs',
-    dependencies: dependencies,
-    include_directories: shared_memory_handler_include_dir
-)
-
-shared_memory_handler = executable(
-    'shared-memory-handler2',
-    shared_memory_handler_main2 + shared_memory_handler_sources,
     link_args: '-lstdc++fs',
     dependencies: dependencies,
     include_directories: shared_memory_handler_include_dir

@@ -1,3 +1,5 @@
+// PLEASE DELETE THIS. THIS IS NOT GOOD PRACTICE. THIS FILE IS BEING USED FOR RUNTIME BENCHMARKING, WHICH IS NOT ACCEPTABLE.
+
 #include "ImageProcessor-replace.h"
 
 void Processing::ImageProcessorReplace::apply_threshold(

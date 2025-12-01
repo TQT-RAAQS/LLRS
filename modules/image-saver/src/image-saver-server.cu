@@ -2,21 +2,6 @@
 
 /************************************************************************************************** */
 
-std::string ImageSaverServer::get_experiment_folder_name(std::string shot_address) {
-    boost::filesystem::path shot_path = shot_address;
-    boost::filesystem::path output = shot_path.parent_path().parent_path();
-    return output.string();
-}
-
-std::string ImageSaverServer::get_images_folder_name(std::string shot_address, std::string image_folder_name) {
-    boost::filesystem::path output = ImageSaverServer::get_experiment_folder_name(shot_address);
-    output = output / boost::filesystem::path(image_folder_name);
-    output = output / boost::filesystem::path(shot_address).filename();
-
-    std::string output_str = output.string();
-    return output_str.substr(0, output_str.length() - 3);
-}
-
 void ImageSaverServer::create_directory(boost::filesystem::path path) {
     boost::filesystem::path parent = path.parent_path();
     if (!boost::filesystem::exists(parent)) {
@@ -49,15 +34,15 @@ void ImageSaverServer::start_server() {
             std::cerr << "Error when handling the request: " << request << "; " << e.what() << std::endl;
         }
     }
+
+    this->flag_thread_killed.store(true);
+    if (this->image_capturer_thread.joinable()) this->image_capturer_thread.join();
+    if (this->image_saver_thread.joinable()) this->image_saver_thread.join();
 }
 
 std::string ImageSaverServer::handle_request(std::string request) {
     if (request == "hello") {
         return "hello";
-    }
-    if (request == "exit") {
-        std::cout << images_cache.size() << std::endl;
-        return "200";
     }
     if (request == "abort") {
         return "done";
@@ -84,16 +69,17 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
     std::string adjusted_h5_address = adjust_address(h5_address); // Converting server address to local address on this workstation
     INFO << "Processing a new shot: " << adjusted_h5_address << std::endl;
     
-    std::string new_experiment_folder = ImageSaverServer::get_experiment_folder_name(adjusted_h5_address);
+    std::string new_experiment_folder = LabscriptAddressUtils::get_experiment_folder_name(adjusted_h5_address);
     if (experiment_folder != new_experiment_folder || !flag_thread_running.load()) {
         experiment_folder = new_experiment_folder;
         configure_fgc(adjusted_h5_address);
+        this->reload_psf_data();
     }
 
     {
         std::lock_guard<std::mutex> lock(cache_mutex);
         
-        image_folder_address = ImageSaverServer::get_images_folder_name(adjusted_h5_address, image_folder_name);
+        image_folder_address = LabscriptAddressUtils::get_images_folder_name(adjusted_h5_address, image_folder_name);
         timestamp = long(std::chrono::duration<double>(
             std::chrono::system_clock::now().time_since_epoch()
         ).count() * 1000);
@@ -144,14 +130,33 @@ void ImageSaverServer::configure_fgc(std::string h5_address) {
 ImageSaverServer::ImageSaverServer(std::string config_str) {
     std::string config_address = IMAGE_SAVER_SERVER(config_str);
     config = YAML::LoadFile(config_address);
+    this->flag_thread_killed.store(false);
 
     setup_zmq_client();
     setup_fgc();
     setup_image_capturer_thread();
     setup_saver_worker();
+    reload_psf_data();
+    setup_shared_memory_handler();
+}
+
+ImageSaverServer::~ImageSaverServer() {
+    this->shared_memory_handler->close_connection();
 }
 
 /************************************************************************************************** */
+
+void ImageSaverServer::reload_psf_data() {
+    this->configs_translator.translate();
+    this->image_processor.reload();
+}
+
+void ImageSaverServer::setup_shared_memory_handler() {
+    auto smh_config = this->config["smh_config"].as<std::string>();
+    this->shared_memory_handler = std::make_unique<SharedMemoryHandler>(smh_config);
+    this->shared_memory_handler->open_connection();
+    this->shared_memory_handler->register_as_image_saver();
+}
 
 void ImageSaverServer::setup_zmq_client() {
     port = config["port"].as<int>();
@@ -194,17 +199,15 @@ void ImageSaverServer::set_fgc_roi(int roi_w, int roi_h, int timeout_ms, int roi
 
 void ImageSaverServer::setup_image_capturer_thread() {
     flag_thread_running.store(false);
-    std::thread image_capturer_thread(&ImageSaverServer::capture_images, this);
-    image_capturer_thread.detach();
+    this->image_capturer_thread = std::thread(&ImageSaverServer::capture_images, this);
 }
 
 void ImageSaverServer::setup_saver_worker() {
-    std::thread image_saver_thread(&ImageSaverServer::save_images, this);
-    image_saver_thread.detach();
+    this->image_saver_thread = std::thread(&ImageSaverServer::save_images, this);
 }
 
 void ImageSaverServer::capture_images() {
-    while (true) {
+    while (!this->flag_thread_killed.load()) {
         if (flag_thread_running.load()) {
             std::vector<uint16_t> current_image = fgc->acquire_single_image();
             if (current_image.size() == 0) {
@@ -227,7 +230,7 @@ void ImageSaverServer::capture_images() {
 
 void ImageSaverServer::save_images() {
     ImageBatch result;
-    while (true) {
+    while (!this->flag_thread_killed.load()) {
         {
             std::lock_guard<std::mutex> lock(cache_mutex);
             if (images_cache.size() == 0) {

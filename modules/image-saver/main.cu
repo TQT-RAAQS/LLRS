@@ -3,6 +3,7 @@
 int main() {
     ImageSaverServer iss("default.yml");
     iss.start_server();
+    return 0;
 
     // ACQUIRING IMAGES
     // ActiveSilicon1XCLD fgc_object;

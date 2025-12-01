@@ -18,10 +18,6 @@ const char kPathSeparator1 = '/';
 #endif
 #endif
 
-#ifndef PROJECT_BASE_DIR
-#define PROJECT_BASE_DIR "" // Should be set by meson, this is just a place holder.
-#endif
-
 namespace fs = std::experimental::filesystem;
 
 #define FILE_EXISTS(name) (fs::exists(name))
@@ -29,6 +25,18 @@ namespace fs = std::experimental::filesystem;
 #define PSF_PATH(fname)                                                        \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "psf" + kPathSeparator1 + (fname))
+#define PSF_TRANSLATION_FILE                                                   \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+      kPathSeparator1 + "psf" + kPathSeparator1 + "psfs.bin")
+#define TRAPS_ORDERS_TRANSLATION_FILE                                          \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+       kPathSeparator1 + "psf" + kPathSeparator1 + "orders.bin")
+#define CONFIGS_TRANSLATION_READY_FILE                                         \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+       kPathSeparator1 + "translation" + kPathSeparator1 + "flag.done")
+#define PSF_READER_SCRIPT                                                      \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "tools" +          \
+     kPathSeparator1 + "psf-reader.py")
 #define COEF_X_PATH(fname)                                                     \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "coef" + kPathSeparator1 + "primary" +                  \
@@ -71,10 +79,10 @@ namespace fs = std::experimental::filesystem;
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
      kPathSeparator1 + "image-saver-fgc" + kPathSeparator1 + (id))
 #define SHARED_MEMORY_HANDLER(id)                                              \
-     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +       \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
       kPathSeparator1 + "shared-memory-handler" + kPathSeparator1 + (id))
 #define MASTER_SHARED_MEMORY_HANDLER_SERVER(id)                                \
-      (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +      \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
        kPathSeparator1 + "master-shared-memory-handler-server" + kPathSeparator1 + (id))
 
 #define TRIAL_NAME(num) ("trial_" + std::to_string(num))
