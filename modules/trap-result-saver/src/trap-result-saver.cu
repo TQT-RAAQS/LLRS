@@ -4,6 +4,11 @@ TrapResultSaver::TrapResultSaver(const std::string config) {
     this->configs = YAML::LoadFile(TRAP_RESULT_SAVER(config));
     this->image_folder_name = this->configs["image_folder_name"].as<std::string>();
     this->setup_memory_handler();
+    this->setup_semaphore();
+}
+
+void TrapResultSaver::setup_semaphore() {
+    sem_init(this->saving_semaphore, 0, 0);
 }
 
 void TrapResultSaver::setup_memory_handler() {
@@ -15,9 +20,67 @@ void TrapResultSaver::setup_memory_handler() {
 void TrapResultSaver::start() {
     this->thread_killed.store(false);
     this->saver_thread = std::make_unique<std::thread>(&TrapResultSaver::saver_worker, this);
+    this->data_retriever_thread = std::make_unique<std::thread>(&TrapResultSaver::retriever_worker, this);
 }
 
 void TrapResultSaver::saver_worker() {
+    auto saver_timeout_s = this->configs["saver_timeout_s"].as<int>();
+
+    while (!this->thread_killed.load()) {
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        ts.tv_sec += saver_timeout_s;
+
+        auto ret = sem_timedwait(this->saving_semaphore, &ts);
+        if (ret == -1) {
+            if (errno == ETIMEDOUT) {
+                if (this->thread_killed.load()) break;
+                continue;
+            } else {
+                throw std::system_error(errno, std::generic_category(), "sem_timedwait failed");
+            }
+        }
+
+        auto& results_to_save = this->trap_results.back();
+        
+        this->save_to_file(results_to_save);
+
+        this->trap_results.pop_back();
+    }
+}
+
+void TrapResultSaver::save_to_file(ShotTrapResult& shot_trap_result) {
+    auto& dir_address = std::get<0>(shot_trap_result);
+    auto& results     = std::get<1>(shot_trap_result);
+
+    auto file_address = (boost::filesystem::path(dir_address) / "traps.bin").string();
+
+    std::ofstream ofs(file_address, std::ios::binary);
+    if (!ofs.is_open()) {
+        throw std::runtime_error("Failed to open file for writing: " + file_address);
+    }
+
+    uint64_t num_images = results.size();
+    ofs.write(reinterpret_cast<const char*>(&num_images), sizeof(num_images));
+
+    for (auto& trap : results) {
+        auto& fls_counts = std::get<0>(trap);
+        auto& occupancy  = std::get<1>(trap);
+
+        uint64_t trap_size = fls_counts.size();
+        ofs.write(reinterpret_cast<const char*>(&trap_size), sizeof(trap_size));
+
+        ofs.write(reinterpret_cast<const char*>(fls_counts.data()),
+                  fls_counts.size() * sizeof(double_t));
+
+        ofs.write(reinterpret_cast<const char*>(occupancy.data()),
+                  occupancy.size() * sizeof(uint8_t));
+    }
+
+    ofs.close();
+}
+
+void TrapResultSaver::retriever_worker() {
     int16_t processed_image_count = SHOT_NOT_BEGUN;
     auto current_image_count = this->memory_handler->get_image_count();
     std::string saving_address = "";
@@ -41,11 +104,12 @@ void TrapResultSaver::saver_worker() {
 
         } else if (processed_image_count != SHOT_NOT_BEGUN && current_image_count > 0 && current_image_count > processed_image_count) { // New image has arrived
 
-            // process images
+            this->add_data_to_queue(processed_image_count, saving_address);
             processed_image_count++;
 
         } else if (processed_image_count == current_image_count) { // The shot is done
             INFO << processed_image_count << " images processed and to be saved in " << saving_address << std::endl;
+            sem_post(this->saving_semaphore);
             this->memory_handler->signal_done();
 
             processed_image_count = SHOT_NOT_BEGUN;
@@ -57,10 +121,21 @@ void TrapResultSaver::saver_worker() {
     }
 }
 
+void TrapResultSaver::add_data_to_queue(size_t image_index, std::string save_directory) {
+    auto fls_counts = this->memory_handler->get_trap_fluorescence(image_index);
+    auto occupancy = this->memory_handler->get_trap_occupancy(image_index);
+    
+    if (image_index == 0) {
+        this->trap_results.emplace_back(save_directory, std::vector<ImageTrapResult>{});
+    }
+    
+    std::get<1>(this->trap_results.back()).emplace_back(std::move(fls_counts), std::move(occupancy));
+}
+
 void TrapResultSaver::stop() {
     this->thread_killed.store(true);
-    if (this->saver_thread->joinable()) {
-        this->saver_thread->join();
+    if (this->data_retriever_thread->joinable()) {
+        this->data_retriever_thread->join();
     }
     this->memory_handler->close_connection();
 }

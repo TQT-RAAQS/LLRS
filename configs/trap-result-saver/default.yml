@@ -1,2 +1,3 @@
 smh_config: default.yml
 image_folder_name: raw_data
+saver_timeout_s: 2
