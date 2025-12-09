@@ -24,7 +24,7 @@ void TrapResultSaver::start() {
 }
 
 void TrapResultSaver::saver_worker() {
-    auto saver_timeout_s = this->configs["saver_timeout_s"].as<int>();
+    auto saver_timeout_s = this->configs["saver_timeout_s"].as<uint8_t>();
 
     while (!this->thread_killed.load()) {
         struct timespec ts;
@@ -81,7 +81,7 @@ void TrapResultSaver::save_to_file(ShotTrapResult& shot_trap_result) {
 }
 
 void TrapResultSaver::retriever_worker() {
-    int16_t processed_image_count = SHOT_NOT_BEGUN;
+    int16_t processed_image_count = SHOT_NOT_BEGUN_YET;
     auto current_image_count = this->memory_handler->get_image_count();
     std::string saving_address = "";
     if (current_image_count != 0) {
@@ -95,14 +95,14 @@ void TrapResultSaver::retriever_worker() {
 
         INFO << "Current image count: " << std::to_string(current_image_count) << ", processed image count: " << std::to_string(processed_image_count) << std::endl;
 
-        if (processed_image_count == SHOT_NOT_BEGUN && current_image_count == 0) { // The shot has begun
+        if (processed_image_count == SHOT_NOT_BEGUN_YET && current_image_count == 0) { // The shot has begun
             auto shot_address = this->memory_handler->get_shot_address();
             this->memory_handler->signal_done();
             
             saving_address = LabscriptAddressUtils::get_images_folder_name(shot_address, this->image_folder_name);
             processed_image_count = 0;
 
-        } else if (processed_image_count != SHOT_NOT_BEGUN && current_image_count > 0 && current_image_count > processed_image_count) { // New image has arrived
+        } else if (processed_image_count != SHOT_NOT_BEGUN_YET && current_image_count > 0 && current_image_count > processed_image_count) { // New image has arrived
 
             this->add_data_to_queue(processed_image_count, saving_address);
             processed_image_count++;
@@ -112,7 +112,7 @@ void TrapResultSaver::retriever_worker() {
             sem_post(this->saving_semaphore);
             this->memory_handler->signal_done();
 
-            processed_image_count = SHOT_NOT_BEGUN;
+            processed_image_count = SHOT_NOT_BEGUN_YET;
 
         } else {
             throw std::runtime_error("Unexpected case in the memory manager of the trap result saver shared memory handler. This is most likely a bug. Current image count: " + \

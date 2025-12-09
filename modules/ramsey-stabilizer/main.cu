@@ -1,11 +1,10 @@
-#include "trap-result-saver.h"
-#include <iostream>
+#include "ramsey-stabilizer.h"
 
 int main() {
-    std::string config_name = "default.yml";
-    TrapResultSaver result_saver(config_name);
+    
+    RamseyStabilizer rs("default.yml");
 
-    result_saver.start();
+    rs.start();
 
     std::string input;
     while (true) {
@@ -19,7 +18,7 @@ int main() {
         std::cout << "You entered: " << input << std::endl;
     }
 
-    result_saver.stop();
+    rs.stop();
 
     return 0;
 }

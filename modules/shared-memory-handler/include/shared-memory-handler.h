@@ -41,7 +41,7 @@ public:
     virtual void close_connection(); // 1 means successfully unmapped the pointer, and 2 means it succeeded in doing so and cleared the memory space, as it is the last subscriber to the shared memory.
 
     void signal_done();
-    void wait_for_update();
+    int wait_for_update(uint8_t timeout_s = 0);
 };
 
 #endif

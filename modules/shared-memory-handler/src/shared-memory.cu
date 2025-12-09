@@ -126,13 +126,29 @@ void SharedMemory::submit_done_signal(pid_t pid) {
 }
 
 
-void SharedMemory::submit_wait(pid_t pid) {
+int SharedMemory::submit_wait(pid_t pid, uint8_t timeout_s) {
     int worker_index = this->is_valid_regular_process_pid(pid);
 
     if (worker_index != -1) { // regular worker
-        sem_wait(&this->sem_worker_wait_master[worker_index]);
+        if (timeout_s == 0) {
+            return sem_wait(&this->sem_worker_wait_master[worker_index]);
+        } else {
+            struct timespec ts;
+            clock_gettime(CLOCK_REALTIME, &ts);
+            ts.tv_sec += timeout_s;
+
+            return sem_timedwait(&this->sem_worker_wait_master[worker_index], &ts);
+        }
     } else if (this->is_image_saver(pid)) {
-        sem_wait(&this->sem_image_saver_wait_master);
+        if (timeout_s == 0) {
+            return sem_wait(&this->sem_image_saver_wait_master);
+        } else {
+            struct timespec ts;
+            clock_gettime(CLOCK_REALTIME, &ts);
+            ts.tv_sec += timeout_s;
+
+            return sem_timedwait(&this->sem_image_saver_wait_master, &ts);
+        }
     } else {
         throw std::runtime_error("The provided PID is not the image saver for the shared memory. This operation is invalid.");
     }

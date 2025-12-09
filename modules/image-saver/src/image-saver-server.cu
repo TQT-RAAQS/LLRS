@@ -69,7 +69,7 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
     std::string adjusted_h5_address = adjust_address(h5_address); // Converting server address to local address on this workstation
     INFO << "Processing a new shot: " << adjusted_h5_address << std::endl;
     
-    std::string new_experiment_folder = LabscriptAddressUtils::get_experiment_folder_name(adjusted_h5_address);
+    std::string new_experiment_folder = LabscriptAddressUtils::get_experiment_folder_path(adjusted_h5_address);
     if (experiment_folder != new_experiment_folder || !flag_thread_running.load()) {
         experiment_folder = new_experiment_folder;
         configure_fgc(adjusted_h5_address);
@@ -156,7 +156,7 @@ ImageSaverServer::~ImageSaverServer() {
 /************************************************************************************************** */
 
 void ImageSaverServer::reload_psf_data() {
-    this->configs_translator.translate();
+    this->configs_translator.translate_psf();
     this->image_processor.reload();
 }
 

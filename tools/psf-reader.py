@@ -8,7 +8,7 @@ for line in sys.stdin:
     command = line.strip()
     if command == "quit":
         break
-    elif command == "reload":
+    elif command == "reload_psf":
         # Reload everything
         psf_data = pickle.load(open(Addresses.traps_psf, "rb"))
         thresholds_repo = GlobalDataRepository.get_data(DataLabel.THRESHOLDS)
@@ -39,7 +39,7 @@ for line in sys.stdin:
             # Header: rows, cols
             f.write(np.array(orders.shape, dtype=np.int64).tobytes())
             # Data
-            f.write(np.array(orders.ravel(), dtype=np.float64).tobytes())
+            f.write(np.array(orders.ravel(), dtype=np.int64).tobytes())
 
         # Done file stays as text
         with open(Addresses.llrs_psfs_translation_done, "w") as f:

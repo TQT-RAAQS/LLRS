@@ -15,7 +15,10 @@ public:
     static ConfigsTranslator& instance();
     ~ConfigsTranslator();
 
-    void translate();
+    void translate_psf();
+
+    ConfigsTranslator(const ConfigsTranslator&) = delete;
+    ConfigsTranslator& operator=(const ConfigsTranslator&) = delete;
 };
 
 #endif

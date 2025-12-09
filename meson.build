@@ -11,14 +11,11 @@ fs = import('fs')
 root = meson.project_source_root()
 
 root_parts = root.split('/')
-shared_root = join_paths(root_parts[1], root_parts[2], 'Z')
-
-experiment_root = join_paths(fs.parent(root), 'Experiment')
+shared_root = '/' + join_paths(root_parts[1], root_parts[2], 'Z')
 
 add_global_arguments(
     '-DPROJECT_BASE_DIR="' + root + '"',
     '-DSHARED_DRIVE_DIR="' + shared_root + '"',
-    '-DEXPERIMENT_DIR="' + experiment_root + '"',
     '-I' + meson.project_source_root() + '/modules/common-include',
     '-D LOGGING_VERBOSE',
     '-O3',
@@ -30,6 +27,7 @@ add_global_arguments('-arch=sm_75', '-gencode=arch=compute_75,code=sm_75', '-Xco
 add_global_link_arguments('-lgomp', language: 'cuda')
 # subprojects
 labscript_address_utils_proj = subproject('labscript-address-utils')
+pid_loop_controller_proj = subproject('pid-loop-controller')
 configs_translator_proj = subproject('configs-translator')
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')
@@ -38,6 +36,7 @@ hdf_wrapper = subproject('hdf5-wrapper')
 llcs_proj = subproject('llcs')
 llrs_exe_proj = subproject('llrs-exe')
 trap_result_saver_proj = subproject('trap-result-saver')
+ramsey_stabilizer_proj = subproject('ramsey-stabilizer')
 
 operational_benchmarking_proj = subproject('operational-benchmarking')
 runtime_benchmarking_proj = subproject('runtime-benchmarking')

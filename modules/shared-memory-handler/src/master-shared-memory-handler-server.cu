@@ -1,7 +1,5 @@
 #include "master-shared-memory-handler-server.h"
 
-#define SHOT_NOT_BEGUN_YET -1
-
 MasterSharedMemoryHandlerServer::MasterSharedMemoryHandlerServer(std::string config_name) {
     INFO << "Initializing MasterSharedMemoryHandlerServer with config: " << config_name << "\n";
     this->read_configs(config_name);

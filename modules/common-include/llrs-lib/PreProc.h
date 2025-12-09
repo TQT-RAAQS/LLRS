@@ -22,6 +22,9 @@ namespace fs = std::experimental::filesystem;
 
 #define FILE_EXISTS(name) (fs::exists(name))
 
+#define EXPERIMENTS_ROOT_DIR                                                   \
+    (std::string("") + SHARED_DRIVE_DIR + kPathSeparator1 + "Experiments" +     \
+     kPathSeparator1 + "Rydberg")
 #define PSF_PATH(fname)                                                        \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "psf" + kPathSeparator1 + (fname))
@@ -87,6 +90,9 @@ namespace fs = std::experimental::filesystem;
 #define MASTER_SHARED_MEMORY_HANDLER_SERVER(id)                                \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
       kPathSeparator1 + "master-shared-memory-handler-server" + kPathSeparator1 + (id))
+#define RAMSEY_STABILIZER(id)                                                  \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
+      kPathSeparator1 + "ramsey-stabilizer" + kPathSeparator1 + (id))
 
 #define TRIAL_NAME(num) ("trial_" + std::to_string(num))
 #define REP_NAME(num) ("repetition_" + std::to_string(num))

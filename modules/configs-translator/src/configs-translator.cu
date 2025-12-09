@@ -20,11 +20,11 @@ ConfigsTranslator::~ConfigsTranslator() {
     pclose(this->translator_pipe);
 }
 
-void ConfigsTranslator::translate() {
+void ConfigsTranslator::translate_psf() {
     std::remove(PSF_TRANSLATION_FILE.c_str());
     std::remove(CONFIGS_TRANSLATION_READY_FILE.c_str());
 
-    fprintf(this->translator_pipe, "reload\n");
+    fprintf(this->translator_pipe, "reload_psf\n");
     fflush(this->translator_pipe);
 
     INFO << "Trying to regenerate the translated config files...\n";

@@ -28,7 +28,7 @@ class ImageSaverServer {
 
     YAML::Node config;
 
-    ConfigsTranslator configs_translator = ConfigsTranslator::instance();
+    ConfigsTranslator& configs_translator = ConfigsTranslator::instance();
     Processing::ImageProcessor image_processor;
     std::unique_ptr<SharedMemoryHandler> shared_memory_handler;
     
