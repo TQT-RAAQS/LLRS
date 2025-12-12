@@ -29,9 +29,9 @@ input_trigger:
     timeout_ms: 0                       # Trigger timeout in milliseconds. To disable timeout, set to 0.
 
 # Output Trigger Settings
-async_out_trig_channels:  [0]            # 0=x0 1=x1 2=x2
+async_out_trig_channels:  []            # 0=x0 1=x1 2=x2
 sync_out_trig:
-    - port:    1                        # 0=x0 1=x1 2=x2
+    - port:    0                        # 0=x0 1=x1 2=x2
       channel: 0                        # 0=ch0, 1=ch1, 2=ch2, 3=ch3
       bit:     15                       # The bit associated to the channel - Can only be 13, 14, or 15
 

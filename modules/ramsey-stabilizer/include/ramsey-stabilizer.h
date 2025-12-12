@@ -7,6 +7,7 @@
 #include "configs-translator.h"
 #include "ramsey-stabilizer-metadata-saver.h"
 #include "ramsey-stabilizer-labscript-config.h"
+#include "phase-extractor.h"
 #include "pid-loop-controller.h"
 #include <string>
 #include <boost/filesystem.hpp>

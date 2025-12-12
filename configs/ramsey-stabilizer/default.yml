@@ -1,10 +1,12 @@
 memory_handler_config: default.yml
-flag_configs_translater: false
+flag_configs_translator: false
 memory_handler_wait_s: 1
-spatial_zero_padding_x: 128
-spatial_zero_padding_y: 128
-dx: 10.6e-6
-dy: 5.3e-6
+
+phase_extractor:
+  spatial_zero_padding_x: 128
+  spatial_zero_padding_y: 128
+  dx: 10.6e-6
+  dy: 5.3e-6
 
 saver_config:
   image_folder_name: raw_data

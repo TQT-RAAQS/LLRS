@@ -12,9 +12,9 @@
 #define AWG_MEMORY_SIZE 4294967296
 
 enum TriggerType { 
-  X0=1, 
-  X1=2,
-  X2=4
+  X0=0b001, 
+  X1=0b010, 
+  X2=0b100, 
 };
 
 class AWG {
@@ -36,9 +36,14 @@ class AWG {
                       uint64 llCondition);
 
     void interleave_data(short* target, const std::vector<std::vector<short>> &waveforms, const std::vector<std::vector<int8>>& digital_trigger = {});
+
     int load_data(int seg_num, short *p_data, uint64 size, bool wait_until_finished = true);
+
     int init_segment(int seg_num, int num_samples);
+
+    // DEPRECATED
     int init_and_load_all(short *p_segment, int num_samples);
+    // DEPRECATED
     int init_and_load_range(short *p_segment, int num_samples, int start,
                             int end);
     int wait_for_data_load();
@@ -61,11 +66,13 @@ class AWG {
     int get_idle_segment_length() const { return config.idle_segment_length; };
     int get_wavefrom_mask() const { return config.wfm_mask; };
     int get_current_step();
+    int get_minimum_segment_size();
     int get_last_seg() const { return config.awg_num_segments - 1; };
     int get_last_step() const { return max_step - 1; };
     bool get_idle_segment_wfm() const { return config.idle_segment_wfm; }
-    void print_awg_error();
     std::tuple<int, std::string> get_awg_error();
+    
+    void print_awg_error();
 
     class TransferBuffer {
         void *buffer;

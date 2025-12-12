@@ -498,7 +498,7 @@ int AWG::setup_sync_output_triggers(std::vector<sync_output_trigger_config_t> co
 void AWG::generate_async_output_pulse(TriggerType port) {
     spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 0); // Set trigger state to 0
     spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, port); // Set trigger for the designated port to 1.
-    spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 0); // Reset the trigger state to 0 immediately; this produces a very short trigger.
+    spcm_dwSetParam_i32(p_card, SPCM_XX_ASYNCIO, 0); // Reset the trigger state to 0 immediately; this produces a very short trigger (SK measured a ~10 us long trigger on 2025-12-12 on a 4 channel AWG on the port X0).
 }
 
 /**
@@ -581,11 +581,13 @@ void AWG::interleave_data(short* target, const std::vector<std::vector<short>> &
     for (size_t j = 0; j < this->num_channels; ++j) {
         const auto& bit_shift = this->config.channel_bit_shifts[config.channels[j]];
         if (bit_shift == 0) {
+            #pragma omp simd
             for (size_t i = 0; i < num_samples; ++i) {
                 target[i * this->num_channels + j] = waveforms[j][i];
             }
             continue;
         }
+        #pragma omp simd
         for (size_t i = 0; i < num_samples; ++i) {
             short data = static_cast<short>(static_cast<uint16>(waveforms[j][i]) >> bit_shift);
         
@@ -682,6 +684,10 @@ int AWG::init_and_load_range(short *p_segment, int num_samples, int start,
     }
 
     return status;
+}
+
+int AWG::get_minimum_segment_size() {
+    return 384 / this->num_channels;
 }
 
 /**
