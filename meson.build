@@ -24,6 +24,11 @@ add_global_arguments(
 
 add_global_arguments('-arch=sm_75', '-gencode=arch=compute_75,code=sm_75', '-Xcompiler=-fopenmp', language: 'cuda')
 
+c_compiler = meson.get_compiler('c')
+compiler_id = c_compiler.get_id()
+compiler_version = c_compiler.version()
+message('Using compiler: ', compiler_id, ' version ', compiler_version)
+
 add_global_link_arguments('-lgomp', language: 'cuda')
 # subprojects
 labscript_address_utils_proj = subproject('labscript-address-utils')

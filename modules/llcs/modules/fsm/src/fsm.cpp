@@ -263,7 +263,7 @@ void FiniteStateMachine::st_CLOSE_AWG() {
 }
 
 void FiniteStateMachine::st_RESTART_AWG() {
-    trigger_detector.getAWG()->configure();
+    trigger_detector.getAWG()->open_connection();
     llrs.reset_awg(false, 1);
     std::cout << "Starting AWG stream" << std::endl;
     auto awg = trigger_detector.getAWG();

@@ -1,0 +1,43 @@
+# AWG Global Settings
+driver_path:              /dev/spcm1    # the device file system handle : string 
+
+external_clock_flag:      false         # Whether an external clock is used or not.
+external_clock_freq:      10000000      # Hz : int. Applicable only if external_clock_flag is true.
+
+channels:                 [0, 1]        # list of channels : int[]
+amp:                      [100, 100]      # list of amp for each channel in mV : int[]
+
+# Segment Settings
+awg_num_segments:         256           # number of segments : int
+sample_rate:              624e6         # sample rate : float 
+wfm_mask:                 0x00007fff    # waveform mask : Hex 
+waveforms_per_segment:    32            # waveforms per segment : int 
+null_seg_num_waveforms:   1             # number of the waveforms of the null segment : int
+idle_seg_num_waveforms:   1             # number of the waveforms of the idle segment length : int
+idle_segment_wfm:         true          # whether or not to fill the IDLE segment with static wfms : bool
+first_step_index:         0
+
+
+# Input Trigger Settings
+input_trigger:
+    ports:      [0]                     # List of input trigger ports to be used for trigging. Trig 0 and Trig 1 ports on the AWG (some models may not have Trig 1)
+    logic:      0                       # 0=OR, 1=AND. Is the AWG triggered if either port is triggered, or if both are triggered.
+    level_0_mv: [500]                   # Trigger voltage level 0. A trigger is detected if voltage crosses this level.
+    level_1_mv: [2000]                  # Trigger voltage level 1. The trigger is rearmed (if configured) when the votlage crosses this leve.
+    edge:       1                       # 0 = negative edge, 1 = positive edge
+    rearm:      true                    # Flag on whether the trigger should be rearmed or not. Note that this is only possible for trigger input 0.
+    timeout_ms: 0                       # Trigger timeout in milliseconds. To disable timeout, set to 0.
+
+# Output Trigger Settings
+async_out_trig_channels:  [0]            # 0=x0 1=x1 2=x2
+sync_out_trig:
+    - port:    1                        # 0=x0 1=x1 2=x2
+      channel: 0                        # 0=ch0, 1=ch1, 2=ch2, 3=ch3
+      bit:     15                       # The bit associated to the channel - Can only be 13, 14, or 15
+
+trigger_size:             2000          # number of Waveforms repeated for the synchronized trigger: int
+vpp:                      140           # peak to peak voltage in mV : int
+
+
+# EMCCD Trigger Settings
+acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int

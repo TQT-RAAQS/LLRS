@@ -21,4 +21,3 @@ vpp:                      140           # peak to peak voltage in mV : int
 
 # EMCCD Trigger Settings
 acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int
-async_trig_amp:           3             # trigger Amp in volts : int

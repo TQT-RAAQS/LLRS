@@ -57,11 +57,10 @@ vpp:                      140           # peak to peak voltage in mV : int  \n \
 \n \
 # EMCCD Trigger Settings \n \
 acq_timeout:              600           # acquisition timeout wait time for the EMCCD response in ms : int \n \
-async_trig_amp:           3             # trigger Amp in volts : int  \n \
 \n \
  ";
         std::ofstream config_file{std::string("") + PROJECT_BASE_DIR +
-                                  "/configs/awg/awg.yml"};
+                                  "/configs/awg/trapping.yml"};
         config_file << problem_config;
     }
 

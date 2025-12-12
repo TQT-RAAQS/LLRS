@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
             memcpy(*transfer_buffer + wf_idx * awg.get_waveform_length(),
                    move_wf_ptr, awg.get_waveform_length() * sizeof(short));
         }
-        awg.load_data(1, *transfer_buffer, samples_per_segment * sizeof(short));
+        awg.load_data(1, *transfer_buffer, samples_per_segment);
 
         std::chrono::high_resolution_clock::time_point end =
             std::chrono::high_resolution_clock::now();

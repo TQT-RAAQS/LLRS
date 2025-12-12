@@ -54,8 +54,8 @@ std::vector<short> Synthesis::WaveformTable::interleave_waveforms(
     std::vector<short> primary_wf, std::vector<short> secondary_wf) {
     std::vector<short> result(primary_wf.size() + secondary_wf.size());
 
-    double primary_coefficient = is_transposed ? 1 : 0.5;
-    double secondary_coefficient = is_transposed ? 0.5 : 1;
+    double primary_coefficient = is_transposed ? 1 : 0.5; // TODO: SK 2025-12-10 this is most likely a bug. I don't think a 0.5 multiplication is required.
+    double secondary_coefficient = is_transposed ? 0.5 : 1; // TODO: SK 2025-12-10 this is most likely a bug. I don't think a 0.5 multiplication is required.
     for (size_t idx = 0; idx < primary_wf.size() && idx < secondary_wf.size();
          idx++) {
         result[idx * 2 + primary_chan] = primary_wf[idx] * primary_coefficient;
@@ -63,7 +63,7 @@ std::vector<short> Synthesis::WaveformTable::interleave_waveforms(
             secondary_wf[idx] * secondary_coefficient;
     }
 
-    return std::move(result);
+    return result;
 }
 
 size_t Synthesis::WaveformTable::get_blocked_addr(WfType wf_type, size_t index,
