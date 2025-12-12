@@ -138,6 +138,7 @@ void ImageSaverServer::configure_fgc(std::string h5_address) {
 
 ImageSaverServer::ImageSaverServer(std::string config_str) {
     std::string config_address = IMAGE_SAVER_SERVER(config_str);
+    INFO << config_address << std::endl;
     config = YAML::LoadFile(config_address);
     this->flag_thread_killed.store(false);
 

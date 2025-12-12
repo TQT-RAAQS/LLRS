@@ -43,6 +43,7 @@ ramsey_stabilizer_dependencies = [
 ramsey_stabilizer_sources = [
     'src/ramsey-stabilizer.cu',
     'src/ramsey-stabilizer-metadata-saver.cu',
+    'src/phase-extractor.cu',
 ]
 
 ramsey_stabilizer_dep = []
