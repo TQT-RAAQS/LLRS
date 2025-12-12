@@ -2,6 +2,7 @@
 
 PhaseExtractor::PhaseExtractor(double dx, double dy, size_t Nx_padded, size_t Ny_padded) : 
     dx(dx), dy(dy), Nx_padded(Nx_padded), Ny_padded(Ny_padded) {
+    this->reload_orders();
 }
 
 PhaseExtractor::~PhaseExtractor() {
@@ -64,7 +65,7 @@ double PhaseExtractor::extract_phase(const std::vector<uint8_t>& oc0, const std:
     return PhaseExtractor::wrap_phase(phi);
 }
 
-void PhaseExtractor::read_orders(const bool flag_translate_psf) {
+void PhaseExtractor::reload_orders(const bool flag_translate_psf) {
     if (flag_translate_psf) {
         this->configs_translator.translate_psf();
     }

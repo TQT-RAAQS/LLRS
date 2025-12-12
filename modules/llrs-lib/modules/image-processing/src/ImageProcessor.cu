@@ -216,7 +216,11 @@ void Processing::ImageProcessor::process(
     }
 }
 
-void Processing::ImageProcessor::reload() {
+void Processing::ImageProcessor::reload(bool flag_translate_psf) {
+    if (flag_translate_psf) {
+        this->configs_translator.translate_psf();
+    }
+
     std::ifstream infile(PSF_TRANSLATION_FILE);
     this->parse_file(infile);
     infile.close();

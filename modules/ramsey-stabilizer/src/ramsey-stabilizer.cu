@@ -5,7 +5,6 @@ RamseyStabilizer::RamseyStabilizer(const std::string config) {
     this->setup_fft();
     this->setup_memory_handler();
     this->setup_saver();
-    this->reset_pid();
 }
 
 void RamseyStabilizer::reset_pid() {
@@ -25,14 +24,16 @@ void RamseyStabilizer::setup_saver() {
 }
 
 void RamseyStabilizer::setup_fft() {
-    auto Nx_padded = this->configs["spatial_zero_padding_x"].as<size_t>();
-    auto Ny_padded = this->configs["spatial_zero_padding_y"].as<size_t>();
+    const auto& c = this->configs["phase_extractor"];
 
-    auto dx = this->configs["dx"].as<double>();
-    auto dy = this->configs["dx"].as<double>();
+    auto Nx_padded = c["spatial_zero_padding_x"].as<size_t>();
+    auto Ny_padded = c["spatial_zero_padding_y"].as<size_t>();
+
+    auto dx = c["dx"].as<double>();
+    auto dy = c["dy"].as<double>();
 
     this->phase_extractor = std::make_unique<PhaseExtractor>(dx, dy, Nx_padded, Ny_padded);
-    this->flag_configs_translator = this->configs["flag_configs_translater"].as<bool>();
+    this->flag_configs_translator = this->configs["flag_configs_translator"].as<bool>();
 }
 
 void RamseyStabilizer::setup_memory_handler() {
@@ -120,7 +121,7 @@ void RamseyStabilizer::transition_to_buffered() {
         this->labscript_config = std::make_unique<RamseyStabilizerLabscriptConfig>(this->last_shot_address);
 
         // Re-read the geometric ordering of the traps
-        this->phase_extractor->read_orders(this->flag_configs_translator);
+        this->phase_extractor->reload_orders(this->flag_configs_translator);
 
         // Reset pid params
         this->reset_pid();

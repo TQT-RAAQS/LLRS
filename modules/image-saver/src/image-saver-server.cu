@@ -85,9 +85,6 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
         std::lock_guard<std::mutex> lock(cache_mutex);
         
         image_folder_address = LabscriptAddressUtils::get_images_folder_name(adjusted_h5_address, image_folder_name);
-        timestamp = long(std::chrono::duration<double>(
-            std::chrono::system_clock::now().time_since_epoch()
-        ).count() * 1000);
         image_counter = 0;
     }
 }
@@ -138,7 +135,6 @@ void ImageSaverServer::configure_fgc(std::string h5_address) {
 
 ImageSaverServer::ImageSaverServer(std::string config_str) {
     std::string config_address = IMAGE_SAVER_SERVER(config_str);
-    INFO << config_address << std::endl;
     config = YAML::LoadFile(config_address);
     this->flag_thread_killed.store(false);
 
@@ -157,7 +153,6 @@ ImageSaverServer::~ImageSaverServer() {
 /************************************************************************************************** */
 
 void ImageSaverServer::reload_psf_data() {
-    this->configs_translator.translate_psf();
     this->image_processor.reload();
 }
 
@@ -229,6 +224,10 @@ void ImageSaverServer::capture_images() {
             if (current_image.size() == 0) {
                 flag_thread_running.store(false);
             } else {
+                auto timestamp = long(std::chrono::duration<double>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                ).count() * 1000);
+
                 // Image processing
                 auto trap_count = this->image_processor.get_trap_count();
                 fls_counts.resize(trap_count);

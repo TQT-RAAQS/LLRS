@@ -30,7 +30,7 @@ public:
     PhaseExtractor(double dx, double dy, size_t Nx_padded, size_t Ny_padded);
     ~PhaseExtractor();
 
-    void read_orders(const bool flag_translate_psf);
+    void reload_orders(const bool flag_translate_psf = true);
     double extract_phase(const std::vector<uint8_t>& oc0, const std::vector<uint8_t>& oc1);
 
     static double wrap_phase(double phi);

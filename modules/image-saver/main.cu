@@ -2,7 +2,7 @@
 
 int main() {
     ImageSaverServer iss("default.yml");
-    // iss.start_server();
+    iss.start_server();
     return 0;
 
     // ACQUIRING IMAGES

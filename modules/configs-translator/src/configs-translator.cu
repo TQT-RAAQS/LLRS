@@ -23,6 +23,7 @@ ConfigsTranslator::~ConfigsTranslator() {
 void ConfigsTranslator::translate_psf() {
     std::remove(PSF_TRANSLATION_FILE.c_str());
     std::remove(CONFIGS_TRANSLATION_READY_FILE.c_str());
+    std::remove(TRAPS_ORDERS_TRANSLATION_FILE.c_str());
 
     fprintf(this->translator_pipe, "reload_psf\n");
     fflush(this->translator_pipe);
