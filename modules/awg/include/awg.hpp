@@ -19,7 +19,7 @@ enum TriggerType {
 
 class AWG {
   public:
-    AWG(std::string config_name = "trapping.yml");
+    AWG(const std::string& config_name = "trapping.yml");
     ~AWG();
 
     int open_connection();
@@ -66,7 +66,9 @@ class AWG {
     int get_idle_segment_length() const { return config.idle_segment_length; };
     int get_wavefrom_mask() const { return config.wfm_mask; };
     int get_current_step();
-    int get_minimum_segment_size();
+    int get_minimum_segment_size() const { return 384 / this->num_channels; };
+    int get_max_step_count() const { return this->max_step; };
+    int get_max_segment_count() const { return this->max_segment; };
     int get_last_seg() const { return config.awg_num_segments - 1; };
     int get_last_step() const { return max_step - 1; };
     bool get_idle_segment_wfm() const { return config.idle_segment_wfm; }
@@ -127,7 +129,6 @@ class AWG {
     int enable_outputs(const std::vector<int> &channels,
                        const std::vector<int> &amp);
 
-    std::string config_name;
     struct awg_config_t {
         std::string driver_path;
         bool external_clock_flag;
@@ -161,6 +162,7 @@ class AWG {
     drv_handle p_card;
     int num_channels;
     int max_step;
+    int max_segment;
     int bps;
     int lSetChannels;
     int dwFactor = 1;

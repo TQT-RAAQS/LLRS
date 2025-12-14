@@ -33,6 +33,8 @@ add_global_link_arguments('-lgomp', language: 'cuda')
 # subprojects
 labscript_address_utils_proj = subproject('labscript-address-utils')
 pid_loop_controller_proj = subproject('pid-loop-controller')
+timed_hash_queue_proj = subproject('timed-hash-queue')
+microwave_awg_handler_proj = subproject('microwave-awg-handler')
 configs_translator_proj = subproject('configs-translator')
 fgc_proj = subproject('fgc')
 awg_proj = subproject('awg')

@@ -2,7 +2,7 @@ memory_handler_config: default.yml
 memory_handler_wait_s: 1
 flag_configs_translator: false
 
-phase_extractor:
+fourier_analyzer:
   spatial_zero_padding_x: 128
   spatial_zero_padding_y: 128
   dx: 10.6e-6

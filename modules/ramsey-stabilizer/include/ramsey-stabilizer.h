@@ -7,7 +7,7 @@
 #include "configs-translator.h"
 #include "ramsey-stabilizer-metadata-saver.h"
 #include "ramsey-stabilizer-labscript-config.h"
-#include "phase-extractor.h"
+#include "fourier-analyzer.h"
 #include "pid-loop-controller.h"
 #include <string>
 #include <boost/filesystem.hpp>
@@ -27,8 +27,8 @@ class RamseyStabilizer {
 
     YAML::Node configs;
     
-    void setup_fft();
-    std::unique_ptr<PhaseExtractor> phase_extractor = nullptr;
+    void setup_fourier_analyzer();
+    std::unique_ptr<FourierAnalyzer> fourier_analyzer = nullptr;
     
     std::unique_ptr<SharedMemoryHandler> smh = nullptr;
     std::string last_shot_address = "";

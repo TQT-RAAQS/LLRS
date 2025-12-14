@@ -9,8 +9,8 @@
 /**
  * @brief Constructor for AWG class
  */
-AWG::AWG(std::string config_name) : config_name(config_name) { 
-    if (read_config(AWG_CONFIG_PATH(this->config_name)) != AWG_OK) {
+AWG::AWG(const std::string& config_name) { 
+    if (read_config(AWG_CONFIG_PATH(config_name)) != AWG_OK) {
         std::cerr << "Error occured in parsing AWG config.\n";
         throw std::runtime_error("Could not parse the AWG config.\n");
     }
@@ -58,6 +58,7 @@ int AWG::read_config(std::string filename) {
         config.channel_bit_shifts[c] = 0;
         config.channel_digout_indices[c] = std::vector<int>();
     }
+    this->num_channels = config.channels.size();
     config.amp = node["amp"].as<std::vector<int>>();
     config.awg_num_segments = node["awg_num_segments"].as<int>();
     config.sample_rate = node["sample_rate"].as<double>();
@@ -137,6 +138,7 @@ int AWG::open_connection() {
     status |= setup_sync_output_triggers(config.sync_out_trig_configs);
 
     status |= spcm_dwGetParam_i32(p_card, SPC_SEQMODE_AVAILMAXSTEPS, &max_step);
+    status |= spcm_dwGetParam_i32(p_card, SPC_SEQMODE_AVAILMAXSEGMENT, &max_segment);
     status |= spcm_dwGetParam_i32(p_card, SPC_MIINST_BYTESPERSAMPLE, &bps);
     status |= spcm_dwGetParam_i32(p_card, SPC_CHCOUNT, &lSetChannels);
     dwFactor = 1;
@@ -686,10 +688,6 @@ int AWG::init_and_load_range(short *p_segment, int num_samples, int start,
     return status;
 }
 
-int AWG::get_minimum_segment_size() {
-    return 384 / this->num_channels;
-}
-
 /**
  * @brief: Get current step that is streaming in the sequence memory of AWG
  * @return the step at which the error was generated, i.e. the step that is
@@ -731,8 +729,8 @@ int AWG::fill_transfer_buffer(TransferBuffer &tb, int num_samples,
                               int16 value) {
     int dwSegmentLenSample = dwFactor * num_samples;
     for (int i = 0; i < dwSegmentLenSample; i++) {
-        for (int lChannel = 0; lChannel < lSetChannels; ++lChannel) {
-            ((short *)*tb)[i * lSetChannels + lChannel] = value;
+        for (int lChannel = 0; lChannel < num_channels; ++lChannel) {
+            ((short *)*tb)[i * num_channels + lChannel] = value;
         }
     }
     return 0;

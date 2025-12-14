@@ -43,7 +43,7 @@ ramsey_stabilizer_dependencies = [
 ramsey_stabilizer_sources = [
     'src/ramsey-stabilizer.cu',
     'src/ramsey-stabilizer-metadata-saver.cu',
-    'src/phase-extractor.cu',
+    'src/fourier-analyzer.cu',
 ]
 
 ramsey_stabilizer_dep = []
@@ -59,7 +59,7 @@ ramsey_stabilizer_executable = executable(
 
 ramsey_stabilizer_executable = executable(
     'ramsey-stabilizer-test',
-    ['awg_test.cu'] + ramsey_stabilizer_sources,
+    ['test_img.cu'] + ramsey_stabilizer_sources,
     link_args: '-lstdc++fs',
     dependencies: ramsey_stabilizer_dependencies,
     include_directories: ramsey_stabilizer_includes

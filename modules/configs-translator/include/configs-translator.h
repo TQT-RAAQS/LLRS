@@ -16,6 +16,7 @@ public:
     ~ConfigsTranslator();
 
     void translate_psf();
+    void translate_iqmixer();
 
     ConfigsTranslator(const ConfigsTranslator&) = delete;
     ConfigsTranslator& operator=(const ConfigsTranslator&) = delete;

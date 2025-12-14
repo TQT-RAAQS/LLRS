@@ -1,17 +1,17 @@
-#include "phase-extractor.h"
+#include "fourier-analyzer.h"
 
-PhaseExtractor::PhaseExtractor(double dx, double dy, size_t Nx_padded, size_t Ny_padded) : 
+FourierAnalyzer::FourierAnalyzer(double dx, double dy, size_t Nx_padded, size_t Ny_padded) : 
     dx(dx), dy(dy), Nx_padded(Nx_padded), Ny_padded(Ny_padded) {
     this->reload_orders();
 }
 
-PhaseExtractor::~PhaseExtractor() {
+FourierAnalyzer::~FourierAnalyzer() {
     if (fft_plan) {
         fftw_destroy_plan(fft_plan);
     }
 }
 
-double PhaseExtractor::extract_phase(const std::vector<uint8_t>& oc0, const std::vector<uint8_t>& oc1) {
+double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std::vector<uint8_t>& oc1) {
     // Calculate the ternary signal
     double sum = 0.0;
     size_t total = this->Nx * this->Ny;    
@@ -62,10 +62,10 @@ double PhaseExtractor::extract_phase(const std::vector<uint8_t>& oc0, const std:
     // Modify the phase to center the origin on the middle of the trap array
     phi += 2.0 * M_PI * (fx * this->x0 + fy * this->y0);
 
-    return PhaseExtractor::wrap_phase(phi);
+    return FourierAnalyzer::wrap_phase(phi);
 }
 
-void PhaseExtractor::reload_orders(const bool flag_translate_psf) {
+void FourierAnalyzer::reload_orders(const bool flag_translate_psf) {
     if (flag_translate_psf) {
         this->configs_translator.translate_psf();
     }
@@ -108,7 +108,7 @@ void PhaseExtractor::reload_orders(const bool flag_translate_psf) {
     this->y0 = Ny * dy / 2.0;
 }
 
-double PhaseExtractor::wrap_phase(double phi) {
+double FourierAnalyzer::wrap_phase(double phi) {
     // Wrap phase to the range [-pi, pi]
     while (phi > M_PI) phi -= 2 * M_PI;
     while (phi < -M_PI) phi += 2 * M_PI;
