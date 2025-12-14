@@ -1,34 +1,35 @@
-#include <iostream>
 #include "microwave-awg-handler.h"
 #include "microwave-waveforms.h"
+#include <iostream>
+#include <chrono>
+#include <thread>
 
 using namespace MicrowaveHandler;
 using namespace MicrowaveWaveforms;
 
 int main() {
     MicrowaveAwgHandler awg_handler("default.yml", "iqmixer.yml");
+    awg_handler.open_connection();
+
+    size_t N = 1;
+
+    for (size_t i = 0; i < N; ++i) {
+        awg_handler.upload_waveforms({
+            SquarePulse(5e3, 100e-6, 0, 0.5),
+            Pause(1e-3),
+            SquarePulse(5e3, 100e-6, 0, 0.5)
+        });
+    }
+
+    awg_handler.start();
     
-    // auto res = awg_handler.breakdown_waveforms({
-    //     SquarePulse(5e3, 2.0e-6, 0, 0.5),
-    //     Pause(32e-6),
-    //     Pause(35e-6),
-    //     SquarePulse(5e3, 20e-6, 0, 0.5),
-    // });
+    std::this_thread::sleep_for(std::chrono::microseconds(150));
 
-    // for (const auto &c : std::get<0>(res)) {
-    //     auto s = c.waveform;
-
-    //     if (auto *p = boost::get<Pause>(&s)) {
-    //         std::cout << "t=" << c.time*1e6 << " us | PAUSE " << p->duration * 1e6 << " us\n";
-    //     }
-    //     if (auto *p = boost::get<SquarePulse>(&s)) {
-    //         std::cout << "t=" << c.time*1e6 << " us | SIN " << p->duration * 1e6 << " us, delay = " << c.t_initial_pause*1e6 << " us\n";
-    //     }
-    // }
-    // std::cout << "********************\n";
-    // for (const auto &c : std::get<1>(res)) {
-    //     std::cout << c << std::endl;
-    // }
-
+    std::cout << "Current step: " << awg_handler.get_awg_step() << std::endl;
+    awg_handler.awg.print_awg_error();
+    
+    awg_handler.close_connection();
+    
     return 0;
 }
+    

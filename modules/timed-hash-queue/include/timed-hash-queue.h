@@ -25,15 +25,17 @@ public:
     TimedHashQueue(const TimedHashQueue&) = delete;
     TimedHashQueue& operator=(const TimedHashQueue&) = delete;
 
-    void addHash(int64_t hash);
+    void clear();
 
-    void touchHash(int64_t hash);
+    void add_hash(int64_t hash);
 
-    int removeOldestHash();
+    void touch_hash(int64_t hash);
 
-    void removeHash(int64_t hash);
+    int64_t remove_oldest_hash();
 
-    bool containsHash(int64_t hash) const;
+    void remove_hash(int64_t hash);
+
+    bool contains_hash(int64_t hash) const;
 
     const Node* getHead() const { return this->head; };
     const Node* getTail() const { return  this->tail; };

@@ -3,7 +3,7 @@
 
 TimedHashQueue::TimedHashQueue() {}
 
-void TimedHashQueue::addHash(int64_t hash) {
+void TimedHashQueue::add_hash(int64_t hash) {
     const int count = this->hash_map.size();
 
     if (this->hash_map.find(hash) != this->hash_map.end()) {
@@ -23,7 +23,7 @@ void TimedHashQueue::addHash(int64_t hash) {
     this->hash_map[hash] = this->tail;
 }
 
-void TimedHashQueue::touchHash(int64_t hash) {
+void TimedHashQueue::touch_hash(int64_t hash) {
         if (this->hash_map.find(hash) == this->hash_map.end()) {
         return; // Hash not found, do nothing
     }
@@ -51,18 +51,18 @@ void TimedHashQueue::touchHash(int64_t hash) {
     this->tail = node;
 }
 
-int TimedHashQueue::removeOldestHash() {
+int64_t TimedHashQueue::remove_oldest_hash() {
     if (this->hash_map.size() == 0) {
         throw std::runtime_error("TimedHashQueue: Attempting to remove hash from empty queue.");
     }
 
     auto output = this->head->hash;
-    this->removeHash(output);
+    this->remove_hash(output);
 
     return output;
 }
 
-void TimedHashQueue::removeHash(int64_t hash) {
+void TimedHashQueue::remove_hash(int64_t hash) {
     const int count = this->hash_map.size();
 
     if (count == 0) {
@@ -94,7 +94,7 @@ void TimedHashQueue::removeHash(int64_t hash) {
     delete node;
 }
 
-bool TimedHashQueue::containsHash(int64_t hash) const {
+bool TimedHashQueue::contains_hash(int64_t hash) const {
     return this->hash_map.find(hash) != this->hash_map.end();
 }
 
@@ -103,10 +103,15 @@ size_t TimedHashQueue::size() const {
 }
 
 TimedHashQueue::~TimedHashQueue() {
-    auto current = this->head;
-    while (current != nullptr) {
-        auto next_node = current->next;
-        delete current;
-        current = next_node;
+    this->clear();
+}
+
+void TimedHashQueue::clear() {
+    for (const auto& kv : this->hash_map) {
+        auto node = kv.second;
+        delete node;
     }
+    this->head = nullptr;
+    this->tail = nullptr;
+    this->hash_map.clear();
 }

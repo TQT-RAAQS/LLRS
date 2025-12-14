@@ -20,7 +20,12 @@ timed_hash_queue_dep = timed_hash_queue.get_variable('timed_hash_queue_dependenc
 yaml_cpp = cmake.subproject('yaml-cpp')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 
-dependencies = [awg_dep, configs_translator_dep, timed_hash_queue_dep, yaml_cpp_dep]
+dependencies = [
+    awg_dep, 
+    configs_translator_dep, 
+    timed_hash_queue_dep, 
+    yaml_cpp_dep, 
+]
 
 ##########################
 

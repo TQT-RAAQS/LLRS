@@ -30,6 +30,7 @@ class AWG {
 
     bool is_connection_open() const { return flag_is_connected; }
 
+    int set_initial_step(int step);
     void force_hardware_trigger();
     void configure_segment_length(double waveform_duration);
     int seqmem_update(int64 lStep, int64 llSegment, int64 llLoop, int64 llNext,
@@ -67,12 +68,14 @@ class AWG {
     int get_wavefrom_mask() const { return config.wfm_mask; };
     int get_current_step();
     int get_minimum_segment_size() const { return 384 / this->num_channels; };
+    int get_segment_size_steps() const { return 32; };
     int get_max_step_count() const { return this->max_step; };
     int get_max_segment_count() const { return this->max_segment; };
     int get_last_seg() const { return config.awg_num_segments - 1; };
     int get_last_step() const { return max_step - 1; };
     bool get_idle_segment_wfm() const { return config.idle_segment_wfm; }
     std::tuple<int, std::string> get_awg_error();
+    int get_amplitude(int channel_index) const { return config.amp.at(channel_index); }
     
     void print_awg_error();
 

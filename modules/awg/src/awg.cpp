@@ -159,7 +159,7 @@ int AWG::open_connection() {
     status |= spcm_dwSetParam_i32(p_card, SPC_CARDMODE, SPC_REP_STD_SEQUENCE);
     status |= spcm_dwSetParam_i32(p_card, SPC_SEQMODE_MAXSEGMENTS,
                                   config.awg_num_segments);
-    status |= spcm_dwSetParam_i32(p_card, SPC_SEQMODE_STARTSTEP, config.first_step_index);
+    status |= this->set_initial_step(config.first_step_index);
 
     assert(config.samples_per_segment <=
            (AWG_MEMORY_SIZE / bps) /
@@ -174,6 +174,10 @@ int AWG::open_connection() {
 
     flag_is_connected = true;
     return status;
+}
+
+int AWG::set_initial_step(int32 step) {
+    return spcm_dwSetParam_i32(p_card, SPC_SEQMODE_STARTSTEP, step);
 }
 
 // This function forces a "hardware trigger" event.
