@@ -2,11 +2,14 @@
 
 using namespace MicrowaveWaveforms;
 
-MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& handler_config, const std::string& awg_config) {
+MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& handler_config) {
     this->reload();
-    this->awg = AWG(awg_config);
 
     auto config = YAML::LoadFile(MICROWAVE_AWG_HANDLER_CONFIG(handler_config));
+
+    auto awg_config = config["awg_config"].as<std::string>();
+    this->awg = AWG(awg_config);
+
     this->max_segment_count = config["max_segment_count"].as<int>();
     this->default_pause_segment_size = config["default_pause_segment_size"].as<int>();
     this->digital_offset_time = config["digital_offset_time"].as<double>();
@@ -22,22 +25,20 @@ void MicrowaveHandler::MicrowaveAwgHandler::open_connection() {
     this->max_step_size = this->awg.get_max_step_count();
     this->max_segment_count = min(this->max_segment_count, this->awg.get_max_segment_count());
 
-    // Set the initial step index to start rom
+    // Set the initial step index to start from
     this->awg.set_initial_step(MW_START_STEP_INDEX);
 
     // Uploading the short segments used for start/end markers
-    awg.init_segment(MW_START_SEGMENT_INDEX, this->min_segment_size);
-    awg.init_segment(MW_END_SEGMENT_INDEX, this->min_segment_size);
+    awg.init_segment(MW_SHORT_SEGMENT_INDEX, this->min_segment_size);
 
     auto short_buffer = this->awg.allocate_transfer_buffer(this->min_segment_size);
     awg.fill_transfer_buffer(short_buffer, this->min_segment_size, 0);
-    awg.load_data(MW_START_SEGMENT_INDEX, *short_buffer, this->min_segment_size, true);
-    awg.load_data(MW_END_SEGMENT_INDEX, *short_buffer, this->min_segment_size, true);
+    awg.load_data(MW_SHORT_SEGMENT_INDEX, *short_buffer, this->min_segment_size, true);
 
-    awg.seqmem_update(MW_START_STEP_INDEX, MW_START_SEGMENT_INDEX, 1,
+    awg.seqmem_update(MW_START_STEP_INDEX, MW_SHORT_SEGMENT_INDEX, 1,
                       MW_START_STEP_INDEX, SPCSEQ_ENDLOOPALWAYS);
 
-    awg.seqmem_update(MW_END_STEP_INDEX, MW_END_SEGMENT_INDEX, 1,
+    awg.seqmem_update(MW_END_STEP_INDEX, MW_SHORT_SEGMENT_INDEX, 1,
                       MW_END_STEP_INDEX, SPCSEQ_ENDLOOPALWAYS);
 
 }
@@ -46,13 +47,18 @@ void MicrowaveHandler::MicrowaveAwgHandler::close_connection() {
     this->awg.close_card();
 }
 
+void MicrowaveHandler::MicrowaveAwgHandler::force_trigger() {
+    this->awg.force_hardware_trigger();
+}
+
 void MicrowaveHandler::MicrowaveAwgHandler::start() {
+    // Move to the end step
     this->awg.seqmem_update(
         MW_START_STEP_INDEX,
-        MW_START_SEGMENT_INDEX,
+        MW_SHORT_SEGMENT_INDEX,
         1,
         this->step_to_run_index,
-        SPCSEQ_ENDLOOPALWAYS
+        SPCSEQ_ENDLOOPONTRIG
     );
     this->awg.start_stream();
 }
@@ -237,56 +243,88 @@ int MicrowaveHandler::MicrowaveAwgHandler::increment_step_index(int index, int s
 void MicrowaveHandler::MicrowaveAwgHandler::upload_waveforms(
     const std::vector<MicrowaveWaveforms::Waveform>& waveforms)
 {
+    INFO << "[AWG] upload_waveforms() ENTER, waveforms.size() = "
+         << waveforms.size() << std::endl;
+
     // Breakdown
+    INFO << "[AWG] Breaking down waveforms..." << std::endl;
     auto iqmixer_waveforms_tuple = this->breakdown_waveforms(waveforms);
 
     const auto& iqmixer_waveforms = std::get<0>(iqmixer_waveforms_tuple);
     const auto& repetitions      = std::get<1>(iqmixer_waveforms_tuple);
     const size_t N = iqmixer_waveforms.size();
 
+    INFO << "[AWG] Breakdown complete. N = " << N << std::endl;
+
     if (N == 0) {
+        INFO << "[AWG] No waveforms. Resetting indices and returning." << std::endl;
         this->next_step_to_load_index = MW_INITIAL_STEP_INDEX;
         this->step_to_run_index       = MW_END_STEP_INDEX;
         return;
     }
 
     // Upload segments
+    INFO << "[AWG] Uploading " << N << " IQ mixer waveforms..." << std::endl;
+
     std::vector<int> segment_indices(N);
     for (size_t i = 0; i < N; ++i) {
+        INFO << "[AWG] Uploading segment " << i << " / " << (N - 1) << std::endl;
         segment_indices[i] = this->upload_iqmixer_waveform(iqmixer_waveforms[i]);
+        INFO << "[AWG] Segment " << i << " uploaded, index = "
+             << segment_indices[i] << std::endl;
+        INFO << boost::apply_visitor([](auto&& a) {return a.to_string();}, iqmixer_waveforms[i].waveform) << std::endl;
     }
+
+    INFO << "[AWG] Waiting for data load..." << std::endl;
     this->awg.wait_for_data_load();
+    INFO << "[AWG] Data load complete." << std::endl;
 
     // Sequence memory programming
     const auto last_step_index =
         this->increment_step_index(this->next_step_to_load_index, N - 1);
 
+    INFO << "[AWG] Programming sequence memory. "
+         << "First step = " << this->next_step_to_load_index
+         << ", Last step = " << last_step_index << std::endl;
+
     // Last step (terminates sequence)
+    INFO << "[AWG] Programming last step (terminating)." << std::endl;
     this->awg.seqmem_update(
-    last_step_index,
-    segment_indices[N - 1],
-    repetitions[N - 1],
-    MW_END_STEP_INDEX,
-    SPCSEQ_ENDLOOPALWAYS
+        last_step_index,
+        segment_indices[N - 1],
+        repetitions[N - 1],
+        MW_END_STEP_INDEX,
+        SPCSEQ_ENDLOOPALWAYS
     );
 
     // Remaining steps
     for (int i = static_cast<int>(N) - 2; i >= 0; --i) {
-    const auto step_index = this->increment_step_index(this->next_step_to_load_index, i);
-    const auto next_index = this->increment_step_index(step_index, 1);
+        const auto step_index =
+            this->increment_step_index(this->next_step_to_load_index, i);
+        const auto next_index =
+            this->increment_step_index(step_index, 1);
 
-    this->awg.seqmem_update(
-    step_index,
-    segment_indices[i],
-    repetitions[i],
-    next_index,
-    SPCSEQ_ENDLOOPALWAYS
-    );
+        INFO << "[AWG] Programming step " << step_index
+             << " -> next " << next_index
+             << ", segment = " << segment_indices[i]
+             << ", reps = " << repetitions[i] << std::endl;
+
+        this->awg.seqmem_update(
+            step_index,
+            segment_indices[i],
+            repetitions[i],
+            next_index,
+            SPCSEQ_ENDLOOPALWAYS
+        );
     }
-
 
     // Update state
     this->step_to_run_index = this->next_step_to_load_index;
     this->next_step_to_load_index =
         this->increment_step_index(last_step_index, 1);
+
+    INFO << "[AWG] upload_waveforms() EXIT. "
+         << "step_to_run_index = " << this->step_to_run_index
+         << ", next_step_to_load_index = "
+         << this->next_step_to_load_index << std::endl;
 }

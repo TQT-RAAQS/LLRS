@@ -22,11 +22,11 @@ first_step_index:         0
 input_trigger:
     ports:      [0]                     # List of input trigger ports to be used for trigging. Trig 0 and Trig 1 ports on the AWG (some models may not have Trig 1)
     logic:      0                       # 0=OR, 1=AND. Is the AWG triggered if either port is triggered, or if both are triggered.
-    level_0_mv: [500]                   # Trigger voltage level 0. A trigger is detected if voltage crosses this level.
-    level_1_mv: [2000]                  # Trigger voltage level 1. The trigger is rearmed (if configured) when the votlage crosses this leve.
+    level_0_mv: [2000]                  # Trigger voltage level 0. A trigger is detected if voltage crosses this level.
+    level_1_mv: [500]                   # Trigger voltage level 1. The trigger is rearmed (if configured) when the votlage crosses this leve.
     edge:       1                       # 0 = negative edge, 1 = positive edge
     rearm:      true                    # Flag on whether the trigger should be rearmed or not. Note that this is only possible for trigger input 0.
-    timeout_ms: 0                       # Trigger timeout in milliseconds. To disable timeout, set to 0.
+    timeout_ms: 5000                    # Trigger timeout in milliseconds. To disable timeout, set to 0.
 
 # Output Trigger Settings
 async_out_trig_channels:  []            # 0=x0 1=x1 2=x2

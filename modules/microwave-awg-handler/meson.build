@@ -38,6 +38,20 @@ sources = [
 
 ##########################
 
+microwave_awg_handler_lib = library(
+    'microwave-awg-handler-lib',
+    sources,
+    include_directories: includes,
+    dependencies: dependencies,
+)
+microwave_awg_handler_dep = declare_dependency(
+    include_directories: includes,
+    link_with: microwave_awg_handler_lib,
+    dependencies: dependencies
+)
+
+##########################
+
 test_executable = executable(
     'microwave_test',
     ['test.cu'] + sources,

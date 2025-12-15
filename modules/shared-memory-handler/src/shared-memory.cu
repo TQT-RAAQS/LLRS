@@ -336,11 +336,11 @@ std::vector<double_t> SharedMemory::get_trap_fluorescence(size_t image_index) {
 
 std::vector<uint8_t> SharedMemory::get_trap_occupancy(size_t  image_index) {
     auto image_count = this->get_image_count();
-
+    
     if (image_index >= image_count) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
-
+    
     auto& N = this->trap_array_sizes.at(image_index);
     
     std::vector<uint8_t> traps_occupancy(N);

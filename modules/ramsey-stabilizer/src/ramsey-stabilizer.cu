@@ -1,7 +1,10 @@
 #include "ramsey-stabilizer.h"
 
+using namespace MicrowaveHandler;
+
 RamseyStabilizer::RamseyStabilizer(const std::string config) {
     this->configs = YAML::LoadFile(RAMSEY_STABILIZER(config));
+    this->setup_awg_handler();
     this->setup_fourier_analyzer();
     this->setup_memory_handler();
     this->setup_saver();
@@ -16,9 +19,14 @@ void RamseyStabilizer::reset_pid() {
     pid_configs["k_d"] = this->labscript_config->get_ramsey_stabilizer_k_d();
     pid_configs["param_initial"] = 0;
 
-    std::cout << pid_configs["param_min"] << std::endl;
-
     this->pid_controller = std::make_unique<PIDLoopController>(pid_configs);
+}
+
+void RamseyStabilizer::setup_awg_handler() {
+    const auto& c = this->configs["awg_handler"];
+
+    auto awg_config_name = c["config"].as<std::string>();
+    this->awg_handler = std::make_unique<MicrowaveAwgHandler>(awg_config_name);
 }
 
 void RamseyStabilizer::setup_saver() {
@@ -72,13 +80,15 @@ void RamseyStabilizer::worker_function() {
                 this->smh->signal_done();
                 images_processed = 0;
             } else if (image_count > 0 && image_count > images_processed) { // A new image is available
-                INFO << "Processing new image. Image index: " << images_processed << ".\n";
+                INFO << "Processing new image. Image index: " << (int)images_processed << ".\n";
                 this->process_image(images_processed);
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over
                 INFO << "Shot is over. Adding metadata to queue.\n";
                 this->saver->add_to_queue(this->last_shot_address, this->phi, this->delta, this->pid_controller->get_control_param());
+                this->awg_handler->stop();
                 this->smh->signal_done();
+                this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
             } else {
                 INFO << "Unexpected case in the memory manager. Current image count: " << image_count
@@ -106,15 +116,15 @@ void RamseyStabilizer::process_image(int8_t image_index) {
 
     // Read the atom occupancy states
     auto occ = this->smh->get_trap_occupancy(image_index);
-
+    
     if (image_index == 0) { // If this is the first image
         this->oc0 = std::move(occ);
         return;
     }
-
+    
     // If this is the second image
     this->oc1 = std::move(occ);
-
+    
     this->phi = this->fourier_analyzer->extract_phase(this->oc0, this->oc1);
     
     // Update the parameter
@@ -126,27 +136,86 @@ void RamseyStabilizer::transition_to_buffered() {
     this->last_shot_address = this->smh->get_shot_address();
     auto experiment_name = LabscriptAddressUtils::get_experiment_folder_name(this->last_shot_address);
 
+    // Read the shot .h5 file
+    this->labscript_config = std::make_unique<RamseyStabilizerLabscriptConfig>(this->last_shot_address);
+
     if (this->last_experiment_folder != experiment_name) { // This is a new experiment
         this->last_experiment_folder = experiment_name;
-
-        // Read the shot .h5 file
-        this->labscript_config = std::make_unique<RamseyStabilizerLabscriptConfig>(this->last_shot_address);
 
         // Re-read the geometric ordering of the traps
         this->fourier_analyzer->reload_orders(this->flag_configs_translator);
 
         // Reset PID parameters
         this->reset_pid();
+
+        // Reset waveform data
+        this->reset_waveform_data();
     }
+
+    this->prepare_awg();
+}
+
+void RamseyStabilizer::reset_waveform_data() {
+    this->waveform_data["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+    this->waveform_data["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
+}
+
+void RamseyStabilizer::prepare_awg() {
+    std::vector<MicrowaveWaveforms::Waveform> waveforms;
+    
+    // String analysis
+    auto signals = this->labscript_config->get_mw_signals();
+    auto substituted_signal = RamseyStabilizer::substitute_variables_in_signal(signals, this->waveform_data);
+    auto signal_tokens = RamseyStabilizer::split_signal(substituted_signal, ';');
+    for (const auto& s : signal_tokens) {
+                INFO << "Step: " << this->awg_handler->get_awg_step() << std::endl;
+        waveforms.push_back(MicrowaveWaveforms::from_string(s));
+    }
+
+    // Upload the waveforms
+    this->awg_handler->upload_waveforms(waveforms);
+
+    // Start the AWG
+    this->awg_handler->start();
+}
+
+std::string RamseyStabilizer::substitute_variables_in_signal(std::string s, const std::unordered_map<std::string, double>& vars) {
+    for (const auto& kv : vars) {
+        std::string key = "$" + kv.first + "$";
+        std::string val = std::to_string(kv.second);
+
+        size_t pos = 0;
+        while ((pos = s.find(key, pos)) != std::string::npos) {
+            s.replace(pos, key.size(), val);
+            pos += val.size();
+        }
+    }
+    return s;
+}
+
+std::vector<std::string> RamseyStabilizer::split_signal(const std::string& s, char delim) {
+    std::vector<std::string> tokens;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (std::getline(ss, item, delim)) {
+        if (!item.empty())
+            tokens.push_back(item);
+    }
+    return tokens;
 }
 
 void RamseyStabilizer::start() {
+    this->awg_handler->open_connection();
     this->thread_worker_killed.store(false);
     this->thread_worker = std::make_unique<std::thread>(&RamseyStabilizer::worker_function, this);
     this->saver->start();
 }
 
 void RamseyStabilizer::stop() {
+    if (this->awg_handler->is_connected()) {
+        this->awg_handler->close_connection();
+    }
     this->thread_worker_killed.store(true);
     if (this->thread_worker != nullptr && this->thread_worker->joinable()) {
         this->thread_worker->join();

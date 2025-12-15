@@ -15,6 +15,7 @@ image_processing = subproject('image-processing')
 configs_translator_proj = subproject('configs-translator')
 pid_loop_controller_proj = subproject('pid-loop-controller')
 awg_proj = subproject('awg')
+microwave_awg_handler_proj = subproject('microwave-awg-handler')
 
 # dependencies
 shared_memory_handler_dep = shared_memory_handler_proj.get_variable('shared_memory_handler_dep')
@@ -26,6 +27,7 @@ fftw_dep = dependency('fftw3', required: true)
 configs_translator_dep = configs_translator_proj.get_variable('configs_translator_dep')
 pid_loop_controller_dep = pid_loop_controller_proj.get_variable('pid_loop_controller_dep')
 awg_dep = awg_proj.get_variable('awg_dep')
+microwave_awg_handler_dep = microwave_awg_handler_proj.get_variable('microwave_awg_handler_dep')
 
 ramsey_stabilizer_dependencies = [
     shared_memory_handler_dep, 
@@ -36,7 +38,8 @@ ramsey_stabilizer_dependencies = [
     fftw_dep,
     configs_translator_dep,
     pid_loop_controller_dep,
-    awg_dep
+    awg_dep,
+    microwave_awg_handler_dep,
 ]
 
 # sources
@@ -57,9 +60,9 @@ ramsey_stabilizer_executable = executable(
     include_directories: ramsey_stabilizer_includes
 )
 
-ramsey_stabilizer_executable = executable(
+ramsey_stabilizer_executable_test = executable(
     'ramsey-stabilizer-test',
-    ['test_img.cu'] + ramsey_stabilizer_sources,
+    ['test.cu'] + ramsey_stabilizer_sources,
     link_args: '-lstdc++fs',
     dependencies: ramsey_stabilizer_dependencies,
     include_directories: ramsey_stabilizer_includes

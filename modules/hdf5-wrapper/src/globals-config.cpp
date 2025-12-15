@@ -58,4 +58,6 @@ void GlobalsConfig::read_from_shot_file() {
             break;
         }
     }
+
+    this->shotfile.close_file();
 }

@@ -4,6 +4,7 @@ using namespace MicrowaveSynthesizer;
 using namespace MicrowaveWaveforms;
 
 #define _MW_MAX_ANALOG_VALUE 0x7fff
+#define _ALPHA_MAX 0.050
 
 MicrowaveWaveformSynthesizer::MicrowaveWaveformSynthesizer() {
     this->reload();
@@ -54,8 +55,15 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
     double dt = 1.0 / awg.get_sample_rate();
 
     // Normalization factors
+    if (p->amplitude > _ALPHA_MAX) {
+        throw std::runtime_error(
+            "SquarePulse amplitude exceeds maximum allowed value of " +
+            std::to_string(_ALPHA_MAX) + ": " + std::to_string(p->amplitude)
+        );
+    }
+
     double a0 = awg.get_amplitude(0) * 1e-3;
-    double a1 = awg.get_amplitude(0) * 1e-3;
+    double a1 = awg.get_amplitude(1) * 1e-3;
     double alpha_I = p->amplitude / a0;
     double alpha_Q = p->amplitude / a1;
     double alpha_I_dc = this->vI_dc / a0;

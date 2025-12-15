@@ -12,10 +12,12 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     double ramsey_stabilizer_k_d;
     double ramsey_stabilizer_first_gate_phase;
     double ramsey_stabilizer_nu0;
+    double ramsey_stabilizer_alpha;
     double ramsey_stabilizer_phi0;
     double ramsey_stabilizer_pi2_T;
     double ramsey_stabilizer_second_gate_phase;
     double ramsey_stabilizer_tau;
+    char* mw_signals;
 
   public:
   RamseyStabilizerLabscriptConfig(ShotFile shotfile)
@@ -28,10 +30,12 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
                {"ramsey_stabilizer_k_d", &ramsey_stabilizer_k_d, LabscriptType::VALUE},
                {"ramsey_stabilizer_first_gate_phase", &ramsey_stabilizer_first_gate_phase, LabscriptType::VALUE},
                {"ramsey_stabilizer_nu0", &ramsey_stabilizer_nu0, LabscriptType::VALUE},
+               {"ramsey_stabilizer_alpha", &ramsey_stabilizer_alpha, LabscriptType::VALUE},
                {"ramsey_stabilizer_phi0", &ramsey_stabilizer_phi0, LabscriptType::VALUE},
                {"ramsey_stabilizer_pi2_T", &ramsey_stabilizer_pi2_T, LabscriptType::VALUE},
                {"ramsey_stabilizer_second_gate_phase", &ramsey_stabilizer_second_gate_phase, LabscriptType::VALUE},
-               {"ramsey_stabilizer_tau", &ramsey_stabilizer_tau, LabscriptType::VALUE}}) {}
+               {"ramsey_stabilizer_tau", &ramsey_stabilizer_tau, LabscriptType::VALUE},
+               {"mw_signals", &mw_signals, LabscriptType::VALUE}}) {}
 
     double get_ramsey_stabilizer_delta_max() const { return ramsey_stabilizer_delta_max; }
     double get_ramsey_stabilizer_delta_min() const { return ramsey_stabilizer_delta_min; }
@@ -40,10 +44,12 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     double get_ramsey_stabilizer_k_d() const { return ramsey_stabilizer_k_d; }
     double get_ramsey_stabilizer_first_gate_phase() const { return ramsey_stabilizer_first_gate_phase; }
     double get_ramsey_stabilizer_nu0() const { return ramsey_stabilizer_nu0; }
+    double get_ramsey_stabilizer_alpha() const { return ramsey_stabilizer_alpha; }
     double get_ramsey_stabilizer_phi0() const { return ramsey_stabilizer_phi0; }
     double get_ramsey_stabilizer_pi2_T() const { return ramsey_stabilizer_pi2_T; }
     double get_ramsey_stabilizer_second_gate_phase() const { return ramsey_stabilizer_second_gate_phase; }
     double get_ramsey_stabilizer_tau() const { return ramsey_stabilizer_tau; }
+    std::string get_mw_signals() const { return mw_signals; }
 };
 
 #endif

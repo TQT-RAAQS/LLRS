@@ -10,7 +10,7 @@ for line in sys.stdin:
         break
     elif command == "reload_iqmixer":
         # Reload IQMixer parameters
-        iqmixer_data = pickle.load(open(Addresses.iqmixer_wf_params, "rb"))
+        iqmixer_data = pickle.load(open(Addresses.iqmixer_wf_params_v, "rb"))
         dphi = iqmixer_data["dphi"]
         vdc_I = iqmixer_data["vdc_I"]
         vdc_Q = iqmixer_data["vdc_Q"]

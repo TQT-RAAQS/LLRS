@@ -36,13 +36,13 @@ namespace fs = std::experimental::filesystem;
        kPathSeparator1 + "psf" + kPathSeparator1 + "orders.bin")
 #define CONFIGS_PSF_TRANSLATION_READY_FILE                                     \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
-       kPathSeparator1 + "translation" + kPathSeparator1 + "psf_flag.done")
+       kPathSeparator1 + "translation" + kPathSeparator1 + "psf.done")
 #define IQMIXER_TRANSLATION_FILE                                               \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
         kPathSeparator1 + "iqmixer" + kPathSeparator1 + "iqmixer.bin")
 #define IQMIXER_TRANSLATION_READY_FILE                                         \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
-        kPathSeparator1 + "iqmixer" + kPathSeparator1 + "iqmixer.done")
+        kPathSeparator1 + "translation" + kPathSeparator1 + "iqmixer.done")
 #define CONFIGS_TRANSLATOR_SCRIPT                                              \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "tools" +          \
      kPathSeparator1 + "config-translator.py")

@@ -14,12 +14,13 @@
 
 namespace MicrowaveHandler {
 
-    #define MW_START_SEGMENT_INDEX 0
-    #define MW_END_SEGMENT_INDEX 1
+    #define MW_SHORT_SEGMENT_INDEX 0
+    #define MW_INITIAL_SEGMENT_INDEX 1 // Make sure this is larger than the short segment
+
     #define MW_START_STEP_INDEX 0
     #define MW_END_STEP_INDEX 1
     #define MW_INITIAL_STEP_INDEX 2 // Make sure this is larger than the start and end steps
-    #define MW_INITIAL_SEGMENT_INDEX 2 // Make sure this is larger than the start and end segments
+    
     #define MW_MAX_STEP_REPETITION 1048575
 
     class MicrowaveAwgHandler {
@@ -76,7 +77,7 @@ namespace MicrowaveHandler {
         
     public:
         AWG awg;
-        MicrowaveAwgHandler(const std::string& handler_config, const std::string& awg_config);
+        MicrowaveAwgHandler(const std::string& handler_config);
         ~MicrowaveAwgHandler();
 
         void open_connection();
@@ -84,6 +85,7 @@ namespace MicrowaveHandler {
         void reload(bool flag_translate = true);
         void start();
         void stop();
+        void force_trigger();
 
         void upload_waveforms(const std::vector<MicrowaveWaveforms::Waveform>& waveforms);
 
