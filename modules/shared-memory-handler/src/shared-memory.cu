@@ -126,13 +126,29 @@ void SharedMemory::submit_done_signal(pid_t pid) {
 }
 
 
-void SharedMemory::submit_wait(pid_t pid) {
+int SharedMemory::submit_wait(pid_t pid, uint8_t timeout_s) {
     int worker_index = this->is_valid_regular_process_pid(pid);
 
     if (worker_index != -1) { // regular worker
-        sem_wait(&this->sem_worker_wait_master[worker_index]);
+        if (timeout_s == 0) {
+            return sem_wait(&this->sem_worker_wait_master[worker_index]);
+        } else {
+            struct timespec ts;
+            clock_gettime(CLOCK_REALTIME, &ts);
+            ts.tv_sec += timeout_s;
+
+            return sem_timedwait(&this->sem_worker_wait_master[worker_index], &ts);
+        }
     } else if (this->is_image_saver(pid)) {
-        sem_wait(&this->sem_image_saver_wait_master);
+        if (timeout_s == 0) {
+            return sem_wait(&this->sem_image_saver_wait_master);
+        } else {
+            struct timespec ts;
+            clock_gettime(CLOCK_REALTIME, &ts);
+            ts.tv_sec += timeout_s;
+
+            return sem_timedwait(&this->sem_image_saver_wait_master, &ts);
+        }
     } else {
         throw std::runtime_error("The provided PID is not the image saver for the shared memory. This operation is invalid.");
     }
@@ -320,11 +336,11 @@ std::vector<double_t> SharedMemory::get_trap_fluorescence(size_t image_index) {
 
 std::vector<uint8_t> SharedMemory::get_trap_occupancy(size_t  image_index) {
     auto image_count = this->get_image_count();
-
+    
     if (image_index >= image_count) {
         throw std::runtime_error("The image_index provided is higher than the number of images available in the shared meomry.");
     }
-
+    
     auto& N = this->trap_array_sizes.at(image_index);
     
     std::vector<uint8_t> traps_occupancy(N);

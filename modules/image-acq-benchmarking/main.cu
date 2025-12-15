@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
         std::chrono::steady_clock::time_point begin;
         std::chrono::steady_clock::time_point end;
 
-        awg->generate_async_output_pulse(EMCCD);
+        awg->generate_async_output_pulse(TriggerType::X0);
         begin = std::chrono::steady_clock::now();
         std::vector<uint16_t> image = fgc->acquire_single_image();
         end = std::chrono::steady_clock::now();

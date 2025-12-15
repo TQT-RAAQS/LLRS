@@ -9,6 +9,7 @@
 #include "Collector.h"
 #include "llrs-lib/PreProc.h"
 #include "llrs-lib/Settings.h"
+#include "configs-translator.h"
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
@@ -29,17 +30,19 @@ using PSF_TUPLE = std::tuple<size_t, size_t, double>; // y_index, x_index, weigh
 void write_to_pgm(const std::vector<uint16_t> &image, int width, int height);
 
 class ImageProcessor {
+
+  ConfigsTranslator& configs_translator = ConfigsTranslator::instance();
+
   // DEPRECATED
   std::vector<std::vector<PSF_PAIR>> _psf;
 
   std::vector<std::vector<PSF_TUPLE>> psfs;
   std::vector<std::vector<double_t>> thresholds;
 
-  void setup_configs_translator();
   void parse_file(std::ifstream &infile);
 
 public:
-    void reload();
+    void reload(bool flag_translate_psf = true);
     void process(size_t image_width,
                  size_t image_index,
                  const std::vector<uint16_t>& image,

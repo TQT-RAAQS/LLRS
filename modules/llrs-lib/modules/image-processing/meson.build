@@ -11,12 +11,16 @@ llrs_lib_image_processing_inc = include_directories('include')
 
 # submodules
 collector_proj = subproject('collector')
+configs_translator = subproject('configs-translator')
 
 # dependencies
 llrs_lib_collector_dep = collector_proj.get_variable('llrs_lib_collector_dep')
 llrs_lib_collector_activate_dep = collector_proj.get_variable(
     'llrs_lib_collector_activate_dep',
 )
+configs_translator_dep = configs_translator.get_variable('configs_translator_dep')
+
+dependencies = [llrs_lib_collector_dep, configs_translator_dep]
 
 # sources
 llrs_lib_image_processing_src = [
@@ -29,7 +33,7 @@ llrs_lib_image_processing = library(
     'llrs-lib-image-processing',
     llrs_lib_image_processing_src,
     include_directories: [llrs_lib_image_processing_inc],
-    dependencies: [llrs_lib_collector_dep],
+    dependencies: dependencies,
 )
 
 llrs_lib_image_processing_runtime = library(
@@ -37,7 +41,7 @@ llrs_lib_image_processing_runtime = library(
     llrs_lib_image_processing_src,
     include_directories: [llrs_lib_image_processing_inc],
     cuda_args: ['-D LOGGING_RUNTIME'],
-    dependencies: [llrs_lib_collector_activate_dep],
+    dependencies: dependencies,
 )
 
 
@@ -45,12 +49,12 @@ llrs_lib_image_processing_runtime = library(
 llrs_lib_image_processing_dep = declare_dependency(
     include_directories: [llrs_lib_image_processing_inc],
     link_with: llrs_lib_image_processing,
-    dependencies: [llrs_lib_collector_dep],
+    dependencies: dependencies,
 )
 
 llrs_lib_image_processing_runtime_dep = declare_dependency(
     include_directories: [llrs_lib_image_processing_inc],
     link_with: llrs_lib_image_processing_runtime,
-    dependencies: [llrs_lib_collector_activate_dep],
+    dependencies: dependencies,
 )
 

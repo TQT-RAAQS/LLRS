@@ -64,8 +64,8 @@ class Sequence {
     }
     bool load_single_segment(std::vector<Reconfig::Move> &moves_list);
     bool load_multiple_segments(std::vector<Reconfig::Move> &moves_list);
-    void emccd_trigger() { awg->generate_async_output_pulse(EMCCD); }
-    void clock_trigger() { awg->generate_async_output_pulse(RESUME_CLOCK); }
+    void emccd_trigger() { awg->generate_async_output_pulse(TriggerType::X0); }
+    void clock_trigger() { awg->generate_async_output_pulse(TriggerType::X1); }
     void reset(bool reset_segments);
 
     void get_static_wfm(int16 *pnData, size_t num_wfms, int Nt_x);

@@ -69,7 +69,7 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
     std::string adjusted_h5_address = adjust_address(h5_address); // Converting server address to local address on this workstation
     INFO << "Processing a new shot: " << adjusted_h5_address << std::endl;
     
-    std::string new_experiment_folder = LabscriptAddressUtils::get_experiment_folder_name(adjusted_h5_address);
+    std::string new_experiment_folder = LabscriptAddressUtils::get_experiment_folder_path(adjusted_h5_address);
     if (experiment_folder != new_experiment_folder || !flag_thread_running.load()) {
         experiment_folder = new_experiment_folder;
         configure_fgc(adjusted_h5_address);
@@ -85,9 +85,6 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
         std::lock_guard<std::mutex> lock(cache_mutex);
         
         image_folder_address = LabscriptAddressUtils::get_images_folder_name(adjusted_h5_address, image_folder_name);
-        timestamp = long(std::chrono::duration<double>(
-            std::chrono::system_clock::now().time_since_epoch()
-        ).count() * 1000);
         image_counter = 0;
     }
 }
@@ -156,7 +153,6 @@ ImageSaverServer::~ImageSaverServer() {
 /************************************************************************************************** */
 
 void ImageSaverServer::reload_psf_data() {
-    this->configs_translator.translate();
     this->image_processor.reload();
 }
 
@@ -228,6 +224,10 @@ void ImageSaverServer::capture_images() {
             if (current_image.size() == 0) {
                 flag_thread_running.store(false);
             } else {
+                auto timestamp = long(std::chrono::duration<double>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                ).count() * 1000);
+
                 // Image processing
                 auto trap_count = this->image_processor.get_trap_count();
                 fls_counts.resize(trap_count);

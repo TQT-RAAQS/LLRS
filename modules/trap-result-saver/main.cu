@@ -16,7 +16,6 @@ int main() {
             break;
         }
 
-        // You can handle other commands here
         std::cout << "You entered: " << input << std::endl;
     }
 

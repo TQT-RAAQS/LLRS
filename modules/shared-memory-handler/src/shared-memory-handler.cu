@@ -116,6 +116,6 @@ void SharedMemoryHandler::signal_done() {
     this->shared_memory->submit_done_signal(this->pid);
 }
 
-void SharedMemoryHandler::wait_for_update() {
-    this->shared_memory->submit_wait(this->pid);
+int SharedMemoryHandler::wait_for_update(uint8_t timeout_s) {
+    return this->shared_memory->submit_wait(this->pid, timeout_s);
 }

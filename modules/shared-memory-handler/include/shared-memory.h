@@ -22,6 +22,7 @@
 #define MAX_TRAP_ARRAY_SIZE 10000
 #define SHOT_ADDRESS_MAX_SIZE 1000
 #define PID_EMPTY 0
+#define SHOT_NOT_BEGUN_YET -1
 
 class MasterSharedMemoryHandler;
 
@@ -96,7 +97,7 @@ public:
     size_t delete_subscriber(pid_t pid);
 
     void submit_done_signal(pid_t pid);
-    void submit_wait(pid_t pid);
+    int submit_wait(pid_t pid, uint8_t timeout_s = 0);
 };
 
 #endif

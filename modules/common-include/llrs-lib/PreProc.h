@@ -22,6 +22,9 @@ namespace fs = std::experimental::filesystem;
 
 #define FILE_EXISTS(name) (fs::exists(name))
 
+#define EXPERIMENTS_ROOT_DIR                                                   \
+    (std::string("") + SHARED_DRIVE_DIR + kPathSeparator1 + "Experiments" +    \
+     kPathSeparator1 + "Rydberg")
 #define PSF_PATH(fname)                                                        \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "psf" + kPathSeparator1 + (fname))
@@ -31,12 +34,18 @@ namespace fs = std::experimental::filesystem;
 #define TRAPS_ORDERS_TRANSLATION_FILE                                          \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
        kPathSeparator1 + "psf" + kPathSeparator1 + "orders.bin")
-#define CONFIGS_TRANSLATION_READY_FILE                                         \
+#define CONFIGS_PSF_TRANSLATION_READY_FILE                                     \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
-       kPathSeparator1 + "translation" + kPathSeparator1 + "flag.done")
-#define PSF_READER_SCRIPT                                                      \
+       kPathSeparator1 + "translation" + kPathSeparator1 + "psf.done")
+#define IQMIXER_TRANSLATION_FILE                                               \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "iqmixer" + kPathSeparator1 + "iqmixer.bin")
+#define IQMIXER_TRANSLATION_READY_FILE                                         \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "translation" + kPathSeparator1 + "iqmixer.done")
+#define CONFIGS_TRANSLATOR_SCRIPT                                              \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "tools" +          \
-     kPathSeparator1 + "psf-reader.py")
+     kPathSeparator1 + "config-translator.py")
 #define COEF_X_PATH(fname)                                                     \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "coef" + kPathSeparator1 + "primary" +                  \
@@ -72,6 +81,9 @@ namespace fs = std::experimental::filesystem;
 #define IMAGE_PATH(epoch)                                                      \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
      kPathSeparator1 + "images" + kPathSeparator1 + (epoch) + ".pgm")
+#define MICROWAVE_AWG_HANDLER_CONFIG(id)                                       \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
+    kPathSeparator1 + "microwave-handler" + kPathSeparator1 + (id))
 #define IMAGE_SAVER_SERVER(id)                                                 \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
      kPathSeparator1 + "image-saver-server" + kPathSeparator1 + (id))
@@ -87,6 +99,9 @@ namespace fs = std::experimental::filesystem;
 #define MASTER_SHARED_MEMORY_HANDLER_SERVER(id)                                \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
       kPathSeparator1 + "master-shared-memory-handler-server" + kPathSeparator1 + (id))
+#define RAMSEY_STABILIZER(id)                                                  \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
+      kPathSeparator1 + "ramsey-stabilizer" + kPathSeparator1 + (id))
 
 #define TRIAL_NAME(num) ("trial_" + std::to_string(num))
 #define REP_NAME(num) ("repetition_" + std::to_string(num))

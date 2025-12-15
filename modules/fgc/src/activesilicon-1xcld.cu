@@ -29,7 +29,7 @@ void ActiveSilicon1XCLD::setup(uint32_t roi_width, uint32_t roi_height,
     /* Create handle and load default settings base on the PCF file */
     std::string NADA = "";
     std::string pcf_config_path = std::string(
-        NADA + PROJECT_BASE_DIR + "/configs/fgc/andor_ixonultra888.pcf");
+    NADA + PROJECT_BASE_DIR + "/configs/fgc/andor_ixonultra888.pcf");
     PHX_Create(&this->_handle, &PHX_ErrHandlerDefault);
     PHX_ParameterSet(this->_handle, PHX_CONFIG_FILE, &pcf_config_path);
 

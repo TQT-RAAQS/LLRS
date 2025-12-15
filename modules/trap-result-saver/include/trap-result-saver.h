@@ -12,7 +12,6 @@
 #include <ctime>
 #include <fstream>
 
-#define SHOT_NOT_BEGUN -1
 #define IMAGE_FOLDER_NAME 
 
 using ImageTrapResult = std::tuple<std::vector<double_t>, std::vector<uint8_t>>; // fluorescence and occupancy, each of size trap_size

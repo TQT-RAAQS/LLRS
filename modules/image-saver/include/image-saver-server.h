@@ -18,7 +18,6 @@
 #include "emccd-config.h"
 #include "shot-file.h"
 #include "activesilicon-1xcld.hpp"
-#include "configs-translator.h"
 #include "ImageProcessor.h"
 #include "shared-memory-handler.h"
 
@@ -28,7 +27,6 @@ class ImageSaverServer {
 
     YAML::Node config;
 
-    ConfigsTranslator configs_translator = ConfigsTranslator::instance();
     Processing::ImageProcessor image_processor;
     std::unique_ptr<SharedMemoryHandler> shared_memory_handler;
     
@@ -53,7 +51,6 @@ class ImageSaverServer {
     std::mutex cache_mutex;
     int image_counter = 0;
     std::string image_folder_address = "";
-    long timestamp = 0;
     std::vector<ImageBatch> images_cache;
 
     std::string handle_request(std::string request);

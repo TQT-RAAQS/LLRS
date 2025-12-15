@@ -167,7 +167,7 @@ bool Stream::Sequence::load_single_segment(
     START_TIMER("V-First-Upload");
     // upload the segment
     awg->load_data(short_circuit_seg_idx, *double_sized_buffer,
-                   samples_per_segment * 2 * sizeof(short));
+                   samples_per_segment * 2);
     END_TIMER("V-First-Upload");
     END_TIMER("V-Latency");
     GET_EXTERNAL_TIME("V-First-Update", 0);
@@ -231,8 +231,8 @@ bool Stream::Sequence::load_multiple_segments(
     std::swap(lookup_pointer, upload_pointer);
 
     // pre - load first segment
-    awg->load_data_async_start(idle_segment_idx + 1, upload_pointer,
-                               samples_per_segment * sizeof(short));
+    awg->load_data(idle_segment_idx + 1, upload_pointer,
+                               samples_per_segment, false);
 
     // lookup second segment
     START_TIMER("V-Second-Lookup");
@@ -252,8 +252,8 @@ bool Stream::Sequence::load_multiple_segments(
         // swap buffers
         std::swap(lookup_pointer, upload_pointer);
         // ---upload data---
-        awg->load_data_async_start(load_seg_idx, upload_pointer,
-                                   samples_per_segment * sizeof(short));
+        awg->load_data(load_seg_idx, upload_pointer,
+                                   samples_per_segment, false);
 
         //---lookup waveforms for next segment
         wf_segment_lookup(lookup_pointer, moves_list, waveforms_per_segment);
