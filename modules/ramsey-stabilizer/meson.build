@@ -15,7 +15,7 @@ image_processing = subproject('image-processing')
 configs_translator_proj = subproject('configs-translator')
 pid_loop_controller_proj = subproject('pid-loop-controller')
 awg_proj = subproject('awg')
-microwave_awg_handler_proj = subproject('microwave-awg-handler')
+microwave_awg_handler_proj = subproject('microwave-handler')
 
 # dependencies
 shared_memory_handler_dep = shared_memory_handler_proj.get_variable('shared_memory_handler_dep')

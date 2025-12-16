@@ -12,18 +12,15 @@
 struct ShotInformation {
 
     std::string shot_address;
-    double extracted_phase;
-    double old_detuning;
-    double new_detuning;
+    double error_signal;
+    double new_frequency;
 
     ShotInformation(std::string shot_address,
-                    double extracted_phase,
-                    double old_detuning,
-                    double new_detuning) : 
+                    double error_signal,
+                    double new_frequency) : 
                     shot_address(shot_address),
-                    extracted_phase(extracted_phase),
-                    old_detuning(old_detuning),
-                    new_detuning(new_detuning)
+                    error_signal(error_signal),
+                    new_frequency(new_frequency)
                     {}
     ShotInformation() = default;
 };
@@ -45,7 +42,7 @@ public:
 
     void start();
     void stop();
-    void add_to_queue(std::string shot_address, double extracted_phase, double old_detuning, double new_detuning);
+    void add_to_queue(std::string shot_address, double error_signal, double new_frequency);
 
     RamseyStabilizerMetadataSaver(YAML::Node configs);
     ~RamseyStabilizerMetadataSaver();

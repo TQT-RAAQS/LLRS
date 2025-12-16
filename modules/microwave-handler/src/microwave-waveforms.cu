@@ -1,8 +1,8 @@
 #include "microwave-waveforms.h"
 
-using namespace MicrowaveWaveforms;
+using namespace MicrowaveHandler;
 
-Waveform MicrowaveWaveforms::from_string(const std::string& str) {
+Waveform MicrowaveHandler::waveform_from_string(const std::string& str) {
     std::istringstream iss(str);
     std::string type;
     iss >> type;

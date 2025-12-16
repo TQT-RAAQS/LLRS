@@ -36,7 +36,7 @@ class RamseyStabilizer {
     std::unique_ptr<MicrowaveAwgHandler> awg_handler;
     
     void reset_waveform_data();
-    std::unordered_map<std::string, double> waveform_data;
+    std::unordered_map<std::string, double> waveform_params;
     
     void setup_fourier_analyzer();
     std::unique_ptr<FourierAnalyzer> fourier_analyzer = nullptr;

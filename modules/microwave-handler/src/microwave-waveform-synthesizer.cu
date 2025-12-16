@@ -1,7 +1,6 @@
 #include "microwave-waveform-synthesizer.h"
 
-using namespace MicrowaveSynthesizer;
-using namespace MicrowaveWaveforms;
+using namespace MicrowaveHandler;
 
 #define _MW_MAX_ANALOG_VALUE 0x7fff
 #define _ALPHA_MAX 0.050
@@ -28,7 +27,7 @@ void MicrowaveWaveformSynthesizer::generate_pulse(
     short* buffer,
     size_t sample_count,
     AWG& awg,
-    const MicrowaveWaveforms::Waveform& iqmixer_waveform,
+    const MicrowaveHandler::Waveform& iqmixer_waveform,
     double t,
     double t_initial_pause) {
         

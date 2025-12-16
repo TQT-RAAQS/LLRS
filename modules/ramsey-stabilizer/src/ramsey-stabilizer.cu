@@ -12,12 +12,11 @@ RamseyStabilizer::RamseyStabilizer(const std::string config) {
 
 void RamseyStabilizer::reset_pid() {
     auto pid_configs = this->configs["pid_config"];
-    pid_configs["param_min"] = this->labscript_config->get_ramsey_stabilizer_delta_min();
-    pid_configs["param_max"] = this->labscript_config->get_ramsey_stabilizer_delta_max();
     pid_configs["k_p"] = this->labscript_config->get_ramsey_stabilizer_k_p();
     pid_configs["k_i"] = this->labscript_config->get_ramsey_stabilizer_k_i();
     pid_configs["k_d"] = this->labscript_config->get_ramsey_stabilizer_k_d();
-    pid_configs["param_initial"] = 0;
+    pid_configs["param_initial"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+    pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
 
     this->pid_controller = std::make_unique<PIDLoopController>(pid_configs);
 }
@@ -85,9 +84,9 @@ void RamseyStabilizer::worker_function() {
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over
                 INFO << "Shot is over. Adding metadata to queue.\n";
-                this->saver->add_to_queue(this->last_shot_address, this->phi, this->delta, this->pid_controller->get_control_param());
-                this->awg_handler->stop();
                 this->smh->signal_done();
+                this->awg_handler->stop();
+                this->saver->add_to_queue(this->last_shot_address, this->phi - this->labscript_config->get_ramsey_stabilizer_phi0(), this->waveform_params["nu0"]);
                 this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
             } else {
@@ -121,7 +120,6 @@ void RamseyStabilizer::process_image(int8_t image_index) {
         this->oc0 = std::move(occ);
         return;
     }
-    
     // If this is the second image
     this->oc1 = std::move(occ);
     
@@ -129,7 +127,10 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     
     // Update the parameter
     auto error = FourierAnalyzer::wrap_phase(this->labscript_config->get_ramsey_stabilizer_phi0() - this->phi);
-    this->pid_controller->add_value(error);
+    auto correction = this->pid_controller->compute_correction(error);
+    INFO << "Extracted phase: " << this->phi << ", Error: " << error << ", Correction: " << correction << ".\n";
+
+    this->waveform_params["nu0"] += correction;
 }
 
 void RamseyStabilizer::transition_to_buffered() {
@@ -156,20 +157,19 @@ void RamseyStabilizer::transition_to_buffered() {
 }
 
 void RamseyStabilizer::reset_waveform_data() {
-    this->waveform_data["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
-    this->waveform_data["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
+    this->waveform_params["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+    this->waveform_params["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
 }
 
 void RamseyStabilizer::prepare_awg() {
-    std::vector<MicrowaveWaveforms::Waveform> waveforms;
+    std::vector<MicrowaveHandler::Waveform> waveforms;
     
     // String analysis
     auto signals = this->labscript_config->get_mw_signals();
-    auto substituted_signal = RamseyStabilizer::substitute_variables_in_signal(signals, this->waveform_data);
+    auto substituted_signal = RamseyStabilizer::substitute_variables_in_signal(signals, this->waveform_params);
     auto signal_tokens = RamseyStabilizer::split_signal(substituted_signal, ';');
     for (const auto& s : signal_tokens) {
-                INFO << "Step: " << this->awg_handler->get_awg_step() << std::endl;
-        waveforms.push_back(MicrowaveWaveforms::from_string(s));
+        waveforms.push_back(MicrowaveHandler::waveform_from_string(s));
     }
 
     // Upload the waveforms

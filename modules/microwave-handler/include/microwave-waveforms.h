@@ -5,7 +5,7 @@
 #include <boost/variant.hpp>
 #include <sstream>
 
-namespace MicrowaveWaveforms {
+namespace MicrowaveHandler {
 
     struct Pause;
     struct SquarePulse;
@@ -15,7 +15,7 @@ namespace MicrowaveWaveforms {
         SquarePulse
     >;
 
-    Waveform from_string(const std::string& str);
+    Waveform waveform_from_string(const std::string& str);
 
     struct Pause {
         double duration;   // duration in seconds

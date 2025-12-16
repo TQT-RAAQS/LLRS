@@ -1,6 +1,6 @@
 #include "microwave-awg-handler.h"
 
-using namespace MicrowaveWaveforms;
+using namespace MicrowaveHandler;
 
 MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& handler_config) {
     this->reload();
@@ -241,7 +241,7 @@ int MicrowaveHandler::MicrowaveAwgHandler::increment_step_index(int index, int s
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::upload_waveforms(
-    const std::vector<MicrowaveWaveforms::Waveform>& waveforms)
+    const std::vector<MicrowaveHandler::Waveform>& waveforms)
 {
     INFO << "[AWG] upload_waveforms() ENTER, waveforms.size() = "
          << waveforms.size() << std::endl;

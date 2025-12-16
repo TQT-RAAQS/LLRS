@@ -11,14 +11,10 @@ class PIDLoopController {
     std::deque<double> buffer;
     size_t max_buffer_size;
 
-    double param_min;
-    double param_max;
-    
     double k_p;
     double k_i;
     double k_d;
-
-    double param;
+    double max_change;
 
     double get_p_correction();
     double get_i_correction();
@@ -29,8 +25,7 @@ public:
     PIDLoopController(YAML::Node configs);
     void set_control_param(double d);
 
-    void add_value(double v);
-    double get_control_param();
+    double compute_correction(double v);
 };
 
 #endif
