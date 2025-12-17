@@ -47,7 +47,7 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
         double mag = std::norm(this->signal_fft[i]);
         if (mag > peak) {
             peak = mag;
-            peak_index = i;   // will be correctly updated because SIMD chooses the winning lane
+            peak_index = i;
         }
     }
 
