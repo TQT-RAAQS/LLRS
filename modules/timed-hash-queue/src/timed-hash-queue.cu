@@ -24,7 +24,7 @@ void TimedHashQueue::add_hash(int64_t hash) {
 }
 
 void TimedHashQueue::touch_hash(int64_t hash) {
-        if (this->hash_map.find(hash) == this->hash_map.end()) {
+    if (this->hash_map.find(hash) == this->hash_map.end()) {
         return; // Hash not found, do nothing
     }
 

@@ -147,22 +147,22 @@ void RamseyStabilizer::process_image(int8_t image_index) {
 void RamseyStabilizer::transition_to_buffered() {
     this->last_shot_address = this->smh->get_shot_address();
     auto experiment_name = LabscriptAddressUtils::get_experiment_folder_name(this->last_shot_address);
-
+    
     // Read the shot .h5 file
     this->labscript_config = std::make_unique<RamseyStabilizerLabscriptConfig>(this->last_shot_address);
-
+    
     if (this->last_experiment_folder != experiment_name) { // This is a new experiment
         this->last_experiment_folder = experiment_name;
-
+        
         // Re-read the geometric ordering of the traps
         this->fourier_analyzer->reload_orders(this->flag_configs_translator);
-
+        
         // Reset PID parameters
         this->reset_pid();
-
+        
         this->gradient_x_parallel = this->labscript_config->get_ramsey_stabilizer_gradient_x_parallel();
     }
-
+    
     this->active_pid_index = this->labscript_config->get_ramsey_stabilizer_active_pid_index();
     if (this->active_pid_index >= this->pid_count) {
         throw std::runtime_error("Active PID index " + std::to_string(this->active_pid_index) + " is out of range (PID count: " + std::to_string(this->pid_count) + "). Change the number of PID loops in the settings for the Ramsey Stabilizer module.");
@@ -173,6 +173,7 @@ void RamseyStabilizer::transition_to_buffered() {
 void RamseyStabilizer::reset_waveform_data() {
     this->waveform_params.clear();
     for (size_t i = 0; i < this->pid_count; ++i) {
+        this->waveform_params.emplace_back();
         this->waveform_params.at(i)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
         this->waveform_params.at(i)["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
     }
