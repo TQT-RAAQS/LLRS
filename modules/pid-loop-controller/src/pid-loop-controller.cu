@@ -22,10 +22,6 @@ double PIDLoopController::compute_correction(double v) {
     
     auto raw_correction = p_correction + i_correction + d_correction;;
 
-    auto output = abs(raw_correction) > abs(max_change) ? raw_correction / abs(raw_correction) * abs(max_change) : raw_correction;
-    std::cout << "\n\n\n\n\n";
-    std::cout << output;
-    std::cout << "\n\n\n\n\n";
     return abs(raw_correction) > abs(max_change) ? raw_correction / abs(raw_correction) * abs(max_change) : raw_correction;
 }
 

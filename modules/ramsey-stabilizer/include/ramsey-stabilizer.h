@@ -8,7 +8,7 @@
 #include "ramsey-stabilizer-metadata-saver.h"
 #include "ramsey-stabilizer-labscript-config.h"
 #include "fourier-analyzer.h"
-#include "pid-loop-controller.h"
+#include "pid-loop-phase-controller.h"
 #include "microwave-awg-handler.h"
 #include <unordered_map>
 #include <string>
@@ -61,9 +61,10 @@ class RamseyStabilizer {
     std::unique_ptr<RamseyStabilizerMetadataSaver> saver;
     void setup_saver();
 
-    std::unique_ptr<PIDLoopController> pid_controller;
+    std::unique_ptr<PIDLoopPhaseController> pid_controller;
     double phi, target_phi;
-    double delta;
+    double delta, error;
+    int8_t gradient_x_parallel;
     void reset_pid();
 
     static std::string substitute_variables_in_signal(std::string s, const std::unordered_map<std::string, double>& vars);

@@ -18,7 +18,8 @@ void RamseyStabilizer::reset_pid() {
     pid_configs["param_initial"] = this->labscript_config->get_ramsey_stabilizer_nu0();
     pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
 
-    this->pid_controller = std::make_unique<PIDLoopController>(pid_configs);
+    this->pid_controller = std::make_unique<PIDLoopPhaseController>(pid_configs);
+    this->target_phi = this->labscript_config->get_ramsey_stabilizer_phi0();
 }
 
 void RamseyStabilizer::setup_awg_handler() {
@@ -80,13 +81,15 @@ void RamseyStabilizer::worker_function() {
                 images_processed = 0;
             } else if (image_count > 0 && image_count > images_processed) { // A new image is available
                 INFO << "Processing new image. Image index: " << (int)images_processed << ".\n";
-                this->process_image(images_processed);
+                if (this->labscript_config->get_ramsey_stabilizer_pid_enabled()) {
+                    this->process_image(images_processed);
+                }
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over
                 INFO << "Shot is over. Adding metadata to queue.\n";
                 this->smh->signal_done();
                 this->awg_handler->stop();
-                this->saver->add_to_queue(this->last_shot_address, this->phi - this->labscript_config->get_ramsey_stabilizer_phi0(), this->waveform_params["nu0"]);
+                this->saver->add_to_queue(this->last_shot_address, this->error, this->waveform_params["nu0"]);
                 this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
             } else {
@@ -124,10 +127,11 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     this->oc1 = std::move(occ);
     
     this->phi = this->fourier_analyzer->extract_phase(this->oc0, this->oc1);
+    this->phi *= (2.0 * this->gradient_x_parallel - 1.0); // Adjust for gradient direction along x
     
     // Update the parameter
-    auto error = FourierAnalyzer::wrap_phase(this->labscript_config->get_ramsey_stabilizer_phi0() - this->phi);
-    auto correction = this->pid_controller->compute_correction(error);
+    this->error = FourierAnalyzer::wrap_phase(this->phi - this->target_phi);
+    auto correction = this->pid_controller->compute_correction(this->error);
     INFO << "Extracted phase: " << this->phi << ", Error: " << error << ", Correction: " << correction << ".\n";
 
     this->waveform_params["nu0"] += correction;
@@ -151,6 +155,8 @@ void RamseyStabilizer::transition_to_buffered() {
 
         // Reset waveform data
         this->reset_waveform_data();
+
+        this->gradient_x_parallel = this->labscript_config->get_ramsey_stabilizer_gradient_x_parallel();
     }
 
     this->prepare_awg();

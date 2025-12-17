@@ -15,6 +15,7 @@ dependencies = [yaml_cpp_dep]
 
 pid_loop_controller_sources = [
     'src/pid-loop-controller.cu',
+    'src/pid-loop-phase-controller.cu',
 ]
 
 pid_loop_controller_lib = library(

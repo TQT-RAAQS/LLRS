@@ -19,10 +19,11 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
     #pragma omp simd reduction(+:sum)
     for (size_t idx = 0; idx < total; ++idx) {
         const auto oind = this->orders[idx];
+        auto corrected_idx = (idx % this->Nx) + (idx / this->Nx) * this->Nxm;
 
         int s = (oc0[oind] == 0) ? 0 : (static_cast<int>(oc1[oind]) * 2 - 1);
 
-        this->signal[idx] = static_cast<double>(s);
+        this->signal[corrected_idx] = static_cast<double>(s);
         sum += static_cast<double>(s);
     }
     
@@ -30,7 +31,8 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
     double signal_mean = sum / static_cast<double>(total);
     #pragma omp simd
     for (size_t idx = 0; idx < total; ++idx) {
-        this->signal[idx] -= signal_mean;
+        auto corrected_idx = (idx % this->Nx) + (idx / this->Nx) * this->Nxm;
+        this->signal[corrected_idx] -= signal_mean;
     }
 
     // Take the 2D fourier transform
@@ -49,15 +51,17 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
         }
     }
 
-    size_t ix = peak_index % this->Nxm;
-    size_t iy = peak_index / this->Nxm;
+    size_t ix = peak_index % (this->Nxm / 2 + 1);
+    size_t iy = peak_index / (this->Nxm / 2 + 1);
 
+    // dfx = 1 / (dx * Nxm)
+    // dfy = 1 / (dy * Nym)
     double fx = static_cast<double>(ix)/(dx*this->Nxm);
     double fy = static_cast<double>(iy)/(dy*this->Nym);
 
     // Extract the phase
     const auto& peak_val = this->signal_fft[peak_index];
-    double phi = std::atan2(peak_val.imag(), peak_val.real());
+    double phi = std::arg(peak_val);
 
     // Modify the phase to center the origin on the middle of the trap array
     phi += 2.0 * M_PI * (fx * this->x0 + fy * this->y0);
@@ -104,11 +108,12 @@ void FourierAnalyzer::reload_orders(const bool flag_translate_psf) {
     );
 
     // Re-calculate the origin coordinates
-    this->x0 = Nx * dx / 2.0;
-    this->y0 = Ny * dy / 2.0;
+    this->x0 = (double)(Nx-1) * dx / 2.0;
+    this->y0 = (double)(Ny-1) * dy / 2.0;
 }
 
 double FourierAnalyzer::wrap_phase(double phi) {
     // Wrap phase to the range [-pi, pi]
-    return std::fmod(phi + M_PI, 2.0 * M_PI) - M_PI;
+    auto p = std::fmod(phi + M_PI, 2.0 * M_PI);
+    return (p > 0 ? p - M_PI : p + M_PI);
 }
