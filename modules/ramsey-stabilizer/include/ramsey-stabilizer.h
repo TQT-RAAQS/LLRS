@@ -60,8 +60,8 @@ class RamseyStabilizer {
 
     size_t pid_count, active_pid_index;
     std::vector<std::unique_ptr<PIDLoopPhaseController>> pid_controllers;
-    double phi, target_phi;
-    double delta, error;
+    double phi = 0, target_phi = 0;
+    double error = 0;
     int8_t gradient_x_parallel;
     void reset_pid();
 

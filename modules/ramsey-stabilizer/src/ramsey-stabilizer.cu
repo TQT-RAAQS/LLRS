@@ -15,10 +15,11 @@ void RamseyStabilizer::reset_pid() {
     pid_configs["k_p"] = this->labscript_config->get_ramsey_stabilizer_k_p();
     pid_configs["k_i"] = this->labscript_config->get_ramsey_stabilizer_k_i();
     pid_configs["k_d"] = this->labscript_config->get_ramsey_stabilizer_k_d();
-    pid_configs["param_initial"] = this->labscript_config->get_ramsey_stabilizer_nu0();
     pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
 
     this->target_phi = this->labscript_config->get_ramsey_stabilizer_phi0();
+    this->error = 0;
+    this->phi = 0;
     this->pid_count = this->configs["pid_config"]["pid_count"].as<size_t>();
 
     this->pid_controllers.clear();

@@ -54,7 +54,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     double get_ramsey_stabilizer_max_change() const { return ramsey_stabilizer_max_change; }
     int get_ramsey_stabilizer_active_pid_index() const { return ramsey_stabilizer_active_pid_index; }
     int get_ramsey_stabilizer_gradient_x_parallel() const { return ramsey_stabilizer_gradient_x_parallel; }
-    bool get_ramsey_stabilizer_pid_enabled() const { return ramsey_stabilizer_pid_enabled; }
+    int get_ramsey_stabilizer_pid_enabled() const { return ramsey_stabilizer_pid_enabled; }
     std::string get_mw_signals() const { return mw_signals; }
 };
 
