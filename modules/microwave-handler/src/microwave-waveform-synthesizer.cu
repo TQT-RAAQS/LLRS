@@ -1,7 +1,6 @@
 #include "microwave-waveform-synthesizer.h"
 
-using namespace MicrowaveSynthesizer;
-using namespace MicrowaveWaveforms;
+using namespace MicrowaveHandler;
 
 #define _MW_MAX_ANALOG_VALUE 0x7fff
 #define _ALPHA_MAX 0.050
@@ -28,7 +27,7 @@ void MicrowaveWaveformSynthesizer::generate_pulse(
     short* buffer,
     size_t sample_count,
     AWG& awg,
-    const MicrowaveWaveforms::Waveform& iqmixer_waveform,
+    const MicrowaveHandler::Waveform& iqmixer_waveform,
     double t,
     double t_initial_pause) {
         
@@ -93,8 +92,8 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
         double t_rel = i * dt;  // relative to pulse start
         double mask = (t_rel >= -digital_offset_time && t_rel <= p->duration - digital_offset_time);
 
-        v_I[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * p->detuning * (t0 + t_rel) + p->phase) + alpha_I_dc));
-        v_Q[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * p->detuning * (t0 + t_rel) + p->phase + dphi) + alpha_Q_dc));
+        v_I[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * p->frequency * (t0 + t_rel) + p->phase) + alpha_I_dc));
+        v_Q[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * p->frequency * (t0 + t_rel) + p->phase + dphi) + alpha_Q_dc));
 
         digital_trigger[pause_samples + i] = (t_rel >= digital_offset_time && t_rel <= p->duration + digital_offset_time) ? 1 : 0;
     }

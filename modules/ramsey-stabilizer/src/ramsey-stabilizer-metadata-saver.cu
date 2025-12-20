@@ -36,13 +36,12 @@ void RamseyStabilizerMetadataSaver::worker() {
     }
 }
 
-void RamseyStabilizerMetadataSaver::add_to_queue(std::string shot_address, double extracted_phase, double old_detuning, double new_detuning) {
+void RamseyStabilizerMetadataSaver::add_to_queue(std::string shot_address, double error_signal, double new_frequency) {
     std::lock_guard<std::mutex> lock(this->mtx);
     this->queue.emplace_back(
         shot_address,
-        extracted_phase,
-        old_detuning,
-        new_detuning
+        error_signal,
+        new_frequency
     );
 }
 
@@ -55,9 +54,8 @@ void RamseyStabilizerMetadataSaver::save_to_file(const ShotInformation& s) {
         throw std::runtime_error("Could not open file for writing metadata");
     }
 
-    fout.write(reinterpret_cast<const char*>(&s.extracted_phase), sizeof(double));
-    fout.write(reinterpret_cast<const char*>(&s.old_detuning), sizeof(double));
-    fout.write(reinterpret_cast<const char*>(&s.new_detuning), sizeof(double));
+    fout.write(reinterpret_cast<const char*>(&s.error_signal), sizeof(double));
+    fout.write(reinterpret_cast<const char*>(&s.new_frequency), sizeof(double));
 
     fout.close();
 }

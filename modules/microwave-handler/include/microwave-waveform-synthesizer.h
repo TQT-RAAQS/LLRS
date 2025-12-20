@@ -8,7 +8,7 @@
 #include <vector>
 #include <tuple>
 
-namespace MicrowaveSynthesizer {
+namespace MicrowaveHandler {
 
     class MicrowaveWaveformSynthesizer {
 
@@ -25,7 +25,7 @@ namespace MicrowaveSynthesizer {
             short* buffer,
             size_t sample_count,
             AWG& awg,
-            const MicrowaveWaveforms::SquarePulse* p,
+            const MicrowaveHandler::SquarePulse* p,
             double t,
             double t_initial_pause);
 
@@ -38,7 +38,7 @@ namespace MicrowaveSynthesizer {
         void generate_pulse(short* buffer,
                         size_t sample_count,
                         AWG& awg,
-                        const MicrowaveWaveforms::Waveform& iqmixer_waveform,
+                        const MicrowaveHandler::Waveform& iqmixer_waveform,
                         double t,
                         double t_initial_pause);
 

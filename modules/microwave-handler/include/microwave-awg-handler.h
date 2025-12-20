@@ -28,14 +28,14 @@ namespace MicrowaveHandler {
     public:
 
         struct IQMixerWaveform {
-            MicrowaveWaveforms::Waveform waveform;
+            MicrowaveHandler::Waveform waveform;
             double time;
             double t_initial_pause;
             double duration;
             int64_t hash; // store the combined hash
         
             // Constructor computes the hash once
-            IQMixerWaveform(const MicrowaveWaveforms::Waveform& wf, double time, double t_initial_pause, double duration)
+            IQMixerWaveform(const MicrowaveHandler::Waveform& wf, double time, double t_initial_pause, double duration)
                 : waveform(wf), time(time), t_initial_pause(t_initial_pause), duration(duration)
             {
                 auto hash_combine = [](int64_t seed, int64_t value) {
@@ -47,11 +47,11 @@ namespace MicrowaveHandler {
                     [](auto&& w) { return w.hash(); }, waveform);
         
                 // Combine with other fields
-                if (boost::get<MicrowaveWaveforms::SquarePulse>(&wf)) { // Square pulse
+                if (boost::get<MicrowaveHandler::SquarePulse>(&wf)) { // Square pulse
                     h = hash_combine(h, std::hash<double>{}(time));
                     h = hash_combine(h, std::hash<double>{}(t_initial_pause));
                     h = hash_combine(h, std::hash<double>{}(duration));
-                } else if (boost::get<MicrowaveWaveforms::Pause>(&wf)) { // Pause
+                } else if (boost::get<MicrowaveHandler::Pause>(&wf)) { // Pause
                     h = hash_combine(h, std::hash<double>{}(duration));
                 } else {
                     throw std::runtime_error("Unsupported waveform type for hashing.");
@@ -68,8 +68,8 @@ namespace MicrowaveHandler {
         int max_step_size, min_segment_size, max_segment_count, default_pause_segment_size, segment_size_steps;
         double digital_offset_time;
 
-        MicrowaveSynthesizer::MicrowaveWaveformSynthesizer synthesizer;
-        std::tuple<std::vector<IQMixerWaveform>, std::vector<int>> breakdown_waveforms(const std::vector<MicrowaveWaveforms::Waveform>& waveforms);
+        MicrowaveHandler::MicrowaveWaveformSynthesizer synthesizer;
+        std::tuple<std::vector<IQMixerWaveform>, std::vector<int>> breakdown_waveforms(const std::vector<MicrowaveHandler::Waveform>& waveforms);
         int next_step_to_load_index = MW_INITIAL_STEP_INDEX; // Step to be used next by the load_waveforms function
         int step_to_run_index = MW_END_STEP_INDEX; // The first step to be run for the next shot
         int upload_iqmixer_waveform(IQMixerWaveform);
@@ -87,7 +87,7 @@ namespace MicrowaveHandler {
         void stop();
         void force_trigger();
 
-        void upload_waveforms(const std::vector<MicrowaveWaveforms::Waveform>& waveforms);
+        void upload_waveforms(const std::vector<MicrowaveHandler::Waveform>& waveforms);
 
         bool is_connected() const;
 

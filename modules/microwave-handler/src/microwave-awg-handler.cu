@@ -1,6 +1,6 @@
 #include "microwave-awg-handler.h"
 
-using namespace MicrowaveWaveforms;
+using namespace MicrowaveHandler;
 
 MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& handler_config) {
     this->reload();
@@ -241,7 +241,7 @@ int MicrowaveHandler::MicrowaveAwgHandler::increment_step_index(int index, int s
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::upload_waveforms(
-    const std::vector<MicrowaveWaveforms::Waveform>& waveforms)
+    const std::vector<MicrowaveHandler::Waveform>& waveforms)
 {
     INFO << "[AWG] upload_waveforms() ENTER, waveforms.size() = "
          << waveforms.size() << std::endl;
@@ -252,13 +252,12 @@ void MicrowaveHandler::MicrowaveAwgHandler::upload_waveforms(
 
     const auto& iqmixer_waveforms = std::get<0>(iqmixer_waveforms_tuple);
     const auto& repetitions      = std::get<1>(iqmixer_waveforms_tuple);
-    const size_t N = iqmixer_waveforms.size();
+    const size_t N = iqmixer_waveforms.size(); // Number of segments to upload
 
     INFO << "[AWG] Breakdown complete. N = " << N << std::endl;
 
     if (N == 0) {
         INFO << "[AWG] No waveforms. Resetting indices and returning." << std::endl;
-        this->next_step_to_load_index = MW_INITIAL_STEP_INDEX;
         this->step_to_run_index       = MW_END_STEP_INDEX;
         return;
     }

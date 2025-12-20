@@ -5,8 +5,6 @@
 
 class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     
-    double ramsey_stabilizer_delta_max;
-    double ramsey_stabilizer_delta_min;
     double ramsey_stabilizer_k_p;
     double ramsey_stabilizer_k_i;
     double ramsey_stabilizer_k_d;
@@ -17,15 +15,17 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     double ramsey_stabilizer_pi2_T;
     double ramsey_stabilizer_second_gate_phase;
     double ramsey_stabilizer_tau;
+    double ramsey_stabilizer_max_change;
+    int ramsey_stabilizer_gradient_x_parallel;
+    int ramsey_stabilizer_pid_enabled;
+    int ramsey_stabilizer_active_pid_index;
     char* mw_signals;
 
   public:
   RamseyStabilizerLabscriptConfig(ShotFile shotfile)
         : GlobalsConfig(
               shotfile,
-              {{"ramsey_stabilizer_delta_max", &ramsey_stabilizer_delta_max, LabscriptType::VALUE},
-               {"ramsey_stabilizer_delta_min", &ramsey_stabilizer_delta_min, LabscriptType::VALUE},
-               {"ramsey_stabilizer_k_p", &ramsey_stabilizer_k_p, LabscriptType::VALUE},
+              {{"ramsey_stabilizer_k_p", &ramsey_stabilizer_k_p, LabscriptType::VALUE},
                {"ramsey_stabilizer_k_i", &ramsey_stabilizer_k_i, LabscriptType::VALUE},
                {"ramsey_stabilizer_k_d", &ramsey_stabilizer_k_d, LabscriptType::VALUE},
                {"ramsey_stabilizer_first_gate_phase", &ramsey_stabilizer_first_gate_phase, LabscriptType::VALUE},
@@ -35,10 +35,12 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
                {"ramsey_stabilizer_pi2_T", &ramsey_stabilizer_pi2_T, LabscriptType::VALUE},
                {"ramsey_stabilizer_second_gate_phase", &ramsey_stabilizer_second_gate_phase, LabscriptType::VALUE},
                {"ramsey_stabilizer_tau", &ramsey_stabilizer_tau, LabscriptType::VALUE},
-               {"mw_signals", &mw_signals, LabscriptType::VALUE}}) {}
+               {"mw_signals", &mw_signals, LabscriptType::VALUE},
+               {"ramsey_stabilizer_max_change", &ramsey_stabilizer_max_change, LabscriptType::VALUE},
+               {"ramsey_stabilizer_pid_enabled", &ramsey_stabilizer_pid_enabled, LabscriptType::VALUE},
+               {"ramsey_stabilizer_active_pid_index", &ramsey_stabilizer_active_pid_index, LabscriptType::VALUE},
+               {"ramsey_stabilizer_flag_g_x_parallel", &ramsey_stabilizer_gradient_x_parallel, LabscriptType::VALUE}}) {}
 
-    double get_ramsey_stabilizer_delta_max() const { return ramsey_stabilizer_delta_max; }
-    double get_ramsey_stabilizer_delta_min() const { return ramsey_stabilizer_delta_min; }
     double get_ramsey_stabilizer_k_p() const { return ramsey_stabilizer_k_p; }
     double get_ramsey_stabilizer_k_i() const { return ramsey_stabilizer_k_i; }
     double get_ramsey_stabilizer_k_d() const { return ramsey_stabilizer_k_d; }
@@ -49,6 +51,10 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     double get_ramsey_stabilizer_pi2_T() const { return ramsey_stabilizer_pi2_T; }
     double get_ramsey_stabilizer_second_gate_phase() const { return ramsey_stabilizer_second_gate_phase; }
     double get_ramsey_stabilizer_tau() const { return ramsey_stabilizer_tau; }
+    double get_ramsey_stabilizer_max_change() const { return ramsey_stabilizer_max_change; }
+    int get_ramsey_stabilizer_active_pid_index() const { return ramsey_stabilizer_active_pid_index; }
+    int get_ramsey_stabilizer_gradient_x_parallel() const { return ramsey_stabilizer_gradient_x_parallel; }
+    int get_ramsey_stabilizer_pid_enabled() const { return ramsey_stabilizer_pid_enabled; }
     std::string get_mw_signals() const { return mw_signals; }
 };
 

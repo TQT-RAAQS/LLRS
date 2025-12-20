@@ -12,14 +12,22 @@ RamseyStabilizer::RamseyStabilizer(const std::string config) {
 
 void RamseyStabilizer::reset_pid() {
     auto pid_configs = this->configs["pid_config"];
-    pid_configs["param_min"] = this->labscript_config->get_ramsey_stabilizer_delta_min();
-    pid_configs["param_max"] = this->labscript_config->get_ramsey_stabilizer_delta_max();
     pid_configs["k_p"] = this->labscript_config->get_ramsey_stabilizer_k_p();
     pid_configs["k_i"] = this->labscript_config->get_ramsey_stabilizer_k_i();
     pid_configs["k_d"] = this->labscript_config->get_ramsey_stabilizer_k_d();
-    pid_configs["param_initial"] = 0;
+    pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
 
-    this->pid_controller = std::make_unique<PIDLoopController>(pid_configs);
+    this->target_phi = this->labscript_config->get_ramsey_stabilizer_phi0();
+    this->error = 0;
+    this->phi = 0;
+    this->pid_count = this->configs["pid_config"]["pid_count"].as<size_t>();
+
+    this->pid_controllers.clear();
+    for (size_t i = 0; i < this->pid_count; ++i) {
+        this->pid_controllers.emplace_back(std::make_unique<PIDLoopPhaseController>(pid_configs));
+    }
+
+    this->reset_waveform_data();
 }
 
 void RamseyStabilizer::setup_awg_handler() {
@@ -81,13 +89,15 @@ void RamseyStabilizer::worker_function() {
                 images_processed = 0;
             } else if (image_count > 0 && image_count > images_processed) { // A new image is available
                 INFO << "Processing new image. Image index: " << (int)images_processed << ".\n";
-                this->process_image(images_processed);
+                if (this->labscript_config->get_ramsey_stabilizer_pid_enabled()) {
+                    this->process_image(images_processed);
+                }
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over
                 INFO << "Shot is over. Adding metadata to queue.\n";
-                this->saver->add_to_queue(this->last_shot_address, this->phi, this->delta, this->pid_controller->get_control_param());
-                this->awg_handler->stop();
                 this->smh->signal_done();
+                this->awg_handler->stop();
+                this->saver->add_to_queue(this->last_shot_address, this->error, this->waveform_params.at(this->active_pid_index)["nu0"]);
                 this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
             } else {
@@ -121,55 +131,64 @@ void RamseyStabilizer::process_image(int8_t image_index) {
         this->oc0 = std::move(occ);
         return;
     }
-    
     // If this is the second image
     this->oc1 = std::move(occ);
     
     this->phi = this->fourier_analyzer->extract_phase(this->oc0, this->oc1);
+    this->phi *= (2.0 * this->gradient_x_parallel - 1.0); // Adjust for gradient direction along x
     
     // Update the parameter
-    auto error = FourierAnalyzer::wrap_phase(this->labscript_config->get_ramsey_stabilizer_phi0() - this->phi);
-    this->pid_controller->add_value(error);
+    this->error = FourierAnalyzer::wrap_phase(this->phi - this->target_phi);
+    auto correction = this->pid_controllers.at(this->active_pid_index)->compute_correction(this->error);
+    INFO << "Extracted phase: " << this->phi << ", Error: " << error << ", Correction: " << correction << ".\n";
+
+    this->waveform_params.at(this->active_pid_index)["nu0"] += correction;
 }
 
 void RamseyStabilizer::transition_to_buffered() {
     this->last_shot_address = this->smh->get_shot_address();
     auto experiment_name = LabscriptAddressUtils::get_experiment_folder_name(this->last_shot_address);
-
+    
     // Read the shot .h5 file
     this->labscript_config = std::make_unique<RamseyStabilizerLabscriptConfig>(this->last_shot_address);
-
+    
     if (this->last_experiment_folder != experiment_name) { // This is a new experiment
         this->last_experiment_folder = experiment_name;
-
+        
         // Re-read the geometric ordering of the traps
         this->fourier_analyzer->reload_orders(this->flag_configs_translator);
-
+        
         // Reset PID parameters
         this->reset_pid();
-
-        // Reset waveform data
-        this->reset_waveform_data();
+        
+        this->gradient_x_parallel = this->labscript_config->get_ramsey_stabilizer_gradient_x_parallel();
     }
-
+    
+    this->active_pid_index = this->labscript_config->get_ramsey_stabilizer_active_pid_index();
+    if (this->active_pid_index >= this->pid_count) {
+        throw std::runtime_error("Active PID index " + std::to_string(this->active_pid_index) + " is out of range (PID count: " + std::to_string(this->pid_count) + "). Change the number of PID loops in the settings for the Ramsey Stabilizer module.");
+    }
     this->prepare_awg();
 }
 
 void RamseyStabilizer::reset_waveform_data() {
-    this->waveform_data["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
-    this->waveform_data["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
+    this->waveform_params.clear();
+    for (size_t i = 0; i < this->pid_count; ++i) {
+        this->waveform_params.emplace_back();
+        this->waveform_params.at(i)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+        this->waveform_params.at(i)["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
+    }
 }
 
 void RamseyStabilizer::prepare_awg() {
-    std::vector<MicrowaveWaveforms::Waveform> waveforms;
+    std::vector<MicrowaveHandler::Waveform> waveforms;
     
     // String analysis
     auto signals = this->labscript_config->get_mw_signals();
-    auto substituted_signal = RamseyStabilizer::substitute_variables_in_signal(signals, this->waveform_data);
+    auto substituted_signal = RamseyStabilizer::substitute_variables_in_signal(signals, this->waveform_params.at(this->active_pid_index));
     auto signal_tokens = RamseyStabilizer::split_signal(substituted_signal, ';');
     for (const auto& s : signal_tokens) {
-                INFO << "Step: " << this->awg_handler->get_awg_step() << std::endl;
-        waveforms.push_back(MicrowaveWaveforms::from_string(s));
+        waveforms.push_back(MicrowaveHandler::waveform_from_string(s));
     }
 
     // Upload the waveforms

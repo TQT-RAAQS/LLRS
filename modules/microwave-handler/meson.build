@@ -1,5 +1,5 @@
 project(
-    'microwave-awg-handler',
+    'microwave-handler',
     'cuda',
     default_options: ['cpp_std=c++14', 'default_library=static'],
     subproject_dir: 'modules',

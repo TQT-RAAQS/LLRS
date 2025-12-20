@@ -8,7 +8,7 @@
 #include "ramsey-stabilizer-metadata-saver.h"
 #include "ramsey-stabilizer-labscript-config.h"
 #include "fourier-analyzer.h"
-#include "pid-loop-controller.h"
+#include "pid-loop-phase-controller.h"
 #include "microwave-awg-handler.h"
 #include <unordered_map>
 #include <string>
@@ -35,9 +35,6 @@ class RamseyStabilizer {
     void prepare_awg();
     std::unique_ptr<MicrowaveAwgHandler> awg_handler;
     
-    void reset_waveform_data();
-    std::unordered_map<std::string, double> waveform_data;
-    
     void setup_fourier_analyzer();
     std::unique_ptr<FourierAnalyzer> fourier_analyzer = nullptr;
     
@@ -61,10 +58,15 @@ class RamseyStabilizer {
     std::unique_ptr<RamseyStabilizerMetadataSaver> saver;
     void setup_saver();
 
-    std::unique_ptr<PIDLoopController> pid_controller;
-    double phi, target_phi;
-    double delta;
+    size_t pid_count, active_pid_index;
+    std::vector<std::unique_ptr<PIDLoopPhaseController>> pid_controllers;
+    double phi = 0, target_phi = 0;
+    double error = 0;
+    int8_t gradient_x_parallel;
     void reset_pid();
+
+    void reset_waveform_data();
+    std::vector<std::unordered_map<std::string, double>> waveform_params;
 
     static std::string substitute_variables_in_signal(std::string s, const std::unordered_map<std::string, double>& vars);
     static std::vector<std::string> split_signal(const std::string& s, char delim);

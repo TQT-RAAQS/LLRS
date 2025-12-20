@@ -13,6 +13,7 @@ saver_config:
   delay_time_us: 50
 
 pid_config:
+  pid_count: 2
   max_buffer_size: 10
 
 awg_handler:
