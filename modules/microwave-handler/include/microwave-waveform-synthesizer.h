@@ -14,6 +14,8 @@ namespace MicrowaveHandler {
 
         ConfigsTranslator& config_translator = ConfigsTranslator::instance();
 
+        bool flag_fast_interleaving = false;
+
         double dphi, vI_dc, vQ_dc;
         double digital_offset_time = 0;
 
@@ -22,6 +24,14 @@ namespace MicrowaveHandler {
         std::vector<int8> digital_trigger;
 
         void generate_square_pulse(
+            short* buffer,
+            size_t sample_count,
+            AWG& awg,
+            const MicrowaveHandler::SquarePulse* p,
+            double t,
+            double t_initial_pause);
+
+        void generate_square_pulse_fast(
             short* buffer,
             size_t sample_count,
             AWG& awg,
@@ -43,6 +53,7 @@ namespace MicrowaveHandler {
                         double t_initial_pause);
 
         void set_digital_offset_time(double digital_offset_time) { this->digital_offset_time = digital_offset_time; }
+        void set_fast_interleaving_flag(bool flag) { this->flag_fast_interleaving = flag; }
 
     };
 

@@ -53,8 +53,16 @@ microwave_awg_handler_dep = declare_dependency(
 ##########################
 
 test_executable = executable(
-    'microwave_test',
-    ['test.cu'] + sources,
+    'test-synthesizer',
+    ['test-synthesizer.cu'] + sources,
+    link_args: '-lstdc++fs',
+    dependencies: dependencies,
+    include_directories: includes
+)
+
+test_executable = executable(
+    'test-handler',
+    ['test-handler.cu'] + sources,
     link_args: '-lstdc++fs',
     dependencies: dependencies,
     include_directories: includes
