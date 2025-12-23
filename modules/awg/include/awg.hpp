@@ -19,6 +19,10 @@ enum TriggerType {
 
 class AWG {
   public:
+    struct input_trigger_config_t;
+    struct sync_output_trigger_config_t;
+    struct awg_config_t;
+
     AWG(const std::string& config_name = "trapping.yml");
     ~AWG();
 
@@ -52,6 +56,9 @@ class AWG {
 
     /// Getters
     int get_num_channels() const { return num_channels; };
+    const std::vector<int>& get_channels() const { return config.channels; };
+    int get_sync_digital_out_num_channels() const { return config.sync_out_trig_configs.size(); };
+    const std::vector<sync_output_trigger_config_t>& get_sync_digital_out_configs() const { return config.sync_out_trig_configs; };
     double get_sample_rate() const { return config.sample_rate; };
     double get_waveform_duration() const { return config.waveform_duration; };
     int get_num_segments() const { return config.awg_num_segments; };
@@ -101,9 +108,6 @@ class AWG {
                                             bool contBuf = false);
     int fill_transfer_buffer(TransferBuffer &tb, int num_samples, int16 value);
 
-  private:
-    bool flag_is_connected = false;
-
     struct input_trigger_config_t {
         std::vector<size_t> ports;
         uint8_t logic;
@@ -119,18 +123,6 @@ class AWG {
         int8_t channel;
         int8_t bit;
     };
-
-    int set_sample_rate(int sample_rate);
-    int set_external_clock_mode(int external_clock_freq);
-    int set_internal_clock_mode();
-    int set_input_trigger_settings(const input_trigger_config_t& config);
-    int set_dout_trigger_mode(int32 line, int32 channel);
-    int setup_async_output_triggers(std::vector<int8_t> channels);
-    int setup_sync_output_triggers(std::vector<sync_output_trigger_config_t> configs);
-    int read_config(std::string filename);
-    int enable_channels(const std::vector<int> &channels);
-    int enable_outputs(const std::vector<int> &channels,
-                       const std::vector<int> &amp);
 
     struct awg_config_t {
         std::string driver_path;
@@ -161,13 +153,29 @@ class AWG {
         std::unordered_map<int, std::vector<int>> channel_digout_indices;
 
         ~awg_config_t() { }
-    } config;
+    };
+
+  private:
+    bool flag_is_connected = false;
+
+    int set_sample_rate(int sample_rate);
+    int set_external_clock_mode(int external_clock_freq);
+    int set_internal_clock_mode();
+    int set_input_trigger_settings(const input_trigger_config_t& config);
+    int set_dout_trigger_mode(int32 line, int32 channel);
+    int setup_async_output_triggers(std::vector<int8_t> channels);
+    int setup_sync_output_triggers(std::vector<sync_output_trigger_config_t> configs);
+    int read_config(std::string filename);
+    int enable_channels(const std::vector<int> &channels);
+    int enable_outputs(const std::vector<int> &channels,
+                       const std::vector<int> &amp);
+
+    awg_config_t config;
     drv_handle p_card;
     int num_channels;
     int max_step;
     int max_segment;
     int bps;
-    int lSetChannels;
     int dwFactor = 1;
     void *continuousBuffer = nullptr;
     uint64 continuousBufferSize = 0;

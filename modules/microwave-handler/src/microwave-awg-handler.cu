@@ -15,8 +15,10 @@ MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& ha
     this->digital_offset_time = config["digital_offset_time"].as<double>();
     this->min_segment_size = this->awg.get_minimum_segment_size();
     this->segment_size_steps = this->awg.get_segment_size_steps();
+    auto synthesizer_fast_flag = config["synthesizer_fast_interleaving_flag"].as<bool>(true);
 
     this->synthesizer.set_digital_offset_time(this->digital_offset_time);
+    this->synthesizer.set_fast_interleaving_flag(synthesizer_fast_flag);
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::open_connection() {

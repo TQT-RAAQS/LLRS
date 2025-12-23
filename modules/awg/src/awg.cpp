@@ -54,7 +54,7 @@ int AWG::read_config(std::string filename) {
         config.external_clock_freq = 0;
     }
     config.channels = node["channels"].as<std::vector<int>>();
-    for (const auto& c : config.channels) {
+    for (const auto c : config.channels) {
         config.channel_bit_shifts[c] = 0;
         config.channel_digout_indices[c] = std::vector<int>();
     }
@@ -140,7 +140,7 @@ int AWG::open_connection() {
     status |= spcm_dwGetParam_i32(p_card, SPC_SEQMODE_AVAILMAXSTEPS, &max_step);
     status |= spcm_dwGetParam_i32(p_card, SPC_SEQMODE_AVAILMAXSEGMENT, &max_segment);
     status |= spcm_dwGetParam_i32(p_card, SPC_MIINST_BYTESPERSAMPLE, &bps);
-    status |= spcm_dwGetParam_i32(p_card, SPC_CHCOUNT, &lSetChannels);
+    status |= spcm_dwGetParam_i32(p_card, SPC_CHCOUNT, &num_channels);
     dwFactor = 1;
 
     if (config.awg_num_segments == 0 ||
@@ -328,7 +328,7 @@ int AWG::set_input_trigger_settings(const input_trigger_config_t& config) {
 
     // Trigger edge status
     auto edge_status = config.edge ? SPC_TM_POS : SPC_TM_NEG ;
-    for (const auto& ch : config.ports) {
+    for (const auto ch : config.ports) {
         if (ch == 0) {
             auto edge_status_ch0 = edge_status | (config.rearm ? SPC_TM_REARM : 0b0);
 
@@ -343,7 +343,7 @@ int AWG::set_input_trigger_settings(const input_trigger_config_t& config) {
     // Logic mask
     auto trig_mask = config.logic ? SPC_TRIG_ANDMASK : SPC_TRIG_ORMASK;
     int32 logic_ch_mask = 0;
-    for (const auto& ch : config.ports) {
+    for (const auto ch : config.ports) {
         if (ch == 0) {
             logic_ch_mask |= SPC_TMASK_EXT0;
         } else if (ch == 1) {
@@ -378,7 +378,7 @@ int AWG::set_dout_trigger_mode(int32 line, int32 channel) {
  */
 int AWG::setup_async_output_triggers(std::vector<int8_t> channels) {
     int status = 0;
-    for (const auto& c : channels) {
+    for (const auto c : channels) {
         switch (c) {
             case 0:
                 status |= spcm_dwSetParam_i32(p_card, SPCM_X0_MODE, SPCM_XMODE_ASYNCOUT);
@@ -442,7 +442,7 @@ int AWG::setup_sync_output_triggers(std::vector<sync_output_trigger_config_t> co
 
     int32 port;
     int32 trigger_mode;
-    for (const auto& c : configs) {
+    for (const auto c : configs) {
         switch (c.port) {
             case 0:
                 port = SPCM_X0_MODE;
@@ -585,7 +585,7 @@ void AWG::interleave_data(short* target, const std::vector<std::vector<short>> &
     // Interleaving
     size_t num_samples = waveforms[0].size();
     for (size_t j = 0; j < this->num_channels; ++j) {
-        const auto& bit_shift = this->config.channel_bit_shifts[config.channels[j]];
+        const auto bit_shift = this->config.channel_bit_shifts[config.channels[j]];
         if (bit_shift == 0) {
             #pragma omp simd
             for (size_t i = 0; i < num_samples; ++i) {
@@ -597,7 +597,7 @@ void AWG::interleave_data(short* target, const std::vector<std::vector<short>> &
         for (size_t i = 0; i < num_samples; ++i) {
             short data = static_cast<short>(static_cast<uint16>(waveforms[j][i]) >> bit_shift);
         
-            for (const auto &ind : config.channel_digout_indices[config.channels[j]]) {
+            for (const auto ind : config.channel_digout_indices[config.channels[j]]) {
                 data |= static_cast<uint16>(digital_trigger[ind][i]) << config.sync_out_trig_configs[ind].bit;
             }
             target[i * this->num_channels + j] = data;
@@ -612,7 +612,7 @@ void AWG::interleave_data(short* target, const std::vector<std::vector<short>> &
  * @param size => size in number o fsamples to write for each individual channel. DO NOT MULTIPLY BY THE NUMBER OF CHANNELS.
  */
 int AWG::load_data(int seg_num, short *p_data, uint64 size, bool wait_until_finished) {
-    int dwSegLenByte = dwFactor * lSetChannels * size * bps; // Converting the number of samples to bytes for the total interleaved buffer.
+    int dwSegLenByte = dwFactor * num_channels * size * bps; // Converting the number of samples to bytes for the total interleaved buffer.
 
     /// select segment to upload to
     spcm_dwSetParam_i32(p_card, SPC_SEQMODE_WRITESEGMENT, seg_num);
@@ -661,7 +661,7 @@ int AWG::init_segment(int seg_num, int num_samples) {
  */
 int AWG::init_and_load_all(short *p_segment, int num_samples) {
     int status;
-    int dwSegLenSamples = dwFactor * num_samples * lSetChannels;
+    int dwSegLenSamples = dwFactor * num_samples * num_channels;
     for (int idx = 0; idx < config.awg_num_segments; idx++) {
         status |= init_segment(idx, num_samples);
         status |= load_data(idx, p_segment, dwSegLenSamples);
@@ -683,7 +683,7 @@ int AWG::init_and_load_all(short *p_segment, int num_samples) {
 int AWG::init_and_load_range(short *p_segment, int num_samples, int start,
                              int end) {
     int status;
-    int dwSegLenSamples = dwFactor * num_samples * lSetChannels;
+    int dwSegLenSamples = dwFactor * num_samples * num_channels;
     for (int idx = start; idx < end; idx++) {
         status |= init_segment(idx, num_samples);
         status |= load_data(idx, p_segment, dwSegLenSamples);
@@ -717,7 +717,10 @@ int AWG::get_current_step() {
  */
 AWG::TransferBuffer AWG::allocate_transfer_buffer(int num_samples,
                                                   bool contBuf) {
-    size_t qwBufferSize = lSetChannels * dwFactor * num_samples * bps;
+    if (!this->is_connection_open()) {
+        throw std::runtime_error("A transfer buffer can only be allocated if the awg connection is openned; information about the awg is still not available or not reliable (e.g. bps, num_channels, etc.).");
+    }
+    size_t qwBufferSize = num_channels * dwFactor * num_samples * bps;
     return TransferBuffer(*this, qwBufferSize,
                           (qwBufferSize <= continuousBufferSize) && contBuf);
 }
