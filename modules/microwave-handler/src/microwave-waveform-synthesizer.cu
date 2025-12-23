@@ -87,10 +87,10 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
     std::fill(digital_trigger.begin(), digital_trigger.begin() + pause_samples, 0);
 
     // Generate pulse
-    double t_pulse_start = t0 + t_initial_pause;
+    auto t_pulse_start = t0 + t_initial_pause;
     #pragma omp simd
     for (int i = 0; i < pulse_samples + offset_samples; ++i) {
-        double t_rel = i * dt;  // relative to pulse start
+        auto t_rel = i * dt;  // relative to pulse start
         bool mask = (t_rel >= -digital_offset_time && t_rel <= p->duration - digital_offset_time);
 
         v_I[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * p->frequency * (t_pulse_start + t_rel) + p->phase) + alpha_I_dc));
@@ -108,4 +108,3 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
 
     awg.interleave_data(buffer, {v_I, v_Q}, {digital_trigger});
 }
-

@@ -54,7 +54,7 @@ int AWG::read_config(std::string filename) {
         config.external_clock_freq = 0;
     }
     config.channels = node["channels"].as<std::vector<int>>();
-    for (const auto& c : config.channels) {
+    for (const auto c : config.channels) {
         config.channel_bit_shifts[c] = 0;
         config.channel_digout_indices[c] = std::vector<int>();
     }
@@ -328,7 +328,7 @@ int AWG::set_input_trigger_settings(const input_trigger_config_t& config) {
 
     // Trigger edge status
     auto edge_status = config.edge ? SPC_TM_POS : SPC_TM_NEG ;
-    for (const auto& ch : config.ports) {
+    for (const auto ch : config.ports) {
         if (ch == 0) {
             auto edge_status_ch0 = edge_status | (config.rearm ? SPC_TM_REARM : 0b0);
 
@@ -343,7 +343,7 @@ int AWG::set_input_trigger_settings(const input_trigger_config_t& config) {
     // Logic mask
     auto trig_mask = config.logic ? SPC_TRIG_ANDMASK : SPC_TRIG_ORMASK;
     int32 logic_ch_mask = 0;
-    for (const auto& ch : config.ports) {
+    for (const auto ch : config.ports) {
         if (ch == 0) {
             logic_ch_mask |= SPC_TMASK_EXT0;
         } else if (ch == 1) {
@@ -378,7 +378,7 @@ int AWG::set_dout_trigger_mode(int32 line, int32 channel) {
  */
 int AWG::setup_async_output_triggers(std::vector<int8_t> channels) {
     int status = 0;
-    for (const auto& c : channels) {
+    for (const auto c : channels) {
         switch (c) {
             case 0:
                 status |= spcm_dwSetParam_i32(p_card, SPCM_X0_MODE, SPCM_XMODE_ASYNCOUT);
@@ -442,7 +442,7 @@ int AWG::setup_sync_output_triggers(std::vector<sync_output_trigger_config_t> co
 
     int32 port;
     int32 trigger_mode;
-    for (const auto& c : configs) {
+    for (const auto c : configs) {
         switch (c.port) {
             case 0:
                 port = SPCM_X0_MODE;
@@ -585,7 +585,7 @@ void AWG::interleave_data(short* target, const std::vector<std::vector<short>> &
     // Interleaving
     size_t num_samples = waveforms[0].size();
     for (size_t j = 0; j < this->num_channels; ++j) {
-        const auto& bit_shift = this->config.channel_bit_shifts[config.channels[j]];
+        const auto bit_shift = this->config.channel_bit_shifts[config.channels[j]];
         if (bit_shift == 0) {
             #pragma omp simd
             for (size_t i = 0; i < num_samples; ++i) {
@@ -597,7 +597,7 @@ void AWG::interleave_data(short* target, const std::vector<std::vector<short>> &
         for (size_t i = 0; i < num_samples; ++i) {
             short data = static_cast<short>(static_cast<uint16>(waveforms[j][i]) >> bit_shift);
         
-            for (const auto &ind : config.channel_digout_indices[config.channels[j]]) {
+            for (const auto ind : config.channel_digout_indices[config.channels[j]]) {
                 data |= static_cast<uint16>(digital_trigger[ind][i]) << config.sync_out_trig_configs[ind].bit;
             }
             target[i * this->num_channels + j] = data;

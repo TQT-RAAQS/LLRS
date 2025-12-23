@@ -32,3 +32,12 @@ awg_dep = declare_dependency(
     include_directories: awg_inc,
     link_with: awg,
     dependencies: [yaml_cpp_dep, spcm_dep])
+
+# test
+awg_test = executable(
+  'awg-test',
+  'test.cu',
+  include_directories: awg_inc,
+  dependencies: [awg_dep, yaml_cpp_dep, spcm_dep],
+  link_args: '-lstdc++fs',
+)
