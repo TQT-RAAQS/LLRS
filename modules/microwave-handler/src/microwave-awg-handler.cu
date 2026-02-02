@@ -19,6 +19,20 @@ MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& ha
 
     this->synthesizer.set_digital_offset_time(this->digital_offset_time);
     this->synthesizer.set_fast_interleaving_flag(synthesizer_fast_flag);
+
+    if (!(this->default_pause_segment_size >= this->min_segment_size)) {
+        throw std::runtime_error(
+            "default_pause_segment_size (" + std::to_string(this->default_pause_segment_size) + 
+            ") must be >= min_segment_size (" + std::to_string(this->min_segment_size) + ")"
+        );
+    }
+    
+    if (!(this->default_pause_segment_size % this->segment_size_steps == 0)) {
+        throw std::runtime_error(
+            "default_pause_segment_size (" + std::to_string(this->default_pause_segment_size) + 
+            ") must be divisible by segment_size_steps (" + std::to_string(this->segment_size_steps) + ")"
+        );
+    }    
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::open_connection() {
