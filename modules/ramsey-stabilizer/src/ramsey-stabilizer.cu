@@ -172,10 +172,21 @@ void RamseyStabilizer::transition_to_buffered() {
 }
 
 void RamseyStabilizer::reset_waveform_data() {
-    this->waveform_params.clear();
+    if (this->waveform_params.size() != this->pid_count) {
+        this->waveform_params.clear();
+        this->waveform_params.resize(this->pid_count);
+    }
+    
     for (size_t i = 0; i < this->pid_count; ++i) {
-        this->waveform_params.emplace_back();
-        this->waveform_params.at(i)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+        auto is_empty = this->waveform_params.at(i).find("nu0") == this->waveform_params.at(i).end();
+        auto initialization_needed = is_empty | this->labscript_config->get_ramsey_stabilizer_clear_memory_flag();
+
+        if (initialization_needed) {
+            // Variables that should only be read from labscript if initialiation is needed.
+            this->waveform_params.at(i)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+        }
+
+        // Variables that should always be read from labscript
         this->waveform_params.at(i)["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
     }
 }
