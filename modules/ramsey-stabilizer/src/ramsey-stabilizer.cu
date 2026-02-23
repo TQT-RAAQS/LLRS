@@ -100,7 +100,8 @@ void RamseyStabilizer::worker_function() {
                     this->last_shot_address, 
                     this->error, 
                     this->waveform_params.at(this->active_pid_index)["nu0"],
-                    this->awg_handler->get_streaming_time()
+                    // this->awg_handler->get_streaming_time()
+                    -1
                 );
                 
                 this->labscript_config.reset();
