@@ -394,3 +394,7 @@ void MicrowaveHandler::MicrowaveAwgHandler::timer_worker() {
         }
     }   
 }
+
+int64_t MicrowaveHandler::MicrowaveAwgHandler::get_streaming_time() {
+    return this->streaming_time.load();
+}
