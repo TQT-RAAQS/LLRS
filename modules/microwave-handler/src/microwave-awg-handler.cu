@@ -398,10 +398,17 @@ void MicrowaveHandler::MicrowaveAwgHandler::timer_worker() {
     }   
 }
 
-int64_t MicrowaveHandler::MicrowaveAwgHandler::get_streaming_time() {
+int64_t MicrowaveHandler::MicrowaveAwgHandler::get_streaming_time(bool stop_timer) {
+    if (stop_timer) {
+        this->stop_timer();
+    }
     return this->streaming_time.load();
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::reset_streaming_time() {
     this->streaming_time.store(-1);
+}
+
+void MicrowaveHandler::MicrowaveAwgHandler::stop_timer() {
+    this->flag_timer_worker_active.store(false);
 }
