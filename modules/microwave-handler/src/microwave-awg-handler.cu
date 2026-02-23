@@ -400,3 +400,7 @@ void MicrowaveHandler::MicrowaveAwgHandler::timer_worker() {
 int64_t MicrowaveHandler::MicrowaveAwgHandler::get_streaming_time() {
     return this->streaming_time.load();
 }
+
+void MicrowaveHandler::MicrowaveAwgHandler::reset_streaming_time() {
+    this->streaming_time.store(-1);
+}

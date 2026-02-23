@@ -109,6 +109,7 @@ namespace MicrowaveHandler {
         int get_awg_step() { std::lock_guard<std::mutex> lock(this->awg_mtx); return this->awg.get_current_step(); };
 
         int64_t get_streaming_time();
+        void reset_streaming_time();
 
         void clear_memory();
     };
