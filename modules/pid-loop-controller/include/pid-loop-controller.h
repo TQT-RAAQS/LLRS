@@ -20,6 +20,8 @@ protected:
     double k_i;
     double k_d;
 
+    int proportional_width;
+
     virtual double get_p_correction();
     virtual double get_i_correction();
     virtual double get_d_correction();

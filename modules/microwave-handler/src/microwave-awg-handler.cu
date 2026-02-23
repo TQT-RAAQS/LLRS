@@ -1,3 +1,4 @@
+
 #include "microwave-awg-handler.h"
 
 using namespace MicrowaveHandler;
@@ -212,7 +213,7 @@ int MicrowaveHandler::MicrowaveAwgHandler::upload_iqmixer_waveform(IQMixerWavefo
     // Find appropriate segment index
     int segment_index;
     bool is_uploaded;
-    if (this->awg_segments_queue.contains_hash(hash)) { // If th3e waveform has already been uploaded
+    if (this->awg_segments_queue.contains_hash(hash)) { // If the waveform has already been uploaded
 
         this->awg_segments_queue.touch_hash(hash);
         segment_index = this->hash_segment_index_map[hash];
@@ -239,7 +240,7 @@ int MicrowaveHandler::MicrowaveAwgHandler::upload_iqmixer_waveform(IQMixerWavefo
         }
     }
 
-    // Synthesize the waveforms and upload
+    // If not uploaded yet, synthesize the waveforms and upload
     if (!is_uploaded) {
         int sample_count = round(iqmixer_waveform.duration * this->awg.get_sample_rate());
         auto buffer = this->awg.allocate_transfer_buffer(sample_count);
