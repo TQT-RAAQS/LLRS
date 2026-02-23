@@ -95,7 +95,7 @@ void RamseyStabilizer::worker_function() {
                 }
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over 
-                INFO << "Shot over; processed all images, last index " << image_count << ".\n"
+                INFO << "Shot over; processed all images, last index " << image_count << ".\n";
                 this->saver->add_to_queue(
                     this->last_shot_address, 
                     this->error, 
@@ -248,12 +248,12 @@ void RamseyStabilizer::start() {
 }
 
 void RamseyStabilizer::stop() {
-    if (this->awg_handler->is_connected()) {
-        this->awg_handler->close_connection();
-    }
     this->thread_worker_killed.store(true);
     if (this->thread_worker != nullptr && this->thread_worker->joinable()) {
         this->thread_worker->join();
+    }
+    if (this->awg_handler->is_connected()) {
+        this->awg_handler->close_connection();
     }
     this->saver->stop();
 }

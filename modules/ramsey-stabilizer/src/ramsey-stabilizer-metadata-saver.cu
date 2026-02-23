@@ -29,7 +29,11 @@ void RamseyStabilizerMetadataSaver::worker() {
                 this->queue.pop_front();
             }
 
-            this->save_to_file(new_info);
+            try {
+                this->save_to_file(new_info);
+            } catch (const std::exception& e) {
+                ERROR << "Exception in metadata saver: " << e.what() << std::endl;
+            }
         }
 
         std::this_thread::sleep_for(std::chrono::microseconds(delay_time_us));
