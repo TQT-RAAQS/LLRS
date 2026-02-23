@@ -15,6 +15,7 @@ void RamseyStabilizer::reset_pid() {
     pid_configs["k_p"] = this->labscript_config->get_ramsey_stabilizer_k_p();
     pid_configs["k_i"] = this->labscript_config->get_ramsey_stabilizer_k_i();
     pid_configs["k_d"] = this->labscript_config->get_ramsey_stabilizer_k_d();
+    pid_configs["k_p_width"] = this->labscript_config->get_ramsey_stabilizer_k_p_width();
     pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
 
     this->target_phi = this->labscript_config->get_ramsey_stabilizer_phi0();

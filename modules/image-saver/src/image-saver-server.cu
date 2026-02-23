@@ -224,10 +224,9 @@ void ImageSaverServer::capture_images() {
             if (current_image.size() == 0) {
                 flag_thread_running.store(false);
             } else {
-                auto timestamp = long(std::chrono::duration<double>(
+                auto timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now().time_since_epoch()
-                ).count() * 1000);
-
+                ).count();
                 // Image processing
                 auto trap_count = this->image_processor.get_trap_count();
                 fls_counts.resize(trap_count);

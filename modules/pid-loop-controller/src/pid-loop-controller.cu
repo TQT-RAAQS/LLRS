@@ -8,6 +8,12 @@ PIDLoopController::PIDLoopController(YAML::Node configs) {
     this->k_i = this->configs["k_i"].as<double>();
     this->k_d = this->configs["k_d"].as<double>();
     this->max_change = this->configs["max_change"].as<double>();
+
+    this->proportional_width = this->configs["k_p_width"].as<size_t>(1);
+
+    if (this->proportional_width >= this->max_buffer_size) {
+        throw std::invalid_argument("Proportional width must be less than max buffer size");
+    }
 }
 
 double PIDLoopController::compute_correction(double v) {
@@ -26,14 +32,14 @@ double PIDLoopController::compute_correction(double v) {
 }
 
 double PIDLoopController::get_p_correction() {
-    if (this->buffer.size() < 2) {
+    if (this->buffer.size() < this->proportional_width + 1) {
         return 0.0;
     }
 
     double e_now = this->buffer.back();
-    double e_prev = this->buffer[this->buffer.size() - 2];
+    double e_prev = this->buffer[this->buffer.size() - this->proportional_width - 1];
 
-    return -this->k_p * (e_now - e_prev);
+    return -this->k_p * (e_now - e_prev) / this->proportional_width;
 }
 
 double PIDLoopController::get_i_correction() {
