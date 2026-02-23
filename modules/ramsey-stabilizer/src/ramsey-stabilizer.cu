@@ -103,7 +103,8 @@ void RamseyStabilizer::worker_function() {
                     this->waveform_params.at(this->active_pid_index)["nu0"],
                     this->awg_handler->get_streaming_time()
                 );
-                
+                INFO << "Added to queue :)\n";
+
                 this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
             } else {
