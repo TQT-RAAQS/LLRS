@@ -97,12 +97,12 @@ void RamseyStabilizer::worker_function() {
             } else if (image_count == images_processed) { // The shot is over 
                 INFO << "Shot over.; processed all images, image count " << image_count << ".\n";
                 INFO << "Printing time " << this->awg_handler->get_streaming_time() << ".\n";
-                // this->saver->add_to_queue(
-                //     this->last_shot_address, 
-                //     this->error, 
-                //     this->waveform_params.at(this->active_pid_index)["nu0"],
-                //     this->awg_handler->get_streaming_time()
-                // );
+                this->saver->add_to_queue(
+                    this->last_shot_address, 
+                    this->error, 
+                    this->waveform_params.at(this->active_pid_index)["nu0"],
+                    this->awg_handler->get_streaming_time()
+                );
                 INFO << "Added to queue :)\n";
 
                 this->labscript_config.reset();
