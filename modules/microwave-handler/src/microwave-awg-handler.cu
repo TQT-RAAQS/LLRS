@@ -88,6 +88,7 @@ void MicrowaveHandler::MicrowaveAwgHandler::start() {
     );
     this->awg.start_stream();
 
+    this->reset_streaming_time();
     this->flag_timer_worker_active.store(true);
 }
 

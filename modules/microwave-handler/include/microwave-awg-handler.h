@@ -89,6 +89,7 @@ namespace MicrowaveHandler {
         void setup_timer_worker();
         void timer_worker();
         void stop_timer_worker();
+        void reset_streaming_time();
 
     public:
         AWG awg;
@@ -109,7 +110,6 @@ namespace MicrowaveHandler {
         int get_awg_step() { std::lock_guard<std::mutex> lock(this->awg_mtx); return this->awg.get_current_step(); };
 
         int64_t get_streaming_time();
-        void reset_streaming_time();
 
         void clear_memory();
     };
