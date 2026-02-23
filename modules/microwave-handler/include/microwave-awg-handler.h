@@ -81,7 +81,7 @@ namespace MicrowaveHandler {
         int increment_step_index(int index, int step_size);
 
         std::mutex awg_mtx;
-        double timer_worker_wait_time_ms;
+        int timer_worker_wait_time_ms;
         std::atomic<int64_t> streaming_time;
         std::atomic<bool> flag_timer_worker_kill;
         std::atomic<bool> flag_timer_worker_active;
