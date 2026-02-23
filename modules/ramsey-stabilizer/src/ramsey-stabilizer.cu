@@ -95,7 +95,8 @@ void RamseyStabilizer::worker_function() {
                 }
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over 
-                INFO << "Shot over; processed all images, last index " << image_count << ".\n";
+                INFO << "Shot over.; processed all images, image count " << image_count << ".\n";
+                INFO << "Printing time " << this->awg_handler->get_streaming_time() << ".\n";
                 this->saver->add_to_queue(
                     this->last_shot_address, 
                     this->error, 
