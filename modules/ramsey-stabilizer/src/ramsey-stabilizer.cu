@@ -93,11 +93,15 @@ void RamseyStabilizer::worker_function() {
                     this->process_image(images_processed);
                 }
                 ++images_processed;
-            } else if (image_count == images_processed) { // The shot is over
-                INFO << "Shot is over. Adding metadata to queue.\n";
-                this->smh->signal_done();
-                this->awg_handler->stop();
-                this->saver->add_to_queue(this->last_shot_address, this->error, this->waveform_params.at(this->active_pid_index)["nu0"]);
+            } else if (image_count == images_processed) { // The shot is over 
+                
+                this->saver->add_to_queue(
+                    this->last_shot_address, 
+                    this->error, 
+                    this->waveform_params.at(this->active_pid_index)["nu0"],
+                    this->awg_handler->get_streaming_time()
+                );
+                
                 this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
             } else {
