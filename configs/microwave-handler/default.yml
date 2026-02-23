@@ -3,3 +3,4 @@ max_segment_count: 253
 default_pause_segment_size: 6240 # Please make sure this is a multiple of 32, and at least 192
 digital_offset_time: -9.61538462e-08
 synthesizer_fast_interleaving_flag: true
+timer_worker_wait_time_ms: 10

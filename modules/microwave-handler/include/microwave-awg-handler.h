@@ -11,6 +11,11 @@
 #include <fstream>
 #include <cmath>
 #include <tuple>
+#include <chrono>
+#include <atomic>
+#include <mutex>
+#include <thread>
+#include <memory>
 
 namespace MicrowaveHandler {
 
@@ -72,9 +77,19 @@ namespace MicrowaveHandler {
         std::tuple<std::vector<IQMixerWaveform>, std::vector<int>> breakdown_waveforms(const std::vector<MicrowaveHandler::Waveform>& waveforms);
         int next_step_to_load_index = MW_INITIAL_STEP_INDEX; // Step to be used next by the load_waveforms function
         int step_to_run_index = MW_END_STEP_INDEX; // The first step to be run for the next shot
-        int upload_iqmixer_waveform(IQMixerWaveform);
+        int upload_iqmixer_waveform(IQMixerWaveform, bool lock_awg = false);
         int increment_step_index(int index, int step_size);
-        
+
+        std::mutex awg_mtx;
+        double timer_worker_wait_time_ms;
+        std::atomic<int64_t> streaming_time;
+        std::atomic<bool> flag_timer_worker_kill;
+        std::atomic<bool> flag_timer_worker_active;
+        std::unique_ptr<std::thread> timer_worker_thread;
+        void setup_timer_worker();
+        void timer_worker();
+        void stop_timer_worker();
+
     public:
         AWG awg;
         MicrowaveAwgHandler(const std::string& handler_config);
@@ -89,9 +104,11 @@ namespace MicrowaveHandler {
 
         void upload_waveforms(const std::vector<MicrowaveHandler::Waveform>& waveforms);
 
-        bool is_connected() const;
+        bool is_connected();
 
-        int get_awg_step() { return this->awg.get_current_step(); };
+        int get_awg_step() { std::lock_guard<std::mutex> lock(this->awg_mtx); return this->awg.get_current_step(); };
+
+        int64_t get_streaming_time();
 
         void clear_memory();
     };
