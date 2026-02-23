@@ -7,14 +7,14 @@ double PIDLoopPhaseController::wrap_phase(double phase) {
 }
 
 double PIDLoopPhaseController::get_p_correction() {
-    if (this->buffer.size() < 2) {
+    if (this->buffer.size() < this->proportional_width + 1) {
         return 0.0;
     }
 
-    double e_now = this->buffer.back();
-    double e_prev = this->buffer[this->buffer.size() - 2];
+    double e_now = this->buffer.back(); // buffer[N - 1]
+    double e_prev = this->buffer[this->buffer.size() - this->proportional_width - 1]; // buffer[N - 2]
 
-    return -this->k_p * PIDLoopPhaseController::wrap_phase(e_now - e_prev);
+    return -this->k_p * PIDLoopPhaseController::wrap_phase(e_now - e_prev) / this->proportional_width;;
 }
 
 double PIDLoopPhaseController::get_d_correction() {

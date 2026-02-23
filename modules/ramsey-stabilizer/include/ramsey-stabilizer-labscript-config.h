@@ -8,6 +8,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     double ramsey_stabilizer_k_p;
     double ramsey_stabilizer_k_i;
     double ramsey_stabilizer_k_d;
+    double ramsey_stabilizer_k_p_width;
     double ramsey_stabilizer_first_gate_phase;
     double ramsey_stabilizer_nu0;
     double ramsey_stabilizer_alpha;
@@ -17,6 +18,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     double ramsey_stabilizer_tau;
     double ramsey_stabilizer_max_change;
     int ramsey_stabilizer_gradient_x_parallel;
+    int ramsey_stabilizer_clear_memory_flag;
     int ramsey_stabilizer_pid_enabled;
     int ramsey_stabilizer_active_pid_index;
     char* mw_signals;
@@ -39,11 +41,14 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
                {"ramsey_stabilizer_max_change", &ramsey_stabilizer_max_change, LabscriptType::VALUE},
                {"ramsey_stabilizer_pid_enabled", &ramsey_stabilizer_pid_enabled, LabscriptType::VALUE},
                {"ramsey_stabilizer_active_pid_index", &ramsey_stabilizer_active_pid_index, LabscriptType::VALUE},
+               {"ramsey_stabilizer_clear_memory_flag", &ramsey_stabilizer_clear_memory_flag, LabscriptType::VALUE},
+               {"ramsey_stabilizer_k_p_width", &ramsey_stabilizer_k_p_width, LabscriptType::VALUE},
                {"ramsey_stabilizer_flag_g_x_parallel", &ramsey_stabilizer_gradient_x_parallel, LabscriptType::VALUE}}) {}
 
     double get_ramsey_stabilizer_k_p() const { return ramsey_stabilizer_k_p; }
     double get_ramsey_stabilizer_k_i() const { return ramsey_stabilizer_k_i; }
     double get_ramsey_stabilizer_k_d() const { return ramsey_stabilizer_k_d; }
+    double get_ramsey_stabilizer_k_p_width() const { return ramsey_stabilizer_k_p_width; }
     double get_ramsey_stabilizer_first_gate_phase() const { return ramsey_stabilizer_first_gate_phase; }
     double get_ramsey_stabilizer_nu0() const { return ramsey_stabilizer_nu0; }
     double get_ramsey_stabilizer_alpha() const { return ramsey_stabilizer_alpha; }
@@ -55,6 +60,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     int get_ramsey_stabilizer_active_pid_index() const { return ramsey_stabilizer_active_pid_index; }
     int get_ramsey_stabilizer_gradient_x_parallel() const { return ramsey_stabilizer_gradient_x_parallel; }
     int get_ramsey_stabilizer_pid_enabled() const { return ramsey_stabilizer_pid_enabled; }
+    bool get_ramsey_stabilizer_clear_memory_flag() const { return ramsey_stabilizer_clear_memory_flag != 0; }
     std::string get_mw_signals() const { return mw_signals; }
 };
 
