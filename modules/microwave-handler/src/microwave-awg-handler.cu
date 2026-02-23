@@ -368,7 +368,7 @@ void MicrowaveHandler::MicrowaveAwgHandler::upload_waveforms(
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::setup_timer_worker() {
-    this->streaming_time = 0;
+    this->streaming_time.store(0);
     this->flag_timer_worker_kill.store(false);
     this->flag_timer_worker_active.store(false);
     this->timer_worker_thread = std::make_unique<std::thread>(&MicrowaveAwgHandler::timer_worker, this);
