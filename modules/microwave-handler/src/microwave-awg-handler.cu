@@ -36,7 +36,9 @@ MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& ha
             "default_pause_segment_size (" + std::to_string(this->default_pause_segment_size) + 
             ") must be divisible by segment_size_steps (" + std::to_string(this->segment_size_steps) + ")"
         );
-    }    
+    }
+
+    this->setup_timer_worker();
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::open_connection() {
