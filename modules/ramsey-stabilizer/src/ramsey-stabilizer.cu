@@ -67,7 +67,7 @@ void RamseyStabilizer::worker_function() {
 
     try {
         while (!this->thread_worker_killed.load()) {
-            INFO << "!* Waiting for new image or shot start signal from shared memory handler...\n";
+            INFO << "Waiting for new image or shot start signal from shared memory handler...\n";
             auto ret = this->smh->wait_for_update(smh_timeout_s);
             
             if (ret == -1) { // Either an error occurred, or the wait timed out.
