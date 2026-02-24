@@ -406,7 +406,7 @@ int64_t MicrowaveHandler::MicrowaveAwgHandler::get_streaming_time(bool stop_time
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::reset_streaming_time() {
-    this->streaming_time.store(-1);
+    this->streaming_time.store(0);
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::stop_timer() {
