@@ -71,3 +71,6 @@ builddir/
 
 .cache
 .cache/*
+
+*.wraplock
+modules/awg/spcm/meson.build.bak

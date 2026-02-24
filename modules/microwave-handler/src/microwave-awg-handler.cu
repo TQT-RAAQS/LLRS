@@ -16,7 +16,10 @@ MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& ha
     this->digital_offset_time = config["digital_offset_time"].as<double>();
     this->min_segment_size = this->awg.get_minimum_segment_size();
     this->segment_size_steps = this->awg.get_segment_size_steps();
+
     auto synthesizer_fast_flag = config["synthesizer_fast_interleaving_flag"].as<bool>(true);
+
+    this->timer_worker_wait_time_ms = config["timer_worker_wait_time_ms"].as<int>();
 
     this->synthesizer.set_digital_offset_time(this->digital_offset_time);
     this->synthesizer.set_fast_interleaving_flag(synthesizer_fast_flag);
@@ -33,10 +36,13 @@ MicrowaveHandler::MicrowaveAwgHandler::MicrowaveAwgHandler(const std::string& ha
             "default_pause_segment_size (" + std::to_string(this->default_pause_segment_size) + 
             ") must be divisible by segment_size_steps (" + std::to_string(this->segment_size_steps) + ")"
         );
-    }    
+    }
+
+    this->setup_timer_worker();
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::open_connection() {
+    std::lock_guard<std::mutex> lock(this->awg_mtx);
     this->awg.open_connection();
     
     this->max_step_size = this->awg.get_max_step_count();
@@ -61,14 +67,17 @@ void MicrowaveHandler::MicrowaveAwgHandler::open_connection() {
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::close_connection() {
+    std::lock_guard<std::mutex> lock(this->awg_mtx);
     this->awg.close_card();
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::force_trigger() {
+    std::lock_guard<std::mutex> lock(this->awg_mtx);
     this->awg.force_hardware_trigger();
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::start() {
+    std::lock_guard<std::mutex> lock(this->awg_mtx);
     // Move to the end step
     this->awg.seqmem_update(
         MW_START_STEP_INDEX,
@@ -78,17 +87,26 @@ void MicrowaveHandler::MicrowaveAwgHandler::start() {
         SPCSEQ_ENDLOOPONTRIG
     );
     this->awg.start_stream();
+
+    this->reset_streaming_time();
+    this->flag_timer_worker_active.store(true);
 }
 
 void MicrowaveHandler::MicrowaveAwgHandler::stop() {
+    std::lock_guard<std::mutex> lock(this->awg_mtx);
     this->awg.stop_card();
 }
 
-bool MicrowaveHandler::MicrowaveAwgHandler::is_connected() const {
+bool MicrowaveHandler::MicrowaveAwgHandler::is_connected() {
+    std::lock_guard<std::mutex> lock(this->awg_mtx);
     return this->awg.is_connection_open();
 }
 
 MicrowaveHandler::MicrowaveAwgHandler::~MicrowaveAwgHandler() {
+    this->flag_timer_worker_kill.store(true);
+    if (this->timer_worker_thread && this->timer_worker_thread->joinable()) {
+        this->timer_worker_thread->join();
+    }
     if (awg.is_connection_open()) {
         this->close_connection();
     }
@@ -187,7 +205,12 @@ std::tuple<
     return {waveforms_list, repetitions_list};
 }
 
-int MicrowaveHandler::MicrowaveAwgHandler::upload_iqmixer_waveform(IQMixerWaveform iqmixer_waveform) {
+int MicrowaveHandler::MicrowaveAwgHandler::upload_iqmixer_waveform(IQMixerWaveform iqmixer_waveform, bool lock_awg) {
+    std::unique_lock<std::mutex> lock(this->awg_mtx, std::defer_lock);
+    if (lock_awg) {
+        lock.lock();
+    }
+
     const auto& hash = iqmixer_waveform.hash;
 
     // Find appropriate segment index
@@ -260,6 +283,8 @@ int MicrowaveHandler::MicrowaveAwgHandler::increment_step_index(int index, int s
 void MicrowaveHandler::MicrowaveAwgHandler::upload_waveforms(
     const std::vector<MicrowaveHandler::Waveform>& waveforms)
 {
+    std::lock_guard<std::mutex> lock(this->awg_mtx);
+
     INFO << "[AWG] upload_waveforms() ENTER, waveforms.size() = "
          << waveforms.size() << std::endl;
 
@@ -343,4 +368,47 @@ void MicrowaveHandler::MicrowaveAwgHandler::upload_waveforms(
          << "step_to_run_index = " << this->step_to_run_index
          << ", next_step_to_load_index = "
          << this->next_step_to_load_index << std::endl;
+}
+
+void MicrowaveHandler::MicrowaveAwgHandler::setup_timer_worker() {
+    this->streaming_time.store(0);
+    this->flag_timer_worker_kill.store(false);
+    this->flag_timer_worker_active.store(false);
+    this->timer_worker_thread = std::make_unique<std::thread>(&MicrowaveAwgHandler::timer_worker, this);
+}
+
+void MicrowaveHandler::MicrowaveAwgHandler::timer_worker() {
+    while (!this->flag_timer_worker_kill.load()) {
+        try {
+            if (this->flag_timer_worker_active.load()) {
+                auto current_step = this->get_awg_step();
+                if (current_step != MW_START_STEP_INDEX) {
+                    auto time = std::chrono::steady_clock::now().time_since_epoch();
+                    this->streaming_time.store(
+                        std::chrono::duration_cast<std::chrono::nanoseconds>(time).count()
+                    );
+                    this->flag_timer_worker_active.store(false);
+                }
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(this->timer_worker_wait_time_ms));
+            }
+        } catch (const std::exception& e) {
+            ERROR << "Exception in timer_worker: " << e.what() << std::endl;
+        }
+    }   
+}
+
+int64_t MicrowaveHandler::MicrowaveAwgHandler::get_streaming_time(bool stop_timer) {
+    if (stop_timer) {
+        this->stop_timer();
+    }
+    return this->streaming_time.load();
+}
+
+void MicrowaveHandler::MicrowaveAwgHandler::reset_streaming_time() {
+    this->streaming_time.store(-1);
+}
+
+void MicrowaveHandler::MicrowaveAwgHandler::stop_timer() {
+    this->flag_timer_worker_active.store(false);
 }

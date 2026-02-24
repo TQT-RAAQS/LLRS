@@ -29,19 +29,24 @@ void RamseyStabilizerMetadataSaver::worker() {
                 this->queue.pop_front();
             }
 
-            this->save_to_file(new_info);
+            try {
+                this->save_to_file(new_info);
+            } catch (const std::exception& e) {
+                ERROR << "Exception in metadata saver: " << e.what() << std::endl;
+            }
         }
 
         std::this_thread::sleep_for(std::chrono::microseconds(delay_time_us));
     }
 }
 
-void RamseyStabilizerMetadataSaver::add_to_queue(std::string shot_address, double error_signal, double new_frequency) {
+void RamseyStabilizerMetadataSaver::add_to_queue(std::string shot_address, double error_signal, double new_frequency, int64_t timestamp) {
     std::lock_guard<std::mutex> lock(this->mtx);
     this->queue.emplace_back(
         shot_address,
         error_signal,
-        new_frequency
+        new_frequency,
+        timestamp
     );
 }
 
@@ -56,7 +61,7 @@ void RamseyStabilizerMetadataSaver::save_to_file(const ShotInformation& s) {
 
     fout.write(reinterpret_cast<const char*>(&s.error_signal), sizeof(double));
     fout.write(reinterpret_cast<const char*>(&s.new_frequency), sizeof(double));
-
+    fout.write(reinterpret_cast<const char*>(&s.timestamp), sizeof(int64_t));
     fout.close();
 }
 
