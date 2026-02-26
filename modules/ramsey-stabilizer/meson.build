@@ -13,7 +13,7 @@ labscript_address_utils_proj = subproject('labscript-address-utils')
 hdf5 = subproject('hdf5-wrapper')
 image_processing = subproject('image-processing')
 configs_translator_proj = subproject('configs-translator')
-pid_loop_controller_proj = subproject('feedback-controller')
+feedback_controller_proj = subproject('feedback-controller')
 awg_proj = subproject('awg')
 microwave_awg_handler_proj = subproject('microwave-handler')
 
@@ -25,7 +25,7 @@ opencv_dep = dependency('opencv', required: true)
 image_processing_dep = image_processing.get_variable('llrs_lib_image_processing_dep')
 fftw_dep = dependency('fftw3', required: true)
 configs_translator_dep = configs_translator_proj.get_variable('configs_translator_dep')
-pid_loop_controller_dep = pid_loop_controller_proj.get_variable('pid_loop_controller_dep')
+feedback_controller_dep = feedback_controller_proj.get_variable('feedback_controller_dep')
 awg_dep = awg_proj.get_variable('awg_dep')
 microwave_awg_handler_dep = microwave_awg_handler_proj.get_variable('microwave_awg_handler_dep')
 
@@ -37,7 +37,7 @@ ramsey_stabilizer_dependencies = [
     image_processing_dep,
     fftw_dep,
     configs_translator_dep,
-    pid_loop_controller_dep,
+    feedback_controller_dep,
     awg_dep,
     microwave_awg_handler_dep,
 ]
