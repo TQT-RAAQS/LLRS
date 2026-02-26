@@ -15,6 +15,7 @@ saver_config:
 pid_count: 2
 pid_config:
   max_buffer_size: 10
+  reload_needed: true
 
 awg_handler:
   config: "default.yml"
