@@ -13,7 +13,7 @@ labscript_address_utils_proj = subproject('labscript-address-utils')
 hdf5 = subproject('hdf5-wrapper')
 image_processing = subproject('image-processing')
 configs_translator_proj = subproject('configs-translator')
-pid_loop_controller_proj = subproject('pid-loop-controller')
+pid_loop_controller_proj = subproject('feedback-controller')
 awg_proj = subproject('awg')
 microwave_awg_handler_proj = subproject('microwave-handler')
 
