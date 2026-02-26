@@ -44,7 +44,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
                {"ramsey_stabilizer_active_pid_index", &ramsey_stabilizer_active_pid_index, LabscriptType::VALUE},
                {"ramsey_stabilizer_clear_memory_flag", &ramsey_stabilizer_clear_memory_flag, LabscriptType::VALUE},
                {"ramsey_stabilizer_k_p_width", &ramsey_stabilizer_k_p_width, LabscriptType::VALUE},
-               {"ramse_stabilizer_controller_type", &controller_type, LabscriptType::VALUE},
+               {"ramsey_stabilizer_controller_type", &controller_type, LabscriptType::VALUE},
                {"ramsey_stabilizer_flag_g_x_parallel", &ramsey_stabilizer_gradient_x_parallel, LabscriptType::VALUE}}) {}
 
     double get_ramsey_stabilizer_k_p() const { return ramsey_stabilizer_k_p; }
