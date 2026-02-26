@@ -11,24 +11,42 @@ RamseyStabilizer::RamseyStabilizer(const std::string config) {
 }
 
 void RamseyStabilizer::reset_pid() {
-    auto pid_configs = this->configs["pid_config"];
-    pid_configs["k_p"] = this->labscript_config->get_ramsey_stabilizer_k_p();
-    pid_configs["k_i"] = this->labscript_config->get_ramsey_stabilizer_k_i();
-    pid_configs["k_d"] = this->labscript_config->get_ramsey_stabilizer_k_d();
-    pid_configs["k_p_width"] = this->labscript_config->get_ramsey_stabilizer_k_p_width();
-    pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
-
+    // General controller parameters
     this->target_phi = this->labscript_config->get_ramsey_stabilizer_phi0();
     this->error = 0;
     this->phi = 0;
-    this->pid_count = this->configs["pid_config"]["pid_count"].as<size_t>();
+    this->pid_count = this->configs["pid_count"].as<size_t>();
 
+    // Clearing past controllers
     this->pid_controllers.clear();
-    for (size_t i = 0; i < this->pid_count; ++i) {
-        this->pid_controllers.emplace_back(std::make_unique<PIDLoopPhaseController>(pid_configs));
-    }
-
     this->reset_waveform_data();
+
+    // Controller specific initialization
+    auto pid_configs = this->configs["pid_config"];
+    auto controller_type = static_cast<ControllerType>(this->labscript_config->get_controller_type());
+
+    if (controller_type == ControllerType::PID_PHASE_CONTROLLER) {
+        INFO << "Initializing PID phase controller with " << this->pid_count << " loops.\n";
+
+        pid_configs["k_p"] = this->labscript_config->get_ramsey_stabilizer_k_p();
+        pid_configs["k_i"] = this->labscript_config->get_ramsey_stabilizer_k_i();
+        pid_configs["k_d"] = this->labscript_config->get_ramsey_stabilizer_k_d();
+        pid_configs["k_p_width"] = this->labscript_config->get_ramsey_stabilizer_k_p_width();
+        pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
+
+        for (size_t i = 0; i < this->pid_count; ++i) {
+            this->pid_controllers.emplace_back(std::make_unique<PIDLoopPhaseController>(pid_configs));
+        }
+
+    } else if (controller_type == ControllerType::LINEAR_CONTROLLER) {
+        INFO << "Initializing linear controller with " << this->pid_count << " loops.\n";
+
+        for (size_t i = 0; i < this->pid_count; ++i) {
+            this->pid_controllers.emplace_back(std::make_unique<LinearController>(pid_configs));
+        }
+    } else {
+        throw std::runtime_error("Unsupported controller type " + std::to_string(controller_type) + ". Change the controller type in the settings for the Ramsey Stabilizer module.");
+    }
 }
 
 void RamseyStabilizer::setup_awg_handler() {

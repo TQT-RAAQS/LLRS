@@ -54,3 +54,20 @@ void ConfigsTranslator::translate_iqmixer() {
     } while (true);
     INFO << "Translated iqmixer config files generated.\n";
 }
+
+void ConfigsTranslator::translate_linear_controller_configs() {
+    std::remove(LINEAR_CONTROLLER_TRANSLATION_FILE.c_str());
+    std::remove(LINEAR_CONTROLLER_TRANSLATION_READY_FILE.c_str());
+
+    fprintf(this->translator_pipe, "reload_linear_controller_configs\n");
+    fflush(this->translator_pipe);
+
+    INFO << "Trying to regenerate the translated linear controller config files...\n";
+    do {
+        if (fs::exists(LINEAR_CONTROLLER_TRANSLATION_READY_FILE)) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    } while (true);
+    INFO << "Translated linear controller config files generated.\n";
+}

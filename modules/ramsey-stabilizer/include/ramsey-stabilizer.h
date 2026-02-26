@@ -8,7 +8,9 @@
 #include "ramsey-stabilizer-metadata-saver.h"
 #include "ramsey-stabilizer-labscript-config.h"
 #include "fourier-analyzer.h"
+#include "controller.h"
 #include "pid-loop-phase-controller.h"
+#include "linear-controller.h"
 #include "microwave-awg-handler.h"
 #include <unordered_map>
 #include <string>
@@ -24,6 +26,11 @@
 #include <complex>
 
 using namespace MicrowaveHandler;
+
+enum ControllerType {
+    PID_PHASE_CONTROLLER = 0,
+    LINEAR_CONTROLLER = 1
+};
 
 class RamseyStabilizer {
 
@@ -59,7 +66,7 @@ class RamseyStabilizer {
     void setup_saver();
 
     size_t pid_count, active_pid_index;
-    std::vector<std::unique_ptr<PIDLoopPhaseController>> pid_controllers;
+    std::vector<std::unique_ptr<Controller>> pid_controllers;
     double phi = 0, target_phi = 0;
     double error = 0;
     int8_t gradient_x_parallel;

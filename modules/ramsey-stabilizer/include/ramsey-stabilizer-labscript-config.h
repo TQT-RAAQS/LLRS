@@ -21,6 +21,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     int ramsey_stabilizer_clear_memory_flag;
     int ramsey_stabilizer_pid_enabled;
     int ramsey_stabilizer_active_pid_index;
+    int controller_type;
     char* mw_signals;
 
   public:
@@ -43,6 +44,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
                {"ramsey_stabilizer_active_pid_index", &ramsey_stabilizer_active_pid_index, LabscriptType::VALUE},
                {"ramsey_stabilizer_clear_memory_flag", &ramsey_stabilizer_clear_memory_flag, LabscriptType::VALUE},
                {"ramsey_stabilizer_k_p_width", &ramsey_stabilizer_k_p_width, LabscriptType::VALUE},
+               {"ramse_stabilizer_controller_type", &controller_type, LabscriptType::VALUE},
                {"ramsey_stabilizer_flag_g_x_parallel", &ramsey_stabilizer_gradient_x_parallel, LabscriptType::VALUE}}) {}
 
     double get_ramsey_stabilizer_k_p() const { return ramsey_stabilizer_k_p; }
@@ -60,6 +62,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     int get_ramsey_stabilizer_active_pid_index() const { return ramsey_stabilizer_active_pid_index; }
     int get_ramsey_stabilizer_gradient_x_parallel() const { return ramsey_stabilizer_gradient_x_parallel; }
     int get_ramsey_stabilizer_pid_enabled() const { return ramsey_stabilizer_pid_enabled; }
+    int get_controller_type() const { return controller_type; }
     bool get_ramsey_stabilizer_clear_memory_flag() const { return ramsey_stabilizer_clear_memory_flag != 0; }
     std::string get_mw_signals() const { return mw_signals; }
 };

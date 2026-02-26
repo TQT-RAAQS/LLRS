@@ -57,3 +57,24 @@ for line in sys.stdin:
         # Done file stays as text
         with open(Addresses.llrs_psfs_translation_done, "w") as f:
             f.write("")
+
+    elif command == "reload_linear_controller_configs":
+        # Reload linear controller configs
+        linear_configs = pickle.load(open(Addresses.linear_controller_configs, "rb"))
+        
+        error_coefficients = linear_configs["error_coefficients"]  # shape (M,)
+        correction_coefficients = linear_configs["correction_coefficients"]  # shape (M - 1,)
+        M = len(error_coefficients)
+        alpha = linear_configs["lp_alpha"]
+
+        # --- Write linear controller configs binary file ---
+        with open(Addresses.llrs_linear_controller_configs, "wb") as f:
+            # Header: M, alpha
+            f.write(np.array([M], dtype=np.int64).tobytes())
+            f.write(np.array([alpha], dtype=np.float64).tobytes())
+            # Coefficients
+            f.write(np.array(error_coefficients, dtype=np.float64).tobytes())
+            f.write(np.array(correction_coefficients, dtype=np.float64).tobytes())
+
+        with open(Addresses.llrs_linear_controller_configs_done, "w") as f:
+            f.write("")

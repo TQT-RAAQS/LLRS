@@ -2,9 +2,10 @@
 #define _RAMSEY_STABILIZER_PID_LOOP_
 
 #include "yaml-cpp/yaml.h"
+#include "controller.h"
 #include <deque>
 
-class PIDLoopController {
+class PIDLoopController : public Controller {
 
     YAML::Node configs;
 
@@ -30,7 +31,9 @@ public:
 
     PIDLoopController(YAML::Node configs);
 
-    double compute_correction(double v);
+    virtual double compute_correction(double v) override;
+
+    virtual void reset() override;
 };
 
 #endif

@@ -11,11 +11,15 @@ pid_loop_controller_include = ['include']
 yaml_cpp = cmake.subproject('yaml-cpp')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 
-dependencies = [yaml_cpp_dep]
+config_translator = subproject('configs-translator')
+configs_translator_dep = config_translator.get_variable('configs_translator_dep')
+
+dependencies = [yaml_cpp_dep, configs_translator_dep]
 
 pid_loop_controller_sources = [
     'src/pid-loop-controller.cu',
     'src/pid-loop-phase-controller.cu',
+    'src/linear-controller.cu',
 ]
 
 pid_loop_controller_lib = library(
