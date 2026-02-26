@@ -3,7 +3,7 @@
 LinearController::LinearController(YAML::Node configs){
     this->force_reload = configs["reload_needed"].as<bool>();
     this->max_buffer_size = configs["max_buffer_size"].as<size_t>();
-    this->reload_coefficients();
+    this->reset();
 }
 
 void LinearController::reset(){
@@ -13,7 +13,7 @@ void LinearController::reset(){
 
     // Reading the file again to reset the coefficients as well, in case they were updated.
     auto address = LINEAR_CONTROLLER_TRANSLATION_FILE;
-    auto file_exists = std::filesystem::exists(address);
+    auto file_exists = fs::exists(address);
 
     if (this->force_reload || !file_exists) {
         INFO << "Reloading linear controller coefficients from translator.";
