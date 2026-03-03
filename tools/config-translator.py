@@ -32,6 +32,24 @@ for line in sys.stdin:
         w = psf_data['box_size_w']
         h = psf_data['box_size_h']
         image_count = thresholds_repo.shape[0]
+        
+        # Fetch cropping information
+        cropping_data = psf_data["cropping"]
+        is_cropping_active = cropping_data["is_cropping"]
+        is_hardware_cropping = cropping_data["hardware"]
+        cropping_center = cropping_data["cropping_center"]
+        cropping_width = cropping_data["cropping_width"]
+        cropping_height = cropping_data["cropping_height"]
+        flag_center_shift_needed = is_cropping_active and not is_hardware_cropping
+        
+        # Shift centers if needed
+        if flag_center_shift_needed:
+            # Shift centers
+            shift_x = cropping_center[1] - cropping_width // 2
+            shift_y = cropping_center[0] - cropping_height // 2
+            for i in range(len(centers)):
+                centers[i][1] += shift_x  # y component
+                centers[i][0] += shift_y  # x component
 
         # --- Write PSF binary file ---
         with open(Addresses.llrs_psfs_translation, "wb") as f:

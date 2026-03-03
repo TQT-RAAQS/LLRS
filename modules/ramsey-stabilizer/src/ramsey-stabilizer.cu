@@ -84,8 +84,11 @@ void RamseyStabilizer::worker_function() {
     int8_t images_processed = SHOT_NOT_BEGUN_YET;
 
     try {
+        auto flag_info_log = true;
         while (!this->thread_worker_killed.load()) {
-            INFO << "Waiting for new image or shot start signal from shared memory handler...\n";
+            if (flag_info_log) {
+                INFO << "Waiting for new image or shot start signal from shared memory handler...\n";
+            }
             auto ret = this->smh->wait_for_update(smh_timeout_s);
             
             if (ret == -1) { // Either an error occurred, or the wait timed out.
@@ -93,11 +96,13 @@ void RamseyStabilizer::worker_function() {
                     if (this->thread_worker_killed.load()) {
                         break; // Exit if a stop request was issued.
                     }
+                    flag_info_log = false;
                     continue; // Go back to waiting.
                 } else {
                     throw std::system_error(errno, std::generic_category(), "Semaphore for the worker failed");
                 }
             }
+            flag_info_log = true;
 
             auto image_count = this->smh->get_image_count();
             INFO << "Image count: " << image_count << ", Images processed: " << (int)images_processed << ".\n";
@@ -109,21 +114,22 @@ void RamseyStabilizer::worker_function() {
                 images_processed = 0;
             } else if (image_count > 0 && image_count > images_processed) { // A new image is available
                 INFO << "Processing new image. Image index: " << (int)images_processed << ".\n";
-                if (this->labscript_config->get_ramsey_stabilizer_pid_enabled()) {
+                if (this->flag_active && this->labscript_config->get_ramsey_stabilizer_pid_enabled()) {
                     this->process_image(images_processed);
                 }
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over 
                 INFO << "Shot over.; processed all images, image count " << image_count << ".\n";
                 this->smh->signal_done();
-                this->awg_handler->stop();
-                this->saver->add_to_queue(
-                    this->last_shot_address, 
-                    this->error, 
-                    this->waveform_params.at(this->active_pid_index)["nu0"],
-                    this->awg_handler->get_streaming_time()
-                );
-
+                if (this->flag_active) {
+                    this->awg_handler->stop();
+                    this->saver->add_to_queue(
+                        this->last_shot_address, 
+                        this->error, 
+                        this->waveform_params.at(this->active_pid_index)["nu0"],
+                        this->awg_handler->get_streaming_time()
+                    );
+                }
                 this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
 
@@ -170,6 +176,42 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     INFO << "Extracted phase: " << this->phi << ", Error: " << error << ", Correction: " << correction << ".\n";
 
     this->waveform_params.at(this->active_pid_index)["nu0"] += correction;
+
+    if (this->flag_track_mode) {
+        this->track_mode();
+    }
+}
+
+void RamseyStabilizer::track_mode() {
+    if (this->interrogation_tau <= 0.0 || this->nu_buffer_size == 0) return;
+
+    const auto i = this->active_pid_index;
+
+    auto& buf = this->nu_buffer[i];
+    auto& ma  = this->moving_average[i];
+    auto& params = this->waveform_params[i];
+
+    auto nu0 = params["nu0"];
+    auto max_mode_distance = 1.0 / this->interrogation_tau * this->track_mode_factor;
+
+    if (buf.size() == this->nu_buffer_size && std::abs(nu0 - ma) > max_mode_distance) {
+        INFO << "Mode hop event detected. Setting the waveform parameter to the moving average value "
+             << ma << " Hz, which is outside the allowed distance "
+             << max_mode_distance << " Hz from the current value "
+             << nu0 << " Hz.\n";
+
+        nu0 = ma;
+        params["nu0"] = nu0;
+    }
+
+    buf.push_back(nu0);
+
+    if (buf.size() > this->nu_buffer_size) {
+        ma += buf.back() / this->nu_buffer_size - buf.front() / this->nu_buffer_size;
+        buf.pop_front();
+    } else {
+        ma = ma * (buf.size() - 1) / buf.size() + nu0 / buf.size();
+    }
 }
 
 void RamseyStabilizer::transition_to_buffered() {
@@ -178,7 +220,17 @@ void RamseyStabilizer::transition_to_buffered() {
     
     // Read the shot .h5 file
     this->labscript_config = std::make_unique<RamseyStabilizerLabscriptConfig>(this->last_shot_address);
+
+    this->flag_active = this->labscript_config->get_ramsey_stabilizer_active_flag();
+    this->nu_buffer_size = this->labscript_config->get_ramsey_stabilizer_nu_buffer_size();
+    this->flag_track_mode = this->labscript_config->get_ramsey_stabilizer_track_mode();
+    this->interrogation_tau = this->labscript_config->get_ramsey_stabilizer_tau();
+    this->track_mode_factor = this->labscript_config->get_ramsey_stabilizer_track_mode_factor();
     
+    if (!this->flag_active) {
+        return;
+    }
+
     if (this->last_experiment_folder != experiment_name) { // This is a new experiment
         this->last_experiment_folder = experiment_name;
         
@@ -203,10 +255,12 @@ void RamseyStabilizer::reset_waveform_data() {
         this->waveform_params.clear();
         this->waveform_params.resize(this->pid_count);
     }
+    this->moving_average.clear();
+    this->nu_buffer.clear();
     
     for (size_t i = 0; i < this->pid_count; ++i) {
         auto is_empty = this->waveform_params.at(i).find("nu0") == this->waveform_params.at(i).end();
-        auto initialization_needed = is_empty | this->labscript_config->get_ramsey_stabilizer_clear_memory_flag();
+        auto initialization_needed = is_empty || this->labscript_config->get_ramsey_stabilizer_clear_memory_flag();
 
         if (initialization_needed) {
             // Variables that should only be read from labscript if initialiation is needed.
@@ -215,6 +269,10 @@ void RamseyStabilizer::reset_waveform_data() {
 
         // Variables that should always be read from labscript
         this->waveform_params.at(i)["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
+
+        // Track mode logic
+        this->nu_buffer.emplace_back();
+        this->moving_average.push_back(0.0);
     }
 }
 

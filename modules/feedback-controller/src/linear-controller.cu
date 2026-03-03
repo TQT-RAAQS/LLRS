@@ -80,11 +80,11 @@ double LinearController::calculate_correction_term() {
     }
 
     double correction = 0.0;
-    for (size_t i = 0; i < this->M - 1; ++i) {
+    for (size_t i = 0; i < this->M-1; ++i) {
         correction += this->error_coefficients.at(i) * this->error_buffer.at(i);
         correction += this->correction_coefficients.at(i) * this->correction_buffer.at(i);
     }
-    correction += this->error_coefficients.at(M-1) * this->error_buffer.at(M-1);
+    correction += this->error_coefficients.at(this->M-1) * this->error_buffer.at(this->M-1);
 
     return correction;
 }

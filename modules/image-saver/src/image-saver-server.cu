@@ -87,10 +87,17 @@ void ImageSaverServer::transition_to_buffered(std::string h5_address) {
         image_folder_address = LabscriptAddressUtils::get_images_folder_name(adjusted_h5_address, image_folder_name);
         image_counter = 0;
     }
+
+    this->flag_buffered_mode.store(true);
 }
 
 void ImageSaverServer::transition_to_static() {
     INFO << "Transitioning to static" << std::endl;
+    this->flag_buffered_mode.store(false);
+
+    while (this->flag_image_saving_in_process.load()) {
+        // Wait untill all images are processed.
+    }
 
     {
         this->shared_memory_handler->signal_done(); // Signal master that the shot is over.
@@ -137,6 +144,8 @@ ImageSaverServer::ImageSaverServer(std::string config_str) {
     std::string config_address = IMAGE_SAVER_SERVER(config_str);
     config = YAML::LoadFile(config_address);
     this->flag_thread_killed.store(false);
+    this->flag_buffered_mode.store(false);
+    this->flag_image_saving_in_process.store(false);
 
     setup_zmq_client();
     setup_fgc();
@@ -221,6 +230,11 @@ void ImageSaverServer::capture_images() {
     while (!this->flag_thread_killed.load()) {
         if (flag_thread_running.load()) {
             std::vector<uint16_t> current_image = fgc->acquire_single_image();
+            this->flag_image_saving_in_process.store(true);
+            if (!flag_buffered_mode.load()) {
+                this->flag_image_saving_in_process.store(false);
+                continue;
+            }
             if (current_image.size() == 0) {
                 flag_thread_running.store(false);
             } else {
@@ -261,6 +275,8 @@ void ImageSaverServer::capture_images() {
                     (boost::filesystem::path(image_folder_address) / boost::filesystem::path(file_name)).string()
                 ));
                 image_counter++;
+                
+                this->flag_image_saving_in_process.store(false);
             }
         }
     }

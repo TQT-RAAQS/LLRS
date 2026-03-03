@@ -108,7 +108,7 @@ void MasterSharedMemoryHandlerServer::memory_manager_worker() {
         current_image_count = this->handler->get_image_count();
         INFO << "Current image count is: " << std::to_string(current_image_count) << std::endl;
         INFO << "Number of processed images is: " << std::to_string(images_processed_count) << std::endl;
-        if (current_image_count == 0 && images_processed_count == SHOT_NOT_BEGUN_YET) { // Transition to buffer; the shot has begun.
+        if (images_processed_count == SHOT_NOT_BEGUN_YET && current_image_count == 0) { // Transition to buffer; the shot has begun.
             this->handler->signal_processes(); // Tell the processes to initialize.
             
             this->handler->wait_for_processes(); // Wait for them to be initialized.

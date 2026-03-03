@@ -38,6 +38,8 @@ class RamseyStabilizer {
 
     YAML::Node configs;
 
+    bool flag_active = true;
+
     void setup_awg_handler();
     void prepare_awg();
     std::unique_ptr<MicrowaveAwgHandler> awg_handler;
@@ -77,6 +79,13 @@ class RamseyStabilizer {
 
     static std::string substitute_variables_in_signal(std::string s, const std::unordered_map<std::string, double>& vars);
     static std::vector<std::string> split_signal(const std::string& s, char delim);
+
+    double interrogation_tau, track_mode_factor;
+    bool flag_track_mode;
+    std::vector<std::deque<double>> nu_buffer;
+    int nu_buffer_size;
+    std::vector<double> moving_average;
+    void track_mode();
 public:
     RamseyStabilizer(const std::string config);
     ~RamseyStabilizer();
