@@ -14,15 +14,18 @@ struct ShotInformation {
     std::string shot_address;
     double error_signal;
     double new_frequency;
+    double frequency_moving_average;
     int64_t timestamp;
 
     ShotInformation(std::string shot_address,
                     double error_signal,
                     double new_frequency,
+                    double frequency_moving_average,
                     int64_t timestamp) : 
                     shot_address(shot_address),
                     error_signal(error_signal),
                     new_frequency(new_frequency),
+                    frequency_moving_average(frequency_moving_average),
                     timestamp(timestamp)
                     {}
     ShotInformation() = default;
@@ -48,6 +51,7 @@ public:
     void add_to_queue(std::string shot_address,
                       double error_signal,
                       double new_frequency,
+                      double frequency_moving_average,
                       int64_t timestamp);
 
     RamseyStabilizerMetadataSaver(YAML::Node configs);

@@ -127,6 +127,7 @@ void RamseyStabilizer::worker_function() {
                         this->last_shot_address, 
                         this->error, 
                         this->waveform_params.at(this->active_pid_index)["nu0"],
+                        this->moving_average.at(this->active_pid_index),
                         this->awg_handler->get_streaming_time()
                     );
                 }
@@ -184,6 +185,8 @@ void RamseyStabilizer::process_image(int8_t image_index) {
 
 void RamseyStabilizer::track_mode() {
     if (this->interrogation_tau <= 0.0 || this->nu_buffer_size == 0) return;
+    INFO << "Tracking mode enabled. Current nu0: " << this->waveform_params.at(this->active_pid_index)["nu0"] 
+         << " Hz, Moving average: " << this->moving_average.at(this->active_pid_index) << " Hz.\n";
 
     const auto i = this->active_pid_index;
 
@@ -204,13 +207,18 @@ void RamseyStabilizer::track_mode() {
         params["nu0"] = nu0;
     }
 
+    INFO << "Adding nu0 value " << nu0 << " Hz to the buffer for moving average calculation.\n";
     buf.push_back(nu0);
 
-    if (buf.size() > this->nu_buffer_size) {
+    if (buf.size() == this->nu_buffer_size + 1) { // Buffer overflew by one element
+        INFO << "Buffer exceeded maximum size of " << this->nu_buffer_size << "; it is " << buf.size() << ". Removing oldest value and updating moving average.\n";
         ma += buf.back() / this->nu_buffer_size - buf.front() / this->nu_buffer_size;
         buf.pop_front();
+    } else if (buf.size() <= this->nu_buffer_size) { // Buffer is still not full
+        INFO << "Buffer size is " << buf.size() << ". Updating moving average with new value.\n";
+        ma = ma * (buf.size() - 1) / buf.size() + buf.back() / buf.size();
     } else {
-        ma = ma * (buf.size() - 1) / buf.size() + nu0 / buf.size();
+        throw std::runtime_error("Unexpected case! Buffer size is " + std::to_string(buf.size()) + " but it should never exceed " + std::to_string(this->nu_buffer_size + 1) + ".");
     }
 }
 
@@ -226,6 +234,7 @@ void RamseyStabilizer::transition_to_buffered() {
     this->flag_track_mode = this->labscript_config->get_ramsey_stabilizer_track_mode();
     this->interrogation_tau = this->labscript_config->get_ramsey_stabilizer_tau();
     this->track_mode_factor = this->labscript_config->get_ramsey_stabilizer_track_mode_factor();
+    this->error = 0;
     
     if (!this->flag_active) {
         return;

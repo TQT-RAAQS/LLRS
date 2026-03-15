@@ -40,12 +40,13 @@ void RamseyStabilizerMetadataSaver::worker() {
     }
 }
 
-void RamseyStabilizerMetadataSaver::add_to_queue(std::string shot_address, double error_signal, double new_frequency, int64_t timestamp) {
+void RamseyStabilizerMetadataSaver::add_to_queue(std::string shot_address, double error_signal, double new_frequency, double frequency_moving_average, int64_t timestamp) {
     std::lock_guard<std::mutex> lock(this->mtx);
     this->queue.emplace_back(
         shot_address,
         error_signal,
         new_frequency,
+        frequency_moving_average,
         timestamp
     );
 }
@@ -61,6 +62,7 @@ void RamseyStabilizerMetadataSaver::save_to_file(const ShotInformation& s) {
 
     fout.write(reinterpret_cast<const char*>(&s.error_signal), sizeof(double));
     fout.write(reinterpret_cast<const char*>(&s.new_frequency), sizeof(double));
+    fout.write(reinterpret_cast<const char*>(&s.frequency_moving_average), sizeof(double));
     fout.write(reinterpret_cast<const char*>(&s.timestamp), sizeof(int64_t));
     fout.close();
 }
