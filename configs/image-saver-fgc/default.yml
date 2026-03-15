@@ -1,6 +1,6 @@
 timeout: 864000000 # ms
-roi_w: 530 # Use 1024 when not in the crop mode/frame transfer mode, otherwise match the value in run manager
-roi_h: 310 # Use 1024 when not in the crop mode/frame transfer mode, otherwise match the value in run manager
+roi_w: 1024 # 510 # Use 1024 when not in the crop mode/frame transfer mode, otherwise match the value in run manager
+roi_h: 1024 # 330 # Use 1024 when not in the crop mode/frame transfer mode, otherwise match the value in run manager
 roi_x: 0
 roi_y: 0
 hbin: 1

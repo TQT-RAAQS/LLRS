@@ -12,9 +12,10 @@ saver_config:
   image_folder_name: raw_data
   delay_time_us: 50
 
+pid_count: 2
 pid_config:
-  pid_count: 2
   max_buffer_size: 10
+  reload_needed: true
 
 awg_handler:
   config: "default.yml"

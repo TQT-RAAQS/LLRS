@@ -44,6 +44,8 @@ class ImageSaverServer {
 
     std::atomic<bool> flag_thread_running;
     std::atomic<bool> flag_thread_killed;
+    std::atomic<bool> flag_buffered_mode;
+    std::atomic<bool> flag_image_saving_in_process;
 
     std::thread image_saver_thread;
     std::thread image_capturer_thread;

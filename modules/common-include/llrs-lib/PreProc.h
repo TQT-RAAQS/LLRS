@@ -43,6 +43,18 @@ namespace fs = std::experimental::filesystem;
 #define IQMIXER_TRANSLATION_READY_FILE                                         \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
         kPathSeparator1 + "translation" + kPathSeparator1 + "iqmixer.done")
+#define IQMIXER_TRANSLATION_FILE                                               \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "iqmixer" + kPathSeparator1 + "iqmixer.bin")
+#define IQMIXER_TRANSLATION_READY_FILE                                         \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "translation" + kPathSeparator1 + "iqmixer.done")
+#define LINEAR_CONTROLLER_TRANSLATION_FILE                                     \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "linear_controller" + kPathSeparator1 + "linear_controller_configs.bin")
+#define LINEAR_CONTROLLER_TRANSLATION_READY_FILE                               \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "translation" + kPathSeparator1 + "linear_controller_configs.done")
 #define CONFIGS_TRANSLATOR_SCRIPT                                              \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "tools" +          \
      kPathSeparator1 + "config-translator.py")

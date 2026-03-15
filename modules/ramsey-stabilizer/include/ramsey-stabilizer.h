@@ -8,7 +8,9 @@
 #include "ramsey-stabilizer-metadata-saver.h"
 #include "ramsey-stabilizer-labscript-config.h"
 #include "fourier-analyzer.h"
+#include "controller.h"
 #include "pid-loop-phase-controller.h"
+#include "linear-controller.h"
 #include "microwave-awg-handler.h"
 #include <unordered_map>
 #include <string>
@@ -25,11 +27,18 @@
 
 using namespace MicrowaveHandler;
 
+enum ControllerType {
+    PID_PHASE_CONTROLLER = 0,
+    LINEAR_CONTROLLER = 1
+};
+
 class RamseyStabilizer {
 
     std::unique_ptr<RamseyStabilizerLabscriptConfig> labscript_config;
 
     YAML::Node configs;
+
+    bool flag_active = true;
 
     void setup_awg_handler();
     void prepare_awg();
@@ -59,7 +68,7 @@ class RamseyStabilizer {
     void setup_saver();
 
     size_t pid_count, active_pid_index;
-    std::vector<std::unique_ptr<PIDLoopPhaseController>> pid_controllers;
+    std::vector<std::unique_ptr<Controller>> pid_controllers;
     double phi = 0, target_phi = 0;
     double error = 0;
     int8_t gradient_x_parallel;
@@ -70,6 +79,13 @@ class RamseyStabilizer {
 
     static std::string substitute_variables_in_signal(std::string s, const std::unordered_map<std::string, double>& vars);
     static std::vector<std::string> split_signal(const std::string& s, char delim);
+
+    double interrogation_tau, track_mode_factor;
+    bool flag_track_mode;
+    std::vector<std::deque<double>> nu_buffer;
+    int nu_buffer_size;
+    std::vector<double> moving_average;
+    void track_mode();
 public:
     RamseyStabilizer(const std::string config);
     ~RamseyStabilizer();

@@ -14,6 +14,12 @@ PIDLoopController::PIDLoopController(YAML::Node configs) {
     if (this->proportional_width >= this->max_buffer_size) {
         throw std::invalid_argument("Proportional width must be less than max buffer size");
     }
+
+    this->reset();
+}
+
+void PIDLoopController::reset() {
+    this->buffer.clear();
 }
 
 double PIDLoopController::compute_correction(double v) {

@@ -32,6 +32,24 @@ for line in sys.stdin:
         w = psf_data['box_size_w']
         h = psf_data['box_size_h']
         image_count = thresholds_repo.shape[0]
+        
+        # Fetch cropping information
+        cropping_data = psf_data["cropping"]
+        is_cropping_active = cropping_data["is_cropping"]
+        is_hardware_cropping = cropping_data["hardware"]
+        cropping_center = cropping_data["cropping_center"]
+        cropping_width = cropping_data["cropping_width"]
+        cropping_height = cropping_data["cropping_height"]
+        flag_center_shift_needed = is_cropping_active and not is_hardware_cropping
+        
+        # Shift centers if needed
+        if flag_center_shift_needed:
+            # Shift centers
+            shift_x = cropping_center[1] - cropping_width // 2
+            shift_y = cropping_center[0] - cropping_height // 2
+            for i in range(len(centers)):
+                centers[i][1] += shift_x  # y component
+                centers[i][0] += shift_y  # x component
 
         # --- Write PSF binary file ---
         with open(Addresses.llrs_psfs_translation, "wb") as f:
@@ -56,4 +74,25 @@ for line in sys.stdin:
 
         # Done file stays as text
         with open(Addresses.llrs_psfs_translation_done, "w") as f:
+            f.write("")
+
+    elif command == "reload_linear_controller_configs":
+        # Reload linear controller configs
+        linear_configs = pickle.load(open(Addresses.linear_controller_configs, "rb"))
+        
+        error_coefficients = linear_configs["error_coefficients"]  # shape (M,)
+        correction_coefficients = linear_configs["correction_coefficients"]  # shape (M - 1,)
+        M = len(error_coefficients)
+        alpha = linear_configs["lp_alpha"]
+
+        # --- Write linear controller configs binary file ---
+        with open(Addresses.llrs_linear_controller_configs, "wb") as f:
+            # Header: M, alpha
+            f.write(np.array([M], dtype=np.int64).tobytes())
+            f.write(np.array([alpha], dtype=np.float64).tobytes())
+            # Coefficients
+            f.write(np.array(error_coefficients, dtype=np.float64).tobytes())
+            f.write(np.array(correction_coefficients, dtype=np.float64).tobytes())
+
+        with open(Addresses.llrs_linear_controller_configs_done, "w") as f:
             f.write("")
