@@ -32,7 +32,12 @@ hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
 zmq_server_dep = zmq_server.get_variable('zmq_server_dep')
 yaml_cpp_dep = yaml_cpp.dependency('yaml-cpp')
 boost_dep = dependency('boost', modules: ['filesystem', 'system'])
-opencv_dep = dependency('opencv', required: true)
+
+opencv_dep = dependency('opencv', required: false)
+if not opencv_dep.found()
+    opencv_dep = dependency('opencv4', required: true)
+endif
+
 shared_memory_dep = shared_memory.get_variable('shared_memory_handler_dep')
 image_processing_dep = image_processing.get_variable('llrs_lib_image_processing_dep')
 

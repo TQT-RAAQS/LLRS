@@ -9,13 +9,14 @@
 #include <cstdint>
 #include <fstream>
 #include <cmath>
+#include <tuple>
+#include <nlopt.hpp>
 
 class FourierAnalyzer {
 
     size_t Nx, Ny;
     size_t Nx_padded, Ny_padded;
     size_t Nxm, Nym;
-    double dx, dy;
     double x0, y0;
 
     std::vector<int64_t> orders;
@@ -26,8 +27,14 @@ class FourierAnalyzer {
     std::vector<double> signal;
     std::vector<std::complex<double>> signal_fft;
 
+    std::complex<double> perform_dfft(double fx, double fy);
+    static double cost_function(const std::vector<double>& x, std::vector<double>& grad, void* f_data);
+
+    void execute_fft_plan(const std::vector<uint8_t>& oc0, const std::vector<uint8_t>& oc1);
+    std::tuple<int, double, double> find_fft_peak();
+
 public:
-    FourierAnalyzer(double dx, double dy, size_t Nx_padded, size_t Ny_padded);
+    FourierAnalyzer(size_t Nx_padded, size_t Ny_padded);
     ~FourierAnalyzer();
 
     void reload_orders(const bool flag_translate_psf = true);

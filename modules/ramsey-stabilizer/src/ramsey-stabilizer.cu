@@ -66,10 +66,7 @@ void RamseyStabilizer::setup_fourier_analyzer() {
     auto Nx_padded = c["spatial_zero_padding_x"].as<size_t>();
     auto Ny_padded = c["spatial_zero_padding_y"].as<size_t>();
 
-    auto dx = c["dx"].as<double>();
-    auto dy = c["dy"].as<double>();
-
-    this->fourier_analyzer = std::make_unique<FourierAnalyzer>(dx, dy, Nx_padded, Ny_padded);
+    this->fourier_analyzer = std::make_unique<FourierAnalyzer>(Nx_padded, Ny_padded);
     this->flag_configs_translator = this->configs["flag_configs_translator"].as<bool>();
 }
 

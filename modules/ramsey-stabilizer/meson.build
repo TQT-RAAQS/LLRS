@@ -21,13 +21,19 @@ microwave_awg_handler_proj = subproject('microwave-handler')
 shared_memory_handler_dep = shared_memory_handler_proj.get_variable('shared_memory_handler_dep')
 labscript_address_utils_dep = labscript_address_utils_proj.get_variable('labscript_address_utils_dep')
 hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
-opencv_dep = dependency('opencv', required: true)
+
+opencv_dep = dependency('opencv', required: false)
+if not opencv_dep.found()
+    opencv_dep = dependency('opencv4', required: true)
+endif
+
 image_processing_dep = image_processing.get_variable('llrs_lib_image_processing_dep')
 fftw_dep = dependency('fftw3', required: true)
 configs_translator_dep = configs_translator_proj.get_variable('configs_translator_dep')
 feedback_controller_dep = feedback_controller_proj.get_variable('feedback_controller_dep')
 awg_dep = awg_proj.get_variable('awg_dep')
 microwave_awg_handler_dep = microwave_awg_handler_proj.get_variable('microwave_awg_handler_dep')
+nlopt_dep = dependency('nlopt', required: true)
 
 ramsey_stabilizer_dependencies = [
     shared_memory_handler_dep, 
@@ -40,6 +46,7 @@ ramsey_stabilizer_dependencies = [
     feedback_controller_dep,
     awg_dep,
     microwave_awg_handler_dep,
+    nlopt_dep
 ]
 
 # sources
@@ -48,8 +55,6 @@ ramsey_stabilizer_sources = [
     'src/ramsey-stabilizer-metadata-saver.cu',
     'src/fourier-analyzer.cu',
 ]
-
-ramsey_stabilizer_dep = []
 
 # executable
 ramsey_stabilizer_executable = executable(

@@ -1,7 +1,7 @@
 #include "fourier-analyzer.h"
 
-FourierAnalyzer::FourierAnalyzer(double dx, double dy, size_t Nx_padded, size_t Ny_padded) : 
-    dx(dx), dy(dy), Nx_padded(Nx_padded), Ny_padded(Ny_padded) {
+FourierAnalyzer::FourierAnalyzer(size_t Nx_padded, size_t Ny_padded) : 
+    Nx_padded(Nx_padded), Ny_padded(Ny_padded) {
     this->reload_orders();
 }
 
@@ -11,7 +11,7 @@ FourierAnalyzer::~FourierAnalyzer() {
     }
 }
 
-double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std::vector<uint8_t>& oc1) {
+void FourierAnalyzer::execute_fft_plan(const std::vector<uint8_t>& oc0, const std::vector<uint8_t>& oc1) {
     // Calculate the ternary signal
     double sum = 0.0;
     size_t total = this->Nx * this->Ny;    
@@ -21,7 +21,7 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
         const auto oind = this->orders[idx];
         auto corrected_idx = (idx % this->Nx) + (idx / this->Nx) * this->Nxm;
 
-        int s = (oc0[oind] == 0) ? 0 : (static_cast<int>(oc1[oind]) * 2 - 1);
+        int s = oc0[oind] * (static_cast<int>(oc1[oind]) * 2 - 1);
 
         this->signal[corrected_idx] = static_cast<double>(s);
         sum += static_cast<double>(s);
@@ -37,8 +37,9 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
 
     // Take the 2D fourier transform
     fftw_execute(this->fft_plan);
+}
 
-    // Find the peak
+std::tuple<int, double, double> FourierAnalyzer::find_fft_peak() {
     size_t peak_index = -1;
     double peak = -1;
     const size_t N = this->signal_fft.size();
@@ -54,17 +55,53 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
     size_t ix = peak_index % (this->Nxm / 2 + 1);
     size_t iy = peak_index / (this->Nxm / 2 + 1);
 
-    // dfx = 1 / (dx * Nxm)
-    // dfy = 1 / (dy * Nym)
-    double fx = static_cast<double>(ix)/(dx*this->Nxm);
-    double fy = static_cast<double>(iy)/(dy*this->Nym);
+    double fx = static_cast<double>(ix)/(this->Nxm);
+    double fy = static_cast<double>(iy)/(this->Nym);
 
+    return {peak_index, fx, fy};
+}
+
+std::complex<double> FourierAnalyzer::perform_dfft(double fx, double fy) {
+    double val_re = 0.0, val_im = 0.0;
+
+    #pragma omp simd reduction(+:val_re, val_im)
+    for (size_t idx = 0; idx < this->Nx * this->Ny; ++idx) {
+        auto corrected_idx = (idx % this->Nx) + (idx / this->Nx) * this->Nxm;
+        double phase = -2.0 * M_PI * (fx * (idx % this->Nx) + fy * (idx / this->Nx));
+        val_re += this->signal[corrected_idx] * std::cos(phase);
+        val_im += this->signal[corrected_idx] * std::sin(phase);
+    }
+
+    return {val_re, val_im};
+}
+
+double FourierAnalyzer::cost_function(const std::vector<double>& x, std::vector<double>& grad, void* f_data) {
+    (void)grad;
+    auto* self = static_cast<FourierAnalyzer*>(f_data);
+    return -std::norm(self->perform_dfft(x[0], x[1]));
+}
+
+double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std::vector<uint8_t>& oc1) {
+    // Perform FFT
+    this->execute_fft_plan(oc0, oc1);
+    
+    // Extract argmax of FFT
+    auto peak_info = this->find_fft_peak();
+    auto fx_argmax = std::get<1>(peak_info);
+    auto fy_argmax = std::get<2>(peak_info);
+    
+    // Perform Nelder-Mead optimization to refine the peak location
+    nlopt::opt opt(nlopt::LN_NELDERMEAD, 2); // 2 variables, no gradient
+    double maximum_norm;
+    std::vector<double> optimal_f = {fx_argmax, fy_argmax};
+    opt.set_min_objective(FourierAnalyzer::cost_function, this);
+    opt.optimize(optimal_f, maximum_norm);
+    
     // Extract the phase
-    const auto& peak_val = this->signal_fft[peak_index];
-    double phi = std::arg(peak_val);
+    double phi = std::arg(this->perform_dfft(optimal_f[0], optimal_f[1]));
 
     // Modify the phase to center the origin on the middle of the trap array
-    phi += 2.0 * M_PI * (fx * this->x0 + fy * this->y0);
+    phi += 2.0 * M_PI * (optimal_f[0] * this->x0 + optimal_f[1] * this->y0);
 
     return FourierAnalyzer::wrap_phase(phi);
 }
@@ -108,8 +145,8 @@ void FourierAnalyzer::reload_orders(const bool flag_translate_psf) {
     );
 
     // Re-calculate the origin coordinates
-    this->x0 = (double)(Nx-1) * dx / 2.0;
-    this->y0 = (double)(Ny-1) * dy / 2.0;
+    this->x0 = (double)(Nx-1) / 2.0;
+    this->y0 = (double)(Ny-1) / 2.0;
 }
 
 double FourierAnalyzer::wrap_phase(double phi) {

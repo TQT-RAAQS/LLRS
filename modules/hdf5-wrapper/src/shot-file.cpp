@@ -52,7 +52,7 @@ std::vector<std::string> ShotFile::get_global_names() {
     std::vector<std::string> attribute_names;
 
     auto iter_get_attribute_name =
-        [](H5::H5Location &loc, H5std_string attr_name, void *operator_data) {
+        [](H5::H5Object &loc, H5std_string attr_name, void *operator_data) {
             std::vector<std::string> *attributes_vector =
                 static_cast<std::vector<std::string> *>(operator_data);
             attributes_vector->push_back(attr_name);
