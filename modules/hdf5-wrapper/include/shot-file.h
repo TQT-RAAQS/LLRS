@@ -13,6 +13,17 @@
 #include <unordered_map>
 #include <vector>
 
+// HDF5 compatibility: handle both H5::H5Object (newer) and H5::H5Location (older)
+// For backward compatibility with different HDF5 versions:
+// - HDF5 1.12+ uses H5::H5Object 
+// - HDF5 < 1.12 uses H5::H5Location
+// To override, define HDF5_USE_H5LOCATION before including this header
+#ifndef HDF5_USE_H5LOCATION
+using H5LocationCompat = H5::H5Object;
+#else
+using H5LocationCompat = H5::H5Location;
+#endif
+
 using LabscriptDictValueTypes = boost::variant<std::string, int, bool, double>;
 using LabscriptDictType =
     std::unordered_map<std::string, LabscriptDictValueTypes>;

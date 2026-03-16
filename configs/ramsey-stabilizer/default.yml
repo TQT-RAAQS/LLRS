@@ -5,8 +5,6 @@ flag_configs_translator: false
 fourier_analyzer:
   spatial_zero_padding_x: 128
   spatial_zero_padding_y: 128
-  dx: 10.6e-6
-  dy: 5.3e-6
 
 saver_config:
   image_folder_name: raw_data

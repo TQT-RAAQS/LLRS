@@ -17,7 +17,9 @@ fgc_src = [
   ]
 
 # external dependencies
-cuda_dep = dependency('cuda', version: '>=11',modules: ['cufft', 'cudart'])
+# cuda_dep = dependency('cuda', version: '>=11',modules: ['cufft', 'cudart']) # cudart is needed for cudaFree, but it is included by default in the CUDA toolkit, so we can omit it here.
+cuda_dep = dependency('cuda', version: '>=11',modules: ['cufft'])
+
 boost_dep =  dependency('boost', modules: ['system'])
 gl_dep = dependency('gl')
 
