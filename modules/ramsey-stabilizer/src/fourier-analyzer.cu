@@ -91,7 +91,7 @@ double FourierAnalyzer::extract_phase(const std::vector<uint8_t>& oc0, const std
     auto fy_argmax = std::get<2>(peak_info);
     
     // Perform Nelder-Mead optimization to refine the peak location
-    nlopt::opt opt(nlopt::LN_NELDERMEAD, 2); // 2 variables, no gradient
+    nlopt::opt opt(nlopt::LN_NELDERMEAD, 2); // 2 variables
     double maximum_norm;
     std::vector<double> optimal_f = {fx_argmax, fy_argmax};
     opt.set_min_objective(FourierAnalyzer::cost_function, this);

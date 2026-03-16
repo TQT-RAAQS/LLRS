@@ -167,6 +167,7 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     
     this->phi = this->fourier_analyzer->extract_phase(this->oc0, this->oc1);
     this->phi *= (2.0 * this->gradient_x_parallel - 1.0); // Adjust for gradient direction along x
+    this->update_nu0_prime(); // Update the true resonance frequency
     
     // Update the parameter
     this->error = FourierAnalyzer::wrap_phase(this->phi - this->target_phi);
@@ -178,6 +179,12 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     if (this->flag_track_mode) {
         this->track_mode();
     }
+}
+
+void RamseyStabilizer::update_nu0_prime() {
+    auto& nu0 = this->waveform_params.at(this->active_pid_index)["nu0"];
+    auto nu_resonance = nu0 - this->phi / (2.0 * M_PI * this->interrogation_tau);
+    this->waveform_params.at(this->active_pid_index)["nu0_prime"] = nu_resonance;
 }
 
 void RamseyStabilizer::track_mode() {
@@ -271,6 +278,7 @@ void RamseyStabilizer::reset_waveform_data() {
         if (initialization_needed) {
             // Variables that should only be read from labscript if initialiation is needed.
             this->waveform_params.at(i)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+            this->waveform_params.at(i)["nu0_prime"] = this->labscript_config->get_ramsey_stabilizer_nu0();
         }
 
         // Variables that should always be read from labscript

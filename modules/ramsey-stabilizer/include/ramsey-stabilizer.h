@@ -86,6 +86,8 @@ class RamseyStabilizer {
     int nu_buffer_size;
     std::vector<double> moving_average;
     void track_mode();
+
+    void update_nu0_prime();
 public:
     RamseyStabilizer(const std::string config);
     ~RamseyStabilizer();
