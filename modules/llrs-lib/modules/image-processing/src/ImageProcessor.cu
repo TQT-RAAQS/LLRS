@@ -253,7 +253,7 @@ void Processing::ImageProcessor::parse_file(std::ifstream& infile) {
             for (int64_t k = 0; k < box_size_h; ++k) {
                 int64_t y = yc - (box_size_h / 2) + k;
                 int64_t x = xc - (box_size_w / 2) + j;
-                double p = psf_data[j * box_size_h + k];
+                double p = psf_data[k * box_size_h + j];
                 psf_vec.emplace_back(y, x, p);
             }
         }
