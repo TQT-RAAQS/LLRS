@@ -91,7 +91,7 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
     std::fill(digital_trigger.begin(), digital_trigger.begin() + pause_samples, 0);
     
     // Generate pulse
-    auto t_init= t0 + pause_samples * dt;
+    auto t_init = t0 + pause_samples * dt;
     #pragma omp simd
     for (int i = 0; i < pulse_samples + offset_samples; ++i) {
         double t_rel = i * dt;  // relative to pulse start
@@ -169,7 +169,7 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse_fast(
     std::fill(buffer, buffer + 2 * pause_samples, 0);
 
     // Generate pulse
-    auto t_init= t0 + pause_samples * dt;
+    auto t_init = t0 + pause_samples * dt;
     #pragma omp simd
     for (int i = 0; i < pulse_samples + offset_samples; ++i) {
         auto t_rel = i * dt;  // relative to pulse start
