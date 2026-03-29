@@ -23,7 +23,8 @@ for line in sys.stdin:
         
     elif command == "reload_psf":
         # Reload everything
-        psf_data = pickle.load(open(Addresses.traps_psf, "rb"))
+        with open(Addresses.traps_psf, "rb") as file:
+            psf_data = pickle.load(file)
         thresholds_repo = GlobalDataRepository.get_data(DataLabel.THRESHOLDS)
 
         centers = psf_data['centers']   # shape (N, 2)
@@ -48,8 +49,8 @@ for line in sys.stdin:
             shift_x = cropping_center[1] - cropping_width // 2
             shift_y = cropping_center[0] - cropping_height // 2
             for i in range(len(centers)):
-                centers[i][1] += shift_x  # y component
-                centers[i][0] += shift_y  # x component
+                centers[i][1] += shift_x  # x component
+                centers[i][0] += shift_y  # y component
 
         # --- Write PSF binary file ---
         with open(Addresses.llrs_psfs_translation, "wb") as f:
@@ -78,8 +79,9 @@ for line in sys.stdin:
 
     elif command == "reload_linear_controller_configs":
         # Reload linear controller configs
-        linear_configs = pickle.load(open(Addresses.linear_controller_configs, "rb"))
-        
+        with open(Addresses.linear_controller_configs, "rb") as file:
+            linear_configs = pickle.load(file)
+
         error_coefficients = linear_configs["error_coefficients"]  # shape (M,)
         correction_coefficients = linear_configs["correction_coefficients"]  # shape (M - 1,)
         M = len(error_coefficients)
