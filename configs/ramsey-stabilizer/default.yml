@@ -10,7 +10,7 @@ saver_config:
   image_folder_name: raw_data
   delay_time_us: 50
 
-pid_count: 2
+pid_count: 5
 pid_config:
   max_buffer_size: 10
   reload_needed: true

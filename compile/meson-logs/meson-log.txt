@@ -1,0 +1,46 @@
+Build started at 2026-03-31T17:01:37.075671
+Main binary: /usr/bin/python3
+Build Options: 
+Python system: Linux
+The Meson build system
+Version: 0.53.2
+Source dir: /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS
+Build dir: /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS/compile
+Build type: native build
+Project name: LLRS
+Project version: undefined
+No CFLAGS in the environment, not changing global flags.
+No LDFLAGS in the environment, not changing global flags.
+No CPPFLAGS in the environment, not changing global flags.
+Sanity testing C compiler: cc
+Is cross compiler: False.
+Sanity check compiler command line: cc /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS/compile/meson-private/sanitycheckc.c -o /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS/compile/meson-private/sanitycheckc.exe -pipe -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command: /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS/compile/meson-private/sanitycheckc.exe
+C compiler for the build machine: cc (gcc 9.4.0 "cc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0")
+C linker for the build machine: cc ld.bfd 2.34
+No CXXFLAGS in the environment, not changing global flags.
+No LDFLAGS in the environment, not changing global flags.
+No CPPFLAGS in the environment, not changing global flags.
+Sanity testing C++ compiler: c++
+Is cross compiler: False.
+Sanity check compiler command line: c++ /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS/compile/meson-private/sanitycheckcpp.cc -o /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS/compile/meson-private/sanitycheckcpp.exe -pipe -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command: /home/tqtraaqs/Desktop/tqtraaqs_git/LLRS/compile/meson-private/sanitycheckcpp.exe
+C++ compiler for the build machine: c++ (gcc 9.4.0 "c++ (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0")
+C++ linker for the build machine: c++ ld.bfd 2.34
+No CXXFLAGS in the environment, not changing global flags.
+No LDFLAGS in the environment, not changing global flags.
+No CPPFLAGS in the environment, not changing global flags.
+No CUFLAGS in the environment, not changing global flags.
+No LDFLAGS in the environment, not changing global flags.

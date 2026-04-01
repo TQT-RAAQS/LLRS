@@ -27,7 +27,7 @@ for line in sys.stdin:
             psf_data = pickle.load(file)
         thresholds_repo = GlobalDataRepository.get_data(DataLabel.THRESHOLDS)
 
-        centers = psf_data['centers']   # shape (N, 2)
+        centers = psf_data['centers'].copy()   # shape (N, 2)
         psfs = psf_data['psfs']         # shape (N, w, h)
         N = centers.shape[0]
         w = psf_data['box_size_w']

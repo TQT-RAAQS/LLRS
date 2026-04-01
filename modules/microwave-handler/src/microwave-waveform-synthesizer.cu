@@ -89,15 +89,16 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
     std::fill(v_I.begin(), v_I.begin() + pause_samples, 0);
     std::fill(v_Q.begin(), v_Q.begin() + pause_samples, 0);
     std::fill(digital_trigger.begin(), digital_trigger.begin() + pause_samples, 0);
-
+    
     // Generate pulse
+    auto t_init = t0 + pause_samples * dt;
     #pragma omp simd
     for (int i = 0; i < pulse_samples + offset_samples; ++i) {
         double t_rel = i * dt;  // relative to pulse start
         double mask = (t_rel >= -digital_offset_time && t_rel <= p->duration - digital_offset_time);
 
-        v_I[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * p->frequency * (t0 + t_rel) + p->phase) + alpha_I_dc));
-        v_Q[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * p->frequency * (t0 + t_rel) + p->phase + dphi) + alpha_Q_dc));
+        v_I[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * p->frequency * (t_init + t_rel) + p->phase) + alpha_I_dc));
+        v_Q[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * p->frequency * (t_init + t_rel) + p->phase + dphi) + alpha_Q_dc));
 
         digital_trigger[pause_samples + i] = (t_rel >= digital_offset_time && t_rel <= p->duration + digital_offset_time) ? 1 : 0;
     }
@@ -168,13 +169,14 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse_fast(
     std::fill(buffer, buffer + 2 * pause_samples, 0);
 
     // Generate pulse
+    auto t_init = t0 + pause_samples * dt;
     #pragma omp simd
     for (int i = 0; i < pulse_samples + offset_samples; ++i) {
         auto t_rel = i * dt;  // relative to pulse start
         auto mask = static_cast<double>(t_rel >= -digital_offset_time && t_rel <= p->duration - digital_offset_time);
 
-        auto vI = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * p->frequency * (t0 + t_rel) + p->phase) + alpha_I_dc));
-        auto vQ = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * p->frequency * (t0 + t_rel) + p->phase + dphi) + alpha_Q_dc));
+        auto vI = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * p->frequency * (t_init + t_rel) + p->phase) + alpha_I_dc));
+        auto vQ = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * p->frequency * (t_init + t_rel) + p->phase + dphi) + alpha_Q_dc));
         auto vD = static_cast<int16>( (t_rel >= digital_offset_time && t_rel <= p->duration + digital_offset_time) ? 1 : 0 );
 
         buffer[2 * (pause_samples + i)] = (digital_channel == 0 ? static_cast<short>( static_cast<uint16>(vI) >> analog_bit | (vD << digital_bit) ) : vI);
