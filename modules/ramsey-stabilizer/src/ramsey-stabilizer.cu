@@ -116,7 +116,7 @@ void RamseyStabilizer::worker_function() {
                 }
                 ++images_processed;
             } else if (image_count == images_processed) { // The shot is over 
-                INFO << "Shot over.; processed all images, image count " << image_count << ".\n";
+                INFO << "Shot over; processed all images, image count " << image_count << ".\n";
                 this->smh->signal_done();
                 if (this->flag_active) {
                     this->awg_handler->stop();
