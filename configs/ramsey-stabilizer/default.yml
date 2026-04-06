@@ -19,7 +19,7 @@ awg_handler:
   config: "default.yml"
 
 qdac_client:
-  active: false
+  active: true
   config: "default.yml"
 
 magnetometry:
