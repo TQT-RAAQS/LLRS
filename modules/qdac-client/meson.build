@@ -40,6 +40,13 @@ qdac_client_lib = library(
     dependencies: dependencies,
 )
 
+# dependency
+qdac_client_dep = declare_dependency(
+    include_directories: includes,
+    link_with: qdac_client_lib,
+    dependencies: dependencies,
+)
+
 ##########################
 
 test_executable = executable(

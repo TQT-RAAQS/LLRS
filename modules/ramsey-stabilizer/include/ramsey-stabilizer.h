@@ -9,6 +9,7 @@
 #include "ramsey-stabilizer-labscript-config.h"
 #include "fourier-analyzer.h"
 #include "controller.h"
+#include "qdac-client.h"
 #include "pid-loop-phase-controller.h"
 #include "linear-controller.h"
 #include "microwave-awg-handler.h"
@@ -39,6 +40,10 @@ class RamseyStabilizer {
     YAML::Node configs;
 
     bool flag_active = true;
+
+    void setup_qdac_client();
+    std::unique_ptr<QdacClient> qdac_client;
+    bool flag_qdac_client_active;
 
     void setup_awg_handler();
     void prepare_awg();

@@ -8,6 +8,13 @@ RamseyStabilizer::RamseyStabilizer(const std::string config) {
     this->setup_fourier_analyzer();
     this->setup_memory_handler();
     this->setup_saver();
+    this->setup_qdac_client();
+}
+
+void RamseyStabilizer::setup_qdac_client() {
+    auto qdac_config_name = this->configs["qdac_client"]["config"].as<std::string>();
+    this->flag_qdac_client_active = this->configs["qdac_client"]["active"].as<bool>();
+    this->qdac_client = std::make_unique<QdacClient>(qdac_config_name);
 }
 
 void RamseyStabilizer::reset_pid() {

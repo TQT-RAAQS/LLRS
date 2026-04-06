@@ -17,3 +17,7 @@ pid_config:
 
 awg_handler:
   config: "default.yml"
+
+qdac_client:
+  active: true
+  config: "default.yml"
