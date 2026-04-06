@@ -25,9 +25,9 @@ bool QdacClient::handshake() {
     }
 }
 
-bool QdacClient::send_b_field(double b_field) {
+bool QdacClient::send_b_field(int pid_index, double b_field) {
     try {
-        auto command = "ramsey|" + std::to_string(b_field);
+        auto command = "ramsey|" + std::to_string(pid_index) + "|" + std::to_string(b_field);
         auto response = this->send_string(command);
         if (response == "202") {
             INFO << "Successfully sent magnetic field value to QDAC Server: " << b_field << " T.\n";

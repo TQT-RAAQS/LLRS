@@ -183,7 +183,7 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     auto nu_resonance = this->update_nu0_prime(); // Update the true resonance frequency
     if (this->configs["qdac_client"]["active"].as<bool>()) { // If the QDAC client is active, send the estimated magnetic field to the QDAC server.
         auto b_field = (nu_resonance - this->nu_freespace) / this->gamma;
-        this->qdac_client->send_b_field(b_field);
+        this->qdac_client->send_b_field(this->active_pid_index, b_field);
         INFO << "Estimated resonance frequency: " << nu_resonance << " Hz, Estimated magnetic field: " << b_field << " T.\n";
     }
     
