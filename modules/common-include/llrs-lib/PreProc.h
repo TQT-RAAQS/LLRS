@@ -114,6 +114,11 @@ namespace fs = std::experimental::filesystem;
 #define RAMSEY_STABILIZER(id)                                                  \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "configs" +        \
       kPathSeparator1 + "ramsey-stabilizer" + kPathSeparator1 + (id))
+#define QDAC_CLIENT_CONFIG(id)                                                 \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + ".." + kPathSeparator1 + \
+    "Experiment" + kPathSeparator1 + "experiment" + kPathSeparator1 + "servers" +       \
+     kPathSeparator1 + "qdac_server" + kPathSeparator1 + "configs" + kPathSeparator1 + \
+     (id))
 
 #define TRIAL_NAME(num) ("trial_" + std::to_string(num))
 #define REP_NAME(num) ("repetition_" + std::to_string(num))
