@@ -41,6 +41,9 @@ class RamseyStabilizer {
 
     bool flag_active = true;
 
+    double nu_freespace;
+    double gamma;
+
     void setup_qdac_client();
     std::unique_ptr<QdacClient> qdac_client;
     bool flag_qdac_client_active;
@@ -92,7 +95,7 @@ class RamseyStabilizer {
     std::vector<double> moving_average;
     void track_mode();
 
-    void update_nu0_prime();
+    double update_nu0_prime();
 public:
     RamseyStabilizer(const std::string config);
     ~RamseyStabilizer();

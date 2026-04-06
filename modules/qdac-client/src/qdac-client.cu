@@ -25,6 +25,23 @@ bool QdacClient::handshake() {
     }
 }
 
+bool QdacClient::send_b_field(double b_field) {
+    try {
+        auto command = "ramsey|" + std::to_string(b_field);
+        auto response = this->send_string(command);
+        if (response == "202") {
+            INFO << "Successfully sent magnetic field value to QDAC Server: " << b_field << " T.\n";
+            return true;
+        } else {
+            ERROR << "Failed to set magnetic field on QDAC Server. Response: " << response << "\n";
+            return false;
+        }
+    } catch (const std::exception& e) {
+        ERROR << "Error sending magnetic field to QDAC Server: " << e.what() << "\n";
+        return false;
+    }
+}
+
 void QdacClient::setup_client() {
     try {
         INFO << "Setting up QDAC Client...\n";

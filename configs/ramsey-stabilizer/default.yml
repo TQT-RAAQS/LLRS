@@ -19,5 +19,9 @@ awg_handler:
   config: "default.yml"
 
 qdac_client:
-  active: true
+  active: false
   config: "default.yml"
+
+magnetometry:
+  gamma: -2.1e10
+  nu_fs: 99.92e6

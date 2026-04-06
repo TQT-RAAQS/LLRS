@@ -150,7 +150,7 @@ void FourierAnalyzer::reload_orders(const bool flag_translate_psf) {
 }
 
 double FourierAnalyzer::wrap_phase(double phi) {
-    // Wrap phase to the range [-pi, pi]
+    // Wrap phase to the range [-pi, pi)
     auto p = std::fmod(phi + M_PI, 2.0 * M_PI);
     return (p > 0 ? p - M_PI : p + M_PI);
 }

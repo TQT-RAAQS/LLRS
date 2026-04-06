@@ -21,6 +21,7 @@ public:
     QdacClient(std::string config);
 
     bool handshake();
+    bool send_b_field(double b_field);
 };
 
 #endif
