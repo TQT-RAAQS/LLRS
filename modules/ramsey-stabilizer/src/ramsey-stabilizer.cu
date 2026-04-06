@@ -8,6 +8,16 @@ RamseyStabilizer::RamseyStabilizer(const std::string config) {
     this->setup_fourier_analyzer();
     this->setup_memory_handler();
     this->setup_saver();
+    this->setup_qdac_client();
+}
+
+void RamseyStabilizer::setup_qdac_client() {
+    auto qdac_config_name = this->configs["qdac_client"]["config"].as<std::string>();
+    this->flag_qdac_client_active = this->configs["qdac_client"]["active"].as<bool>();
+    this->qdac_client = std::make_unique<QdacClient>(qdac_config_name);
+
+    this->gamma = this->configs["magnetometry"]["gamma"].as<double>();
+    this->nu_freespace = this->configs["magnetometry"]["nu_fs"].as<double>();
 }
 
 void RamseyStabilizer::reset_pid() {
@@ -165,26 +175,36 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     // If this is the second image
     this->oc1 = std::move(occ);
     
+    // Phase extraction using Fourier analysis
     this->phi = this->fourier_analyzer->extract_phase(this->oc0, this->oc1);
     this->phi *= (2.0 * this->gradient_x_parallel - 1.0); // Adjust for gradient direction along x
-    this->update_nu0_prime(); // Update the true resonance frequency
     
-    // Update the parameter
+    // Calculate the true resonance frequency
+    auto nu_resonance = this->update_nu0_prime(); // Update the true resonance frequency
+    if (this->configs["qdac_client"]["active"].as<bool>()) { // If the QDAC client is active, send the estimated magnetic field to the QDAC server.
+        auto b_field = (nu_resonance - this->nu_freespace) / this->gamma;
+        this->qdac_client->send_b_field(b_field);
+        INFO << "Estimated resonance frequency: " << nu_resonance << " Hz, Estimated magnetic field: " << b_field << " T.\n";
+    }
+    
+    // Update the control parameter
     this->error = FourierAnalyzer::wrap_phase(this->phi - this->target_phi);
+    
     auto correction = this->pid_controllers.at(this->active_pid_index)->compute_correction(this->error);
+    this->waveform_params.at(this->active_pid_index)["nu0"] += correction;
     INFO << "Extracted phase: " << this->phi << ", Error: " << error << ", Correction: " << correction << ".\n";
 
-    this->waveform_params.at(this->active_pid_index)["nu0"] += correction;
-
+    // Track mode to prevent mode hops if enabled
     if (this->flag_track_mode) {
         this->track_mode();
     }
 }
 
-void RamseyStabilizer::update_nu0_prime() {
+double RamseyStabilizer::update_nu0_prime() {
     auto& nu0 = this->waveform_params.at(this->active_pid_index)["nu0"];
     auto nu_resonance = nu0 - this->phi / (2.0 * M_PI * this->interrogation_tau);
     this->waveform_params.at(this->active_pid_index)["nu0_prime"] = nu_resonance;
+    return nu_resonance;
 }
 
 void RamseyStabilizer::track_mode() {

@@ -8,6 +8,7 @@ project(
 ramsey_stabilizer_includes = ['include']
 
 # submodules
+qdac_client_proj = subproject('qdac-client')
 shared_memory_handler_proj = subproject('shared-memory-handler')
 labscript_address_utils_proj = subproject('labscript-address-utils')
 hdf5 = subproject('hdf5-wrapper')
@@ -21,6 +22,7 @@ microwave_awg_handler_proj = subproject('microwave-handler')
 shared_memory_handler_dep = shared_memory_handler_proj.get_variable('shared_memory_handler_dep')
 labscript_address_utils_dep = labscript_address_utils_proj.get_variable('labscript_address_utils_dep')
 hdf5_dep = hdf5.get_variable('hdf5_wrapper_dep')
+qdac_client_depe = qdac_client_proj.get_variable('qdac_client_dep')
 
 opencv_dep = dependency('opencv', required: false)
 if not opencv_dep.found()
@@ -46,7 +48,8 @@ ramsey_stabilizer_dependencies = [
     feedback_controller_dep,
     awg_dep,
     microwave_awg_handler_dep,
-    nlopt_dep
+    nlopt_dep,
+    qdac_client_depe
 ]
 
 # sources
