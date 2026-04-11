@@ -41,7 +41,7 @@ void TrapResultSaver::saver_worker() {
             }
         }
 
-        auto& results_to_save = this->trap_results.back();
+        auto& results_to_save = this->trap_results.back(); // TODO: Check if trap_results is empty or not
         
         this->save_to_file(results_to_save);
 
@@ -102,6 +102,8 @@ void TrapResultSaver::retriever_worker() {
             saving_address = LabscriptAddressUtils::get_images_folder_name(shot_address, this->image_folder_name);
             processed_image_count = 0;
 
+            this->trap_results.emplace_back(saving_address, std::vector<ImageTrapResult>{}); // Add empty image trap results to the queue
+
         } else if (processed_image_count != SHOT_NOT_BEGUN_YET && current_image_count > 0 && current_image_count > processed_image_count) { // New image has arrived
 
             this->add_data_to_queue(processed_image_count, saving_address);
@@ -124,10 +126,6 @@ void TrapResultSaver::retriever_worker() {
 void TrapResultSaver::add_data_to_queue(size_t image_index, std::string save_directory) {
     auto fls_counts = this->memory_handler->get_trap_fluorescence(image_index);
     auto occupancy = this->memory_handler->get_trap_occupancy(image_index);
-    
-    if (image_index == 0) {
-        this->trap_results.emplace_back(save_directory, std::vector<ImageTrapResult>{});
-    }
     
     std::get<1>(this->trap_results.back()).emplace_back(std::move(fls_counts), std::move(occupancy));
 }
