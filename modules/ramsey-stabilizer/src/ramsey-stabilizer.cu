@@ -27,16 +27,39 @@ void RamseyStabilizer::reset_pid() {
     this->phi = 0;
     this->pid_count = this->configs["pid_count"].as<size_t>();
 
-    // Clearing past controllers
+    // Clear per-experiment PID state. Individual PID slots are initialized lazily.
     this->pid_controllers.clear();
-    this->reset_waveform_data();
+    this->pid_controllers.resize(this->pid_count);
 
-    // Controller specific initialization
+    this->waveform_params.clear();
+    this->waveform_params.resize(this->pid_count);
+
+    this->moving_average.clear();
+    this->moving_average.resize(this->pid_count, 0.0);
+
+    this->nu_buffer.clear();
+    this->nu_buffer.resize(this->pid_count);
+
+    this->pid_initialized.clear();
+    this->pid_initialized.resize(this->pid_count, false);
+
+    // Controller specific initialization happens lazily per PID slot.
+}
+
+void RamseyStabilizer::ensure_pid_initialized(size_t pid_index) {
+    if (pid_index >= this->pid_count) {
+        throw std::runtime_error("PID index " + std::to_string(pid_index) + " is out of range (PID count: " + std::to_string(this->pid_count) + ").");
+    }
+
+    if (this->pid_initialized.at(pid_index)) {
+        return;
+    }
+
     auto pid_configs = this->configs["pid_config"];
     auto controller_type = static_cast<ControllerType>(this->labscript_config->get_controller_type());
 
     if (controller_type == ControllerType::PID_PHASE_CONTROLLER) {
-        INFO << "Initializing PID phase controller with " << this->pid_count << " loops.\n";
+        INFO << "Initializing PID phase controller for PID index " << pid_index << ".\n";
 
         pid_configs["k_p"] = this->labscript_config->get_ramsey_stabilizer_k_p();
         pid_configs["k_i"] = this->labscript_config->get_ramsey_stabilizer_k_i();
@@ -44,19 +67,21 @@ void RamseyStabilizer::reset_pid() {
         pid_configs["k_p_width"] = this->labscript_config->get_ramsey_stabilizer_k_p_width();
         pid_configs["max_change"] = this->labscript_config->get_ramsey_stabilizer_max_change();
 
-        for (size_t i = 0; i < this->pid_count; ++i) {
-            this->pid_controllers.emplace_back(std::make_unique<PIDLoopPhaseController>(pid_configs));
-        }
-
+        this->pid_controllers.at(pid_index) = std::make_unique<PIDLoopPhaseController>(pid_configs);
     } else if (controller_type == ControllerType::LINEAR_CONTROLLER) {
-        INFO << "Initializing linear controller with " << this->pid_count << " loops.\n";
-
-        for (size_t i = 0; i < this->pid_count; ++i) {
-            this->pid_controllers.emplace_back(std::make_unique<LinearController>(pid_configs));
-        }
+        INFO << "Initializing linear controller for PID index " << pid_index << ".\n";
+        this->pid_controllers.at(pid_index) = std::make_unique<LinearController>(pid_configs);
     } else {
         throw std::runtime_error("Unsupported controller type " + std::to_string(controller_type) + ". Change the controller type in the settings for the Ramsey Stabilizer module.");
     }
+
+    this->waveform_params.at(pid_index)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+    this->waveform_params.at(pid_index)["nu0_streamed"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+    this->waveform_params.at(pid_index)["nu0_prime"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+    this->waveform_params.at(pid_index)["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
+    this->nu_buffer.at(pid_index).clear();
+    this->moving_average.at(pid_index) = 0.0;
+    this->pid_initialized.at(pid_index) = true;
 }
 
 void RamseyStabilizer::setup_awg_handler() {
@@ -283,35 +308,8 @@ void RamseyStabilizer::transition_to_buffered() {
     if (this->active_pid_index >= this->pid_count) {
         throw std::runtime_error("Active PID index " + std::to_string(this->active_pid_index) + " is out of range (PID count: " + std::to_string(this->pid_count) + "). Change the number of PID loops in the settings for the Ramsey Stabilizer module.");
     }
+    this->ensure_pid_initialized(this->active_pid_index);
     this->prepare_awg();
-}
-
-void RamseyStabilizer::reset_waveform_data() {
-    if (this->waveform_params.size() != this->pid_count) {
-        this->waveform_params.clear();
-        this->waveform_params.resize(this->pid_count);
-    }
-    this->moving_average.clear();
-    this->nu_buffer.clear();
-    
-    for (size_t i = 0; i < this->pid_count; ++i) {
-        auto is_empty = this->waveform_params.at(i).find("nu0") == this->waveform_params.at(i).end();
-        auto initialization_needed = is_empty || this->labscript_config->get_ramsey_stabilizer_clear_memory_flag();
-
-        if (initialization_needed) {
-            // Variables that should only be read from labscript if initialiation is needed.
-            this->waveform_params.at(i)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
-            this->waveform_params.at(i)["nu0_streamed"] = this->labscript_config->get_ramsey_stabilizer_nu0();
-            this->waveform_params.at(i)["nu0_prime"] = this->labscript_config->get_ramsey_stabilizer_nu0();
-        }
-
-        // Variables that should always be read from labscript
-        this->waveform_params.at(i)["alpha"] = this->labscript_config->get_ramsey_stabilizer_alpha();
-
-        // Track mode logic
-        this->nu_buffer.emplace_back();
-        this->moving_average.push_back(0.0);
-    }
 }
 
 void RamseyStabilizer::prepare_awg() {

@@ -13,8 +13,12 @@
 #include "pid-loop-phase-controller.h"
 #include "linear-controller.h"
 #include "microwave-awg-handler.h"
+#include <cstdint>
+#include <deque>
+#include <memory>
 #include <unordered_map>
 #include <string>
+#include <vector>
 #include <boost/filesystem.hpp>
 #include <semaphore.h>
 #include <thread>
@@ -81,9 +85,10 @@ class RamseyStabilizer {
     double error = 0;
     int8_t gradient_x_parallel;
     void reset_pid();
-
-    void reset_waveform_data();
     std::vector<std::unordered_map<std::string, double>> waveform_params;
+    std::vector<bool> pid_initialized;
+
+    void ensure_pid_initialized(size_t pid_index);
 
     static void register_streamed_parameters(std::unordered_map<std::string, double>& vars);
     static std::string substitute_variables_in_signal(std::string s, std::unordered_map<std::string, double>& vars);
