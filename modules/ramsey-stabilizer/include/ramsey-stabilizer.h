@@ -85,7 +85,8 @@ class RamseyStabilizer {
     void reset_waveform_data();
     std::vector<std::unordered_map<std::string, double>> waveform_params;
 
-    static std::string substitute_variables_in_signal(std::string s, const std::unordered_map<std::string, double>& vars);
+    static void register_streamed_parameters(std::unordered_map<std::string, double>& vars);
+    static std::string substitute_variables_in_signal(std::string s, std::unordered_map<std::string, double>& vars);
     static std::vector<std::string> split_signal(const std::string& s, char delim);
 
     double interrogation_tau, track_mode_factor;

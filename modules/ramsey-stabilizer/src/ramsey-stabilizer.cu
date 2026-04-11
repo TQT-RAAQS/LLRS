@@ -130,13 +130,14 @@ void RamseyStabilizer::worker_function() {
                 this->smh->signal_done();
                 if (this->flag_active) {
                     this->awg_handler->stop();
-                    this->saver->add_to_queue(
-                        this->last_shot_address, 
-                        this->error, 
+                    this->saver->add_to_queue(ShotInformation{
+                        this->last_shot_address,
+                        this->error,
                         this->waveform_params.at(this->active_pid_index)["nu0"],
+                        this->waveform_params.at(this->active_pid_index)["nu0_streamed"],
                         this->moving_average.at(this->active_pid_index),
                         this->awg_handler->get_streaming_time()
-                    );
+                    });
                 }
                 this->labscript_config.reset();
                 images_processed = SHOT_NOT_BEGUN_YET;
@@ -201,7 +202,7 @@ void RamseyStabilizer::process_image(int8_t image_index) {
 }
 
 double RamseyStabilizer::update_nu0_prime() {
-    auto& nu0 = this->waveform_params.at(this->active_pid_index)["nu0"];
+    auto& nu0 = this->waveform_params.at(this->active_pid_index)["nu0_streamed"];
     auto nu_resonance = nu0 - this->phi / (2.0 * M_PI * this->interrogation_tau);
     this->waveform_params.at(this->active_pid_index)["nu0_prime"] = nu_resonance;
     return nu_resonance;
@@ -300,6 +301,7 @@ void RamseyStabilizer::reset_waveform_data() {
         if (initialization_needed) {
             // Variables that should only be read from labscript if initialiation is needed.
             this->waveform_params.at(i)["nu0"] = this->labscript_config->get_ramsey_stabilizer_nu0();
+            this->waveform_params.at(i)["nu0_streamed"] = this->labscript_config->get_ramsey_stabilizer_nu0();
             this->waveform_params.at(i)["nu0_prime"] = this->labscript_config->get_ramsey_stabilizer_nu0();
         }
 
@@ -330,7 +332,11 @@ void RamseyStabilizer::prepare_awg() {
     this->awg_handler->start();
 }
 
-std::string RamseyStabilizer::substitute_variables_in_signal(std::string s, const std::unordered_map<std::string, double>& vars) {
+void RamseyStabilizer::register_streamed_parameters(std::unordered_map<std::string, double>& vars) {
+    vars["nu0_streamed"] = vars["nu0"];
+}
+
+std::string RamseyStabilizer::substitute_variables_in_signal(std::string s, std::unordered_map<std::string, double>& vars) {
     for (const auto& kv : vars) {
         std::string key = "$" + kv.first + "$";
         std::string val = std::to_string(kv.second);
@@ -341,6 +347,7 @@ std::string RamseyStabilizer::substitute_variables_in_signal(std::string s, cons
             pos += val.size();
         }
     }
+    RamseyStabilizer::register_streamed_parameters(vars); // Register the streamed parameters after substitution.
     return s;
 }
 
