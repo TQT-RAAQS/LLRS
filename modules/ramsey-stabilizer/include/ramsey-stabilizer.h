@@ -46,7 +46,7 @@ class RamseyStabilizer {
 
     void setup_qdac_client();
     std::unique_ptr<QdacClient> qdac_client;
-    bool flag_qdac_client_active;
+    bool flag_qdac_controller_active;
 
     void setup_awg_handler();
     void prepare_awg();
