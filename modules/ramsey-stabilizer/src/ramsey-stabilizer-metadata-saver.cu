@@ -5,6 +5,14 @@ RamseyStabilizerMetadataSaver::RamseyStabilizerMetadataSaver(YAML::Node configs)
     image_folder = this->configs["image_folder_name"].as<std::string>();
 }
 
+void ShotInformation::write_to(std::ostream& out) const {
+    out.write(reinterpret_cast<const char*>(&error_signal), sizeof(double));
+    out.write(reinterpret_cast<const char*>(&frequency), sizeof(double));
+    out.write(reinterpret_cast<const char*>(&new_frequency), sizeof(double));
+    out.write(reinterpret_cast<const char*>(&frequency_moving_average), sizeof(double));
+    out.write(reinterpret_cast<const char*>(&timestamp), sizeof(int64_t));
+}
+
 void RamseyStabilizerMetadataSaver::start() {
     this->thread_killed.store(false);
     this->thread_worker = std::make_unique<std::thread>(&RamseyStabilizerMetadataSaver::worker, this);
@@ -40,15 +48,9 @@ void RamseyStabilizerMetadataSaver::worker() {
     }
 }
 
-void RamseyStabilizerMetadataSaver::add_to_queue(std::string shot_address, double error_signal, double new_frequency, double frequency_moving_average, int64_t timestamp) {
+void RamseyStabilizerMetadataSaver::add_to_queue(ShotInformation shot_information) {
     std::lock_guard<std::mutex> lock(this->mtx);
-    this->queue.emplace_back(
-        shot_address,
-        error_signal,
-        new_frequency,
-        frequency_moving_average,
-        timestamp
-    );
+    this->queue.emplace_back(std::move(shot_information));
 }
 
 void RamseyStabilizerMetadataSaver::save_to_file(const ShotInformation& s) {
@@ -60,10 +62,7 @@ void RamseyStabilizerMetadataSaver::save_to_file(const ShotInformation& s) {
         throw std::runtime_error("Could not open file for writing metadata");
     }
 
-    fout.write(reinterpret_cast<const char*>(&s.error_signal), sizeof(double));
-    fout.write(reinterpret_cast<const char*>(&s.new_frequency), sizeof(double));
-    fout.write(reinterpret_cast<const char*>(&s.frequency_moving_average), sizeof(double));
-    fout.write(reinterpret_cast<const char*>(&s.timestamp), sizeof(int64_t));
+    s.write_to(fout);
     fout.close();
 }
 
