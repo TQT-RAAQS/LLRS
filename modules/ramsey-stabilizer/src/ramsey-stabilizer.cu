@@ -13,7 +13,7 @@ RamseyStabilizer::RamseyStabilizer(const std::string config) {
 
 void RamseyStabilizer::setup_qdac_client() {
     auto qdac_config_name = this->configs["qdac_client"]["config"].as<std::string>();
-    this->flag_qdac_client_active = this->configs["qdac_client"]["active"].as<bool>();
+    this->flag_qdac_controller_active = false;
     this->qdac_client = std::make_unique<QdacClient>(qdac_config_name);
 
     this->gamma = this->configs["magnetometry"]["gamma"].as<double>();
@@ -182,8 +182,7 @@ void RamseyStabilizer::process_image(int8_t image_index) {
     // Calculate the true resonance frequency
     auto nu_resonance = this->update_nu0_prime(); // Update the true resonance frequency
     INFO << "Checking if we should sent to qdac client.\n";
-    if (this->configs["qdac_client"]["active"].as<bool>()) { // If the QDAC client is active, send the estimated magnetic field to the QDAC server.
-        INFO << "Sending...\n";
+    if (this->flag_qdac_controller_active) { // If the QDAC client is active, send the estimated magnetic field to the QDAC server.
         auto b_field = (nu_resonance - this->nu_freespace) / this->gamma;
         this->qdac_client->send_b_field(this->active_pid_index, b_field);
         INFO << "Estimated resonance frequency: " << nu_resonance << " Hz, Estimated magnetic field: " << b_field << " T.\n";
@@ -260,6 +259,8 @@ void RamseyStabilizer::transition_to_buffered() {
     this->flag_track_mode = this->labscript_config->get_ramsey_stabilizer_track_mode();
     this->interrogation_tau = this->labscript_config->get_ramsey_stabilizer_tau();
     this->track_mode_factor = this->labscript_config->get_ramsey_stabilizer_track_mode_factor();
+
+    this->flag_qdac_controller_active = this->labscript_config->get_qdac_controller_active();
     this->error = 0;
     
     if (!this->flag_active) {
