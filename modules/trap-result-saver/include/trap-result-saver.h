@@ -22,7 +22,7 @@ using ShotTrapResult = std::tuple< std::string, std::vector<ImageTrapResult> >; 
 class TrapResultSaver {
 
     YAML::Node configs;
-    sem_t* saving_semaphore;
+    std::unique_ptr<sem_t> saving_semaphore = std::make_unique<sem_t>();
 
     std::queue< ShotTrapResult > trap_results;
     std::mutex trap_results_mutex;

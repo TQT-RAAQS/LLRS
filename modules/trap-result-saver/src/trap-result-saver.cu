@@ -8,7 +8,7 @@ TrapResultSaver::TrapResultSaver(const std::string config) {
 }
 
 void TrapResultSaver::setup_semaphore() {
-    sem_init(this->saving_semaphore, 0, 0);
+    sem_init(this->saving_semaphore.get(), 0, 0);
 }
 
 void TrapResultSaver::setup_memory_handler() {
@@ -31,7 +31,7 @@ void TrapResultSaver::saver_worker() {
         clock_gettime(CLOCK_REALTIME, &ts);
         ts.tv_sec += saver_timeout_s;
 
-        auto ret = sem_timedwait(this->saving_semaphore, &ts);
+        auto ret = sem_timedwait(this->saving_semaphore.get(), &ts);
         if (ret == -1) {
             if (errno == ETIMEDOUT) {
                 if (this->thread_killed.load()) break;
@@ -120,7 +120,7 @@ void TrapResultSaver::retriever_worker() {
 
         } else if (processed_image_count == current_image_count) { // The shot is done
             INFO << processed_image_count << " images processed and to be saved in " << saving_address << std::endl;
-            sem_post(this->saving_semaphore);
+            sem_post(this->saving_semaphore.get());
             this->memory_handler->signal_done();
 
             processed_image_count = SHOT_NOT_BEGUN_YET;
@@ -143,6 +143,9 @@ void TrapResultSaver::stop() {
     this->thread_killed.store(true);
     if (this->data_retriever_thread->joinable()) {
         this->data_retriever_thread->join();
+    }
+    if (this->saver_thread->joinable()) {
+        this->saver_thread->join();
     }
     this->memory_handler->close_connection();
 }
