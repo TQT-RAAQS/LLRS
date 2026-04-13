@@ -4,6 +4,9 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include <zmq.hpp>
+#include <sstream>
+#include <iomanip>
+#include <limits>
 #include "llrs-lib/PreProc.h"
 
 class QdacClient {
@@ -15,7 +18,7 @@ class QdacClient {
     zmq::socket_t socket;
     void setup_client();
 
-    std::string send_string(std::string command, double timeout = -1);
+    std::string send_string(std::string command, double timeout = -1.0);
 
 public:
     QdacClient(std::string config);

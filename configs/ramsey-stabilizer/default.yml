@@ -23,4 +23,4 @@ qdac_client:
 
 magnetometry:
   gamma: -2.1e10
-  nu_fs: 99.92e6
+  nu_fs: 99.922550e6

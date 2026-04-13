@@ -27,7 +27,15 @@ bool QdacClient::handshake() {
 
 bool QdacClient::send_b_field(int pid_index, double b_field) {
     try {
-        auto command = "ramsey|" + std::to_string(pid_index) + "|" + std::to_string(b_field);
+        std::ostringstream oss;
+        oss << "ramsey|" 
+            << pid_index 
+            << "|" 
+            << std::setprecision(std::numeric_limits<double>::max_digits10) 
+            << b_field;
+
+        auto command = oss.str();
+        
         auto response = this->send_string(command);
         if (response == "202") {
             INFO << "Successfully sent magnetic field value to QDAC Server: " << b_field << " T.\n";
@@ -65,6 +73,7 @@ void QdacClient::setup_client() {
 
 std::string QdacClient::send_string(std::string command, double timeout) {
     try {
+        INFO << "Sending the command: " << command << " to QDAC Server...\n";
         this->socket.send(zmq::buffer(command), zmq::send_flags::none);
 
         if (timeout < 0) {
