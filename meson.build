@@ -58,3 +58,5 @@ image_saver = subproject('image-saver')
 shared_memory_handler = subproject('shared-memory-handler')
 
 qdac_client = subproject('qdac-client')
+
+string_math_parser = subproject('string-math-parser')

@@ -11,6 +11,8 @@
 #include <chrono>
 #include <ctime>
 #include <fstream>
+#include <mutex>
+#include <queue>
 
 #define IMAGE_FOLDER_NAME 
 
@@ -22,7 +24,8 @@ class TrapResultSaver {
     YAML::Node configs;
     sem_t* saving_semaphore;
 
-    std::vector< ShotTrapResult > trap_results;
+    std::queue< ShotTrapResult > trap_results;
+    std::mutex trap_results_mutex;
 
     std::unique_ptr<SharedMemoryHandler> memory_handler;
     std::atomic<bool> thread_killed;

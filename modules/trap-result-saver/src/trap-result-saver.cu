@@ -41,11 +41,17 @@ void TrapResultSaver::saver_worker() {
             }
         }
 
-        auto& results_to_save = this->trap_results.back(); // TODO: Check if trap_results is empty or not
-        
-        this->save_to_file(results_to_save);
+        ShotTrapResult results_to_save;
+        {
+            std::lock_guard<std::mutex> lock(this->trap_results_mutex);
+            if (this->trap_results.empty()) {
+                continue;
+            }
+            results_to_save = std::move(this->trap_results.front());
+            this->trap_results.pop();
+        }
 
-        this->trap_results.pop_back();
+        this->save_to_file(results_to_save);
     }
 }
 
@@ -102,7 +108,10 @@ void TrapResultSaver::retriever_worker() {
             saving_address = LabscriptAddressUtils::get_images_folder_name(shot_address, this->image_folder_name);
             processed_image_count = 0;
 
-            this->trap_results.emplace_back(saving_address, std::vector<ImageTrapResult>{}); // Add empty image trap results to the queue
+            {
+                std::lock_guard<std::mutex> lock(this->trap_results_mutex);
+                this->trap_results.emplace(saving_address, std::vector<ImageTrapResult>{}); // Add empty image trap results to the queue
+            }
 
         } else if (processed_image_count != SHOT_NOT_BEGUN_YET && current_image_count > 0 && current_image_count > processed_image_count) { // New image has arrived
 
