@@ -14,9 +14,10 @@ namespace StringMathParser {
         public:
             const std::string term;
 
+            bool can_be_evaluated = false;
             bool evaluated = false;
             double value = 0.0;
-            char operator_char = '\0';
+            char operator_char = ';';
             std::shared_ptr<TermNode> left = nullptr;
             std::shared_ptr<TermNode> right = nullptr;
             std::shared_ptr<TermNode> first_child = nullptr;
