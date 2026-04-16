@@ -27,7 +27,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     int ramsey_stabilizer_track_mode;
     double ramsey_stabilizer_track_mode_factor;
     char* mw_signals;
-    char* qdac_controller_active;
+    bool qdac_controller_active;
 
   public:
   RamseyStabilizerLabscriptConfig(ShotFile shotfile)
@@ -78,7 +78,7 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     int get_ramsey_stabilizer_nu_buffer_size() const { return ramsey_stabilizer_nu_buffer_size; }
     bool get_ramsey_stabilizer_clear_memory_flag() const { return ramsey_stabilizer_clear_memory_flag != 0; }
     bool get_ramsey_stabilizer_track_mode() const { return ramsey_stabilizer_track_mode != 0; }
-    bool get_qdac_controller_active() const { return qdac_controller_active == "True"; }
+    bool get_qdac_controller_active() const { return qdac_controller_active; }
     std::string get_mw_signals() const { return mw_signals; }
 };
 
