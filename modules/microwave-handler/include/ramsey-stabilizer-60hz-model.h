@@ -21,7 +21,13 @@ class RamseyStabilizer60HzModel {
         RamseyStabilizer60HzModel();
 
         void reload_parameters();
-        inline double get_phase_correction(double t) const;
+        inline double get_phase_correction(double t) const {
+            return this->parameters.A * (1 - std::exp(-t / this->parameters.T_A)) + 
+                   this->parameters.B * (1 - std::exp(-t / this->parameters.T_B)) + 
+                   this->parameters.a1 / (2 * M_PI * this->parameters.nu_AC) * std::sin(2 * M_PI * this->parameters.nu_AC * (t + this->parameters.dt)) + 
+                   this->parameters.a2 / (2 * M_PI * 3 * this->parameters.nu_AC) * std::sin(2 * M_PI * 3 * this->parameters.nu_AC * (t + this->parameters.dt)) + 
+                   this->parameters.b * t;
+        }
 };
 
 #endif

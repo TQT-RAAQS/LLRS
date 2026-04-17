@@ -295,6 +295,8 @@ void RamseyStabilizer::transition_to_buffered() {
 
     if (this->last_experiment_folder != experiment_name) { // This is a new experiment
         this->last_experiment_folder = experiment_name;
+
+        this->awg_handler->reload();
         
         // Re-read the geometric ordering of the traps
         this->fourier_analyzer->reload_orders(this->flag_configs_translator);

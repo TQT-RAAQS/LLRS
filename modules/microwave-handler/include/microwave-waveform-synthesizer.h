@@ -5,6 +5,7 @@
 #include "llrs-lib/PreProc.h"
 #include "configs-translator.h"
 #include "awg.hpp"
+#include "ramsey-stabilizer-60hz-model.h"
 #include <vector>
 #include <tuple>
 
@@ -13,6 +14,8 @@ namespace MicrowaveHandler {
     class MicrowaveWaveformSynthesizer {
 
         ConfigsTranslator& config_translator = ConfigsTranslator::instance();
+
+        RamseyStabilizer60HzModel ramsey_stabilizer_60hz_model;
 
         bool flag_fast_interleaving = false;
 
@@ -31,6 +34,14 @@ namespace MicrowaveHandler {
             double t,
             double t_initial_pause);
 
+        void generate_square60_pulse(
+            short* buffer,
+            size_t sample_count,
+            AWG& awg,
+            const MicrowaveHandler::Square60Pulse* p,
+            double t,
+            double t_initial_pause);
+
         void generate_square_pulse_fast(
             short* buffer,
             size_t sample_count,
@@ -38,6 +49,8 @@ namespace MicrowaveHandler {
             const MicrowaveHandler::SquarePulse* p,
             double t,
             double t_initial_pause);
+
+        void reload_iqmixer_parameters(bool flag_translate = true);
 
     public:
 
