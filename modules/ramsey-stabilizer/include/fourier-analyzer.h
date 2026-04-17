@@ -1,5 +1,5 @@
-#ifndef _FOURIER_ANALYZER_H_
-#define _FOURIER_ANALYZER_H_
+#ifndef FOURIER_ANALYZER_H_
+#define FOURIER_ANALYZER_H_
 
 #include "configs-translator.h"
 #include "llrs-lib/PreProc.h"

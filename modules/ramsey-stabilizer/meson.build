@@ -56,7 +56,7 @@ ramsey_stabilizer_dependencies = [
 ramsey_stabilizer_sources = [
     'src/ramsey-stabilizer.cu',
     'src/ramsey-stabilizer-metadata-saver.cu',
-    'src/fourier-analyzer.cu',
+    'src/fourier-analyzer.cu'
 ]
 
 # executable

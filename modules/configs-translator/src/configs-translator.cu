@@ -71,3 +71,20 @@ void ConfigsTranslator::translate_linear_controller_configs() {
     } while (true);
     INFO << "Translated linear controller config files generated.\n";
 }
+
+void ConfigsTranslator::translate_ramsey_stabilizer_60hz_model() {
+    std::remove(RAMSEY_STABILIZER_60HZ_MODEL_FILE.c_str());
+    std::remove(RAMSEY_STABILIZER_60HZ_MODEL_READY_FILE.c_str());
+
+    fprintf(this->translator_pipe, "reload_ramsey_stabilizer_60hz_model\n");
+    fflush(this->translator_pipe);
+
+    INFO << "Trying to regenerate the translated Ramsey stabilizer 60Hz model config files...\n";
+    do {
+        if (fs::exists(RAMSEY_STABILIZER_60HZ_MODEL_READY_FILE)) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    } while (true);
+    INFO << "Translated Ramsey stabilizer 60Hz model config files generated.\n";
+}

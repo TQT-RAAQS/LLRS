@@ -18,6 +18,7 @@ public:
     void translate_psf();
     void translate_iqmixer();
     void translate_linear_controller_configs();
+    void translate_ramsey_stabilizer_60hz_model();
 
     ConfigsTranslator(const ConfigsTranslator&) = delete;
     ConfigsTranslator& operator=(const ConfigsTranslator&) = delete;

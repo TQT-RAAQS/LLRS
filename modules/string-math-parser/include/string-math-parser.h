@@ -1,5 +1,5 @@
-#ifndef _STRING_MATH_PARSER_H
-#define _STRING_MATH_PARSER_H
+#ifndef STRING_MATH_PARSER_H
+#define STRING_MATH_PARSER_H
 
 #include <iostream>
 #include <memory>

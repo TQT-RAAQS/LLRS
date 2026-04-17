@@ -33,7 +33,8 @@ includes = ['include']
 sources = [
     'src/microwave-awg-handler.cu',
     'src/microwave-waveforms.cu',
-    'src/microwave-waveform-synthesizer.cu'
+    'src/microwave-waveform-synthesizer.cu',
+    'src/ramsey-stabilizer-60hz-model.cu'
 ]
 
 ##########################

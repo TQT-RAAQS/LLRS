@@ -195,6 +195,32 @@ std::tuple<
             t += duration;
             t_initial_pause = 0;
 
+        }  else if (auto *p = boost::get<Square60Pulse>(&waveforms[i])) {
+
+            auto duration = p->duration + t_initial_pause + abs(this->digital_offset_time);
+            int sample_count = round(duration / dt);
+            auto dsample_count = ( sample_count % this->segment_size_steps == 0 ? 0 : this->segment_size_steps - (sample_count % this->segment_size_steps) );
+
+            sample_count += dsample_count;
+            duration += dsample_count * dt;
+
+            if (sample_count < this->min_segment_size) {
+                continue;
+            }
+
+            waveforms_list.push_back(
+                MicrowaveHandler::MicrowaveAwgHandler::IQMixerWaveform(
+                    waveforms[i],
+                    t,
+                    t_initial_pause,
+                    duration
+                )
+            );
+            repetitions_list.push_back(1);
+
+            t += duration;
+            t_initial_pause = 0;
+
         } else {
 
             throw std::runtime_error("Unsupported waveform type in breakdown_waveforms: " + std::to_string(waveforms[i].which()) );

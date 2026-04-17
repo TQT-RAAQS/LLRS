@@ -1,5 +1,5 @@
-#ifndef _MICROWAVE_AWG_HANDLER_H_
-#define _MICROWAVE_AWG_HANDLER_H_
+#ifndef MICROWAVE_AWG_HANDLER_H_
+#define MICROWAVE_AWG_HANDLER_H_
 
 #include "awg.hpp"
 #include "timed-hash-queue.h"
@@ -56,6 +56,12 @@ namespace MicrowaveHandler {
                     h = hash_combine(h, std::hash<double>{}(time));
                     h = hash_combine(h, std::hash<double>{}(t_initial_pause));
                     h = hash_combine(h, std::hash<double>{}(duration));
+                    h = hash_combine(h, std::hash<double>{}(1));
+                } else if (boost::get<MicrowaveHandler::Square60Pulse>(&wf)) { // Square pulse
+                    h = hash_combine(h, std::hash<double>{}(time));
+                    h = hash_combine(h, std::hash<double>{}(t_initial_pause));
+                    h = hash_combine(h, std::hash<double>{}(duration));
+                    h = hash_combine(h, std::hash<double>{}(2));
                 } else if (boost::get<MicrowaveHandler::Pause>(&wf)) { // Pause
                     h = hash_combine(h, std::hash<double>{}(duration));
                 } else {
