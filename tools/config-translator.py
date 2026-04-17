@@ -25,6 +25,7 @@ for line in sys.stdin:
         # Reload everything
         with open(Addresses.traps_psf, "rb") as file:
             psf_data = pickle.load(file)
+        GlobalDataRepository.reset_cache()
         thresholds_repo = GlobalDataRepository.get_data(DataLabel.THRESHOLDS)
 
         centers = psf_data['centers'].copy()   # shape (N, 2)
@@ -100,6 +101,7 @@ for line in sys.stdin:
             f.write("")
     
     elif command == "reload_ramsey_stabilizer_60hz_model":
+        GlobalDataRepository.reset_cache()
         ramsey_60hz_model = GlobalDataRepository.get_data(DataLabel.RAMSEY_STABILIZER_60HZ_MODEL)
 
         variable_names = [
@@ -111,7 +113,7 @@ for line in sys.stdin:
             "a1",
             "a2",
             "dt",
-            "nu_AC"
+            "nu_AC",
         ]
         
         v = []
