@@ -1,5 +1,5 @@
-#ifndef _TIMED_HASH_QUEUE_
-#define _TIMED_HASH_QUEUE_
+#ifndef TIMED_HASH_QUEUE_
+#define TIMED_HASH_QUEUE_
 
 #include <unordered_map>
 #include <cstdint>

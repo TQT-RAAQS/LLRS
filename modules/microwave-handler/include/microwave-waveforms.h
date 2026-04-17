@@ -1,5 +1,5 @@
-#ifndef _MICROWAVE_WAVEFORMS_H_
-#define _MICROWAVE_WAVEFORMS_H_
+#ifndef MICROWAVE_WAVEFORMS_H_
+#define MICROWAVE_WAVEFORMS_H_
 
 #include <string>
 #include <boost/variant.hpp>

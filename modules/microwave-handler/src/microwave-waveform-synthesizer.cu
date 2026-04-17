@@ -2,8 +2,8 @@
 
 using namespace MicrowaveHandler;
 
-#define _MW_MAX_ANALOG_VALUE 0x7fff
-#define _ALPHA_MAX 0.050
+#define MW_MAX_ANALOG_VALUE 0x7fff
+#define ALPHA_MAX 0.050
 
 MicrowaveWaveformSynthesizer::MicrowaveWaveformSynthesizer() {
     this->reload();

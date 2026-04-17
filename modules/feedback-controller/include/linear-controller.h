@@ -1,5 +1,5 @@
-#ifndef _RAMSEY_STABILIZER_LINEAR_PID_LOOP_
-#define _RAMSEY_STABILIZER_LINEAR_PID_LOOP_
+#ifndef RAMSEY_STABILIZER_LINEAR_PID_LOOP_
+#define RAMSEY_STABILIZER_LINEAR_PID_LOOP_
 
 #include "controller.h"
 #include "yaml-cpp/yaml.h"

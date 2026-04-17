@@ -1,5 +1,5 @@
-#ifndef _QDAC_CLIENT_H_
-#define _QDAC_CLIENT_H_
+#ifndef QDAC_CLIENT_H_
+#define QDAC_CLIENT_H_
 
 #include <string>
 #include <yaml-cpp/yaml.h>

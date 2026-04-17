@@ -1,5 +1,5 @@
-#ifndef _MICROWAVE_AWG_HANDLER_H_
-#define _MICROWAVE_AWG_HANDLER_H_
+#ifndef MICROWAVE_AWG_HANDLER_H_
+#define MICROWAVE_AWG_HANDLER_H_
 
 #include "awg.hpp"
 #include "timed-hash-queue.h"

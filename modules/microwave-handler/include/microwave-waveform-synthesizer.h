@@ -1,5 +1,5 @@
-#ifndef _MICROWAVE_WAVEFORM_SYNTHESIZER_H_
-#define _MICROWAVE_WAVEFORM_SYNTHESIZER_H_
+#ifndef MICROWAVE_WAVEFORM_SYNTHESIZER_H_
+#define MICROWAVE_WAVEFORM_SYNTHESIZER_H_
 
 #include "microwave-waveforms.h"
 #include "llrs-lib/PreProc.h"

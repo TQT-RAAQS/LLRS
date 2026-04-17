@@ -1,5 +1,5 @@
-#ifndef _CONTROLLER_
-#define _CONTROLLER_
+#ifndef CONTROLLER_
+#define CONTROLLER_
 
 class Controller {
 
