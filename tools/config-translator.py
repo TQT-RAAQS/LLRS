@@ -98,3 +98,28 @@ for line in sys.stdin:
 
         with open(Addresses.llrs_linear_controller_configs_done, "w") as f:
             f.write("")
+    
+    elif command == "reload_ramsey_stabilizer_60hz_model":
+        ramsey_60hz_model = GlobalDataRepository.get_data(DataLabel.RAMSEY_STABILIZER_60HZ_MODEL)
+
+        variable_names = [
+            "b",
+            "A",
+            "T_A",
+            "B",
+            "T_B",
+            "a1",
+            "a2",
+            "dt",
+            "nu_AC"
+        ]
+        
+        v = []
+        for n in variable_names:
+            v.append(ramsey_60hz_model[n])
+
+        with open(Addresses.llrs_ramsey_stabilizer_60hz_model, "wb") as f:
+            f.write(np.array(v, dtype=np.float64).tobytes())
+
+        with open(Addresses.llrs_ramsey_stabilizer_60hz_model_done, "w") as f:
+            f.write("")

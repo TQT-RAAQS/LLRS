@@ -49,6 +49,18 @@ namespace fs = std::experimental::filesystem;
 #define IQMIXER_TRANSLATION_READY_FILE                                         \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
         kPathSeparator1 + "translation" + kPathSeparator1 + "iqmixer.done")
+#define IQMIXER_TRANSLATION_FILE                                               \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "iqmixer" + kPathSeparator1 + "iqmixer.bin")
+#define IQMIXER_TRANSLATION_READY_FILE                                         \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "translation" + kPathSeparator1 + "iqmixer.done")
+#define RAMSEY_STABILIZER_60HZ_MODEL_FILE    \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "ramsey_stabilizer_60hz_model" + kPathSeparator1 + "ramsey_stabilizer_60hz_model.bin")
+#define RAMSEY_STABILIZER_60HZ_MODEL_READY_FILE                                       \
+    (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
+        kPathSeparator1 + "ramsey_stabilizer_60hz_model" + kPathSeparator1 + "ramsey_stabilizer_60hz_model.done")
 #define LINEAR_CONTROLLER_TRANSLATION_FILE                                     \
     (std::string("") + PROJECT_BASE_DIR + kPathSeparator1 + "resources" +      \
         kPathSeparator1 + "linear_controller" + kPathSeparator1 + "linear_controller_configs.bin")
