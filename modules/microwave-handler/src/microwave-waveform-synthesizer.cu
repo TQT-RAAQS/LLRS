@@ -58,10 +58,10 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
     double dt = 1.0 / awg.get_sample_rate();
 
     // Normalization factors
-    if (p->amplitude > _ALPHA_MAX) {
+    if (p->amplitude > ALPHA_MAX) {
         throw std::runtime_error(
             "SquarePulse amplitude exceeds maximum allowed value of " +
-            std::to_string(_ALPHA_MAX) + ": " + std::to_string(p->amplitude)
+            std::to_string(ALPHA_MAX) + ": " + std::to_string(p->amplitude)
         );
     }
 
@@ -99,8 +99,8 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse(
         auto freq = p->frequency;
         double mask = (t_rel >= -digital_offset_time && t_rel <= p->duration - digital_offset_time);
 
-        v_I[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * freq * tnow + p->phase) + alpha_I_dc));
-        v_Q[pause_samples + i] = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * freq * tnow + p->phase + dphi) + alpha_Q_dc));
+        v_I[pause_samples + i] = static_cast<short>(MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * freq * tnow + p->phase) + alpha_I_dc));
+        v_Q[pause_samples + i] = static_cast<short>(MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * freq * tnow + p->phase + dphi) + alpha_Q_dc));
 
         digital_trigger[pause_samples + i] = (t_rel >= digital_offset_time && t_rel <= p->duration + digital_offset_time) ? 1 : 0;
     }
@@ -140,10 +140,10 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse_fast(
     double dt = 1.0 / awg.get_sample_rate();
 
     // Normalization factors
-    if (p->amplitude > _ALPHA_MAX) {
+    if (p->amplitude > ALPHA_MAX) {
         throw std::runtime_error(
             "SquarePulse amplitude exceeds maximum allowed value of " +
-            std::to_string(_ALPHA_MAX) + ": " + std::to_string(p->amplitude)
+            std::to_string(ALPHA_MAX) + ": " + std::to_string(p->amplitude)
         );
     }
 
@@ -179,8 +179,8 @@ void MicrowaveWaveformSynthesizer::generate_square_pulse_fast(
         auto freq = p->frequency;
         auto mask = static_cast<double>(t_rel >= -digital_offset_time && t_rel <= p->duration - digital_offset_time);
 
-        auto vI = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * freq * tnow + p->phase) + alpha_I_dc));
-        auto vQ = static_cast<short>(_MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * freq * tnow + p->phase + dphi) + alpha_Q_dc));
+        auto vI = static_cast<short>(MW_MAX_ANALOG_VALUE * mask * (alpha_I * sin(2 * M_PI * freq * tnow + p->phase) + alpha_I_dc));
+        auto vQ = static_cast<short>(MW_MAX_ANALOG_VALUE * mask * (alpha_Q * sin(2 * M_PI * freq * tnow + p->phase + dphi) + alpha_Q_dc));
         auto vD = static_cast<int16>( (t_rel >= digital_offset_time && t_rel <= p->duration + digital_offset_time) ? 1 : 0 );
 
         buffer[2 * (pause_samples + i)] = (digital_channel == 0 ? static_cast<short>( static_cast<uint16>(vI) >> analog_bit | (vD << digital_bit) ) : vI);
