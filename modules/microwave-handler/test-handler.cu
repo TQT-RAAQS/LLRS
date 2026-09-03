@@ -6,7 +6,6 @@
 #include <awg.hpp>
 
 using namespace MicrowaveHandler;
-using namespace MicrowaveHandler;
 
 int main() {
     MicrowaveAwgHandler awg_handler("default.yml");

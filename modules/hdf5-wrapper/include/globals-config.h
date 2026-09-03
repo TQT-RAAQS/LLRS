@@ -27,10 +27,16 @@ class GlobalsConfig {
 
   protected:
     ShotFile shotfile;
+    std::string shot_address;
 
-    GlobalsConfig(ShotFile shotfile,
-                  std::vector<ConfigDescription> globals_list)
-        : globals_list(globals_list), shotfile(shotfile) {
+    GlobalsConfig(
+        const std::string& shot_address,
+        std::vector<ConfigDescription> globals_list
+    )
+        : globals_list(std::move(globals_list)),
+          shotfile(shot_address),
+          shot_address(shot_address) {
+
         read_from_shot_file();
     }
 };

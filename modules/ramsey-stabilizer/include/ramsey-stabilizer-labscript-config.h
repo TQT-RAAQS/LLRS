@@ -30,9 +30,9 @@ class RamseyStabilizerLabscriptConfig : protected GlobalsConfig {
     bool qdac_controller_active;
 
   public:
-  RamseyStabilizerLabscriptConfig(ShotFile shotfile)
+  RamseyStabilizerLabscriptConfig(const std::string& shot_address)
         : GlobalsConfig(
-              shotfile,
+              shot_address,
               {{"ramsey_stabilizer_k_p", &ramsey_stabilizer_k_p, LabscriptType::VALUE},
                {"ramsey_stabilizer_k_i", &ramsey_stabilizer_k_i, LabscriptType::VALUE},
                {"ramsey_stabilizer_k_d", &ramsey_stabilizer_k_d, LabscriptType::VALUE},

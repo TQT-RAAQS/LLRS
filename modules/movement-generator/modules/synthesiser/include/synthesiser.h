@@ -18,9 +18,9 @@ class MovementsConfig : protected GlobalsConfig {
     std::vector<LabscriptDictType> *movement_waveforms;
 
   public:
-    MovementsConfig(ShotFile shotfile)
+    MovementsConfig(const std::string& shot_address)
         : GlobalsConfig(
-              shotfile,
+              shot_address,
               {{"movement_enabled", &enabled, LabscriptType::VALUE},
                {"movement_count", &movement_count, LabscriptType::VALUE},
                {"movement_waveforms", &movement_waveforms,

@@ -39,4 +39,3 @@ hdf5_wrapper_dep = declare_dependency(
     link_with: hdf5_wrapper_lib,
     dependencies: [hdf5_dependency, boost_dependency],
 )
-

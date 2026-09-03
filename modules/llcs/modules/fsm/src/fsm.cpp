@@ -199,7 +199,7 @@ void FiniteStateMachine::st_PROCESS_SHOT() {
     std::cout << "FSM:: PROCESS_SHOT state" << std::endl;
 
     // receive hdf5 filepath from the workstation
-    LLCSConfig llrs_config(ShotFile(server_handler.get_hdf5_file_path()));
+    LLCSConfig llrs_config(server_handler.get_hdf5_file_path());
     commands = llrs_config.get_commands();
     llrs_metadata.reserve(commands.size());
     commands_itr = 0;

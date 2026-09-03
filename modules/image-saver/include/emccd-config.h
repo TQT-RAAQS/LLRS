@@ -8,9 +8,9 @@ class EmccdConfig : protected GlobalsConfig {
     int roi_x, roi_y, roi_w, roi_h, hbin, vbin;
 
   public:
-    EmccdConfig(ShotFile shotfile)
+    EmccdConfig(const std::string& shot_address)
         : GlobalsConfig(
-              shotfile,
+              shot_address,
               {{"emccd_roi_x", &roi_x, LabscriptType::VALUE},
                {"emccd_roi_y", &roi_y, LabscriptType::VALUE},
                {"emccd_roi_w", &roi_w, LabscriptType::VALUE},

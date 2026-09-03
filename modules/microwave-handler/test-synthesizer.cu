@@ -10,7 +10,7 @@ using namespace MicrowaveHandler;
 int main() {
     auto awg = AWG{"iqmixer.yml"};
 
-    int N = 624000'00;
+    int N = 624000'000;
     double t0 = 312e-6;
     double t_initial_pause = 12e-6;
     double duration = 80e-3;

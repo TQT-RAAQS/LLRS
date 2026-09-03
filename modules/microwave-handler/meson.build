@@ -68,3 +68,11 @@ test_executable = executable(
     dependencies: dependencies,
     include_directories: includes
 )
+
+test_executable = executable(
+    'test-waveform',
+    ['test-waveform.cu'] + sources,
+    link_args: '-lstdc++fs',
+    dependencies: dependencies,
+    include_directories: includes
+)

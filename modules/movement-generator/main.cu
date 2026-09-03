@@ -41,9 +41,7 @@ int main() {
     while (true) {
         std::cout << "Waiting for HDF5 address" << std::endl;
         hdf_address = server_handler.get_hdf5_file_path();
-        ShotFile shotfile(hdf_address);
-        MovementsConfig movementsConfig(shotfile);
-        shotfile.close_file();
+        MovementsConfig movementsConfig(hdf_address);
 
         synthesiser.set_config(movementsConfig);
         synthesiser.synthesise_and_upload(awg, 1);

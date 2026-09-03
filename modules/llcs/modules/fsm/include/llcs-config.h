@@ -27,8 +27,8 @@ class LLCSConfig : protected GlobalsConfig {
     LLRSCommandData get_llrs_command_data(int index);
 
   public:
-    LLCSConfig(ShotFile shotfile)
-        : GlobalsConfig(shotfile,
+    LLCSConfig(const std::string& shot_address)
+        : GlobalsConfig(shot_address,
                         {
                             {"emccd_workstation_commands", &commands_int,
                              LabscriptType::LIST_OF_INT},
